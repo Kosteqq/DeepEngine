@@ -1,6 +1,6 @@
 #include "Debug/Debug.h"
 #include "Architecture/EngineSystem.h"
-
+#include "Window/WindowSubsystem.hpp"
 
 
 class TestSubsystem : DeepEngine::Architecture::EngineSubsystem
@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
 
     auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
     subsystemsManager.CreateSubsystem<TestSubsystem>(2);
+    subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(600, 800, "fckUnity");
 
     if (!subsystemsManager.Init())
     {

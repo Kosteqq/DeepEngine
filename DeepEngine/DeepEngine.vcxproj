@@ -180,7 +180,7 @@
   <ItemGroup>
     <ClCompile Include="Architecture\EngineSystem.cpp" />
     <ClCompile Include="DeepEngine.cpp" />
-    <ClCompile Include="Window\Window.cpp">
+    <ClCompile Include="Window\WindowSubsystem.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
@@ -258,8 +258,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug\Debug.h" />
-    <ClInclude Include="DeepEngine.hpp" />
-    <ClInclude Include="Window\Window.hpp" />
+    <ClInclude Include="Window\WindowSubsystem.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
