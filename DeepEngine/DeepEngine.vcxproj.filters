@@ -21,12 +21,18 @@
     <ClCompile Include="DE_Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Architecture\EngineSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DE_Window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Debug\Debug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Architecture\EngineSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
