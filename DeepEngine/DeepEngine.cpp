@@ -3,6 +3,6 @@
 
 int main(int argc, char* argv[])
 {
-    LOG(Hello World)
+    LOG("Hello World")
     return 0;
 }

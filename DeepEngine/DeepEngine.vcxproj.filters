@@ -18,15 +18,15 @@
     <ClCompile Include="DeepEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DE_Window.cpp">
+    <ClCompile Include="Window\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DE_Window.hpp">
+    <ClInclude Include="Debug\Debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Debug\Debug.h">
+    <ClInclude Include="Window\Window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
