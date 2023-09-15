@@ -155,6 +155,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DeepEngine.cpp" />
+    <ClCompile Include="DE_Window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DE_Window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug\Debug.h" />
