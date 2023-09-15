@@ -30,15 +30,5 @@ protected:
 int main(int argc, char* argv[])
 {
     LOG("Hello World")
-
-    auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
-    subsystemsManager.CreateSubsystem<TestSubsystem>(2);
-
-    if (!subsystemsManager.Init())
-    {
-        LOG("Failed to initialize subsystems!!")
-        return -1;
-    }
-
     return 0;
 }
