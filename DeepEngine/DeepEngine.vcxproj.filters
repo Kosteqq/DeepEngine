@@ -18,10 +18,13 @@
     <ClCompile Include="DeepEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Window\Window.cpp">
+    <ClCompile Include="Architecture\EngineSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Architecture\EngineSystem.cpp">
+    <ClCompile Include="Vulkan\Device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Window\WindowSubsystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,10 +32,10 @@
     <ClInclude Include="Debug\Debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window\Window.hpp">
+    <ClInclude Include="Vulkan\Device.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Architecture\EngineSystem.h">
+    <ClInclude Include="Window\WindowSubsystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,5 +1,5 @@
 #include "WindowSubsystem.hpp"
-#include "../Debug/Debug.h"
+#include "Debug/Debug.h"
 
 namespace DeepEngine
 {
@@ -21,7 +21,7 @@ namespace DeepEngine
 
     void WindowSubsystem::WindowResizedHandler(GLFWwindow* p_window, int p_width, int p_height)
     {
-      auto subsystem = (WindowSubsystem*)glfwGetWindowUserPointer(p_window);
+        auto subsystem = (WindowSubsystem*)glfwGetWindowUserPointer(p_window);
         subsystem->_width = p_width;
         subsystem->_height = p_height;
 
