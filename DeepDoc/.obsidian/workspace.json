@@ -1,0 +1,195 @@
+{
+  "main": {
+    "id": "8f17729492b0c259",
+    "type": "split",
+    "children": [
+      {
+        "id": "d71926747e29fd52",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "37871311287ca43f",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {}
+            }
+          },
+          {
+            "id": "496b56da6326d07c",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {}
+            }
+          },
+          {
+            "id": "32243f73b2905bdd",
+            "type": "leaf",
+            "state": {
+              "type": "canvas",
+              "state": {
+                "file": "Graf.canvas",
+                "viewState": {
+                  "x": 13.3333740234375,
+                  "y": 4.00006103515625,
+                  "zoom": 0
+                }
+              }
+            }
+          },
+          {
+            "id": "d515e2a6e2ab6442",
+            "type": "leaf",
+            "state": {
+              "type": "canvas",
+              "state": {
+                "file": "Graf.canvas",
+                "viewState": {
+                  "x": 344.4386735382559,
+                  "y": 253.83612330837815,
+                  "zoom": -0.6666665649414063
+                }
+              }
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "8e7eb591d77388eb",
+    "type": "split",
+    "children": [
+      {
+        "id": "536dc2f07910614e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c4b8a80e059e06e1",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "1be163bd1e120921",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "0a17ec3a96351e6f",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "69ab7f1de018a250",
+    "type": "split",
+    "children": [
+      {
+        "id": "453b2ec6627878d0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fa544681835bebe3",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Graf.canvas",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "86f60bb09b6ef6ea",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Graf.canvas",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "4cbc93c99eabad70",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "2fcdf55fdd13be19",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Graf.canvas"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Otwórz okno szybkiej zmiany pliku": false,
+      "graph:Otwórz graf": false,
+      "canvas:Stwórz nowe płótno": false,
+      "daily-notes:Otwórz dzisiejszą notatkę": false,
+      "templates:Wstaw szablon": false,
+      "command-palette:Otwórz paletę poleceń": false
+    }
+  },
+  "active": "d515e2a6e2ab6442",
+  "lastOpenFiles": [
+    "Bez nazwy 2.md",
+    "Bez nazwy 1.md",
+    "Bez nazwy 3.md",
+    "Bez nazwy.md",
+    "Graf.canvas",
+    "asd.md",
+    "Pasted image 20230915183418.png",
+    "Pasted image 20230915183415.png"
+  ]
+}
