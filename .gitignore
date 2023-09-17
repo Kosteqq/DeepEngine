@@ -13,8 +13,9 @@ _deps
 # build
 /.idea
 /.vs
-/[xX]64
-/DeepEngine/[xX]64
+/.vscode
+/[Xx]64
+/[Bb]uild
 
 # User-specific files
 *.rsuser
