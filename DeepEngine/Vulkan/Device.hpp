@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vulkan/vulkan_core.h>
+
 #include "../Architecture/EngineSystem.h"
 
 namespace DeepEngine
@@ -8,11 +10,16 @@ namespace DeepEngine
     {
     public:
         Device();
-        ~Device() = default;
+        ~Device();
 
     protected:
       
 
     private:
+        void initVulkan();
+        void CreateInstance();
+
+        VkInstance _instance;
+        
     };
 }
