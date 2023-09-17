@@ -8,53 +8,37 @@
         "type": "tabs",
         "children": [
           {
-            "id": "37871311287ca43f",
-            "type": "leaf",
-            "state": {
-              "type": "empty",
-              "state": {}
-            }
-          },
-          {
-            "id": "496b56da6326d07c",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {}
-            }
-          },
-          {
-            "id": "32243f73b2905bdd",
+            "id": "b6fb7dd317db1933",
             "type": "leaf",
             "state": {
               "type": "canvas",
               "state": {
-                "file": "Graf.canvas",
+                "file": "Code Hierarchy.canvas",
                 "viewState": {
-                  "x": 13.3333740234375,
-                  "y": 4.00006103515625,
-                  "zoom": 0
+                  "x": 337.2437259558619,
+                  "y": 182.8207923381583,
+                  "zoom": 0.4166666666666667
                 }
               }
             }
           },
           {
-            "id": "d515e2a6e2ab6442",
+            "id": "ee775cd10e8d4eb6",
             "type": "leaf",
             "state": {
               "type": "canvas",
               "state": {
-                "file": "Graf.canvas",
+                "file": "Code Hierarchy.canvas",
                 "viewState": {
-                  "x": 344.4386735382559,
-                  "y": 253.83612330837815,
-                  "zoom": -0.6666665649414063
+                  "x": 586.8634556420791,
+                  "y": -242.21926350333695,
+                  "zoom": -0.8970579039396103
                 }
               }
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -120,7 +104,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Graf.canvas",
+                "file": "Code Hierarchy.canvas",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -137,7 +121,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Graf.canvas",
+                "file": "Code Hierarchy.canvas",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -160,7 +144,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Graf.canvas"
+                "file": "Code Hierarchy.canvas"
               }
             }
           }
@@ -173,21 +157,27 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "switcher:Otwórz okno szybkiej zmiany pliku": false,
-      "graph:Otwórz graf": false,
-      "canvas:Stwórz nowe płótno": false,
-      "daily-notes:Otwórz dzisiejszą notatkę": false,
-      "templates:Wstaw szablon": false,
-      "command-palette:Otwórz paletę poleceń": false
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
     }
   },
-  "active": "d515e2a6e2ab6442",
+  "active": "ee775cd10e8d4eb6",
   "lastOpenFiles": [
+    "Debug/Logger.md",
+    "Code Hierarchy.canvas",
+    "Debug",
+    "Engine Subsystem (Core)/Engine Subsystem.md",
+    "_Nomenclature.md",
+    "Graf.canvas",
+    "Engine Subsystem (Core)",
     "Bez nazwy 2.md",
     "Bez nazwy 1.md",
     "Bez nazwy 3.md",
     "Bez nazwy.md",
-    "Graf.canvas",
     "asd.md",
     "Pasted image 20230915183418.png",
     "Pasted image 20230915183415.png"

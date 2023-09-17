@@ -1,0 +1,16 @@
+{
+	"nodes":[
+		{"id":"a2f5e97ee9f18198","type":"group","x":-210,"y":-340,"width":1110,"height":627,"label":"Engine Subsystem (Core)"},
+		{"id":"f99b1e44eff900fe","x":-600,"y":560,"width":560,"height":400,"type":"group","label":"Window Subsystem"},
+		{"id":"572acd41d0542e0d","x":-460,"y":600,"width":250,"height":60,"type":"text","text":"WindowSubystem"},
+		{"id":"2665b33975421ff4","x":-155,"y":-300,"width":400,"height":400,"type":"file","file":"Engine Subsystem (Core)/Engine Subsystem.md"},
+		{"id":"c7cd4cb8865a9483","type":"text","text":"BaseEngineSubsystem","x":340,"y":40,"width":250,"height":60,"color":"5"},
+		{"id":"6adad0f6e526594a","x":325,"y":-260,"width":280,"height":50,"color":"6","type":"text","text":"EngineSubsystemsManager"},
+		{"id":"f8800a22fbd4cecf","x":325,"y":600,"width":250,"height":60,"type":"text","text":"RendererSubsystem"}
+	],
+	"edges":[
+		{"id":"4bbf1fa9347a66d1","fromNode":"6adad0f6e526594a","fromSide":"bottom","toNode":"c7cd4cb8865a9483","toSide":"top"},
+		{"id":"e7921a77749bc2bd","fromNode":"c7cd4cb8865a9483","fromSide":"bottom","toNode":"572acd41d0542e0d","toSide":"top","color":"5"},
+		{"id":"e96f8c0dcce438c0","fromNode":"c7cd4cb8865a9483","fromSide":"bottom","toNode":"f8800a22fbd4cecf","toSide":"top","color":"5"}
+	]
+}

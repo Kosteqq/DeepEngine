@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "de7ef4df1bd9596f",
+        "id": "30081a91d4f0e74f",
         "type": "tabs",
         "children": [
           {
-            "id": "378dfba2340d2309",
+            "id": "df64b736f8def911",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -130,14 +130,16 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "switcher:Otwórz okno szybkiej zmiany pliku": false,
-      "graph:Otwórz graf": false,
-      "canvas:Stwórz nowe płótno": false,
-      "daily-notes:Otwórz dzisiejszą notatkę": false,
-      "templates:Wstaw szablon": false,
-      "command-palette:Otwórz paletę poleceń": false
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
     }
   },
-  "active": "378dfba2340d2309",
-  "lastOpenFiles": []
+  "active": "4074e749c5d44d31",
+  "lastOpenFiles": [
+    "bookmarks.json"
+  ]
 }
