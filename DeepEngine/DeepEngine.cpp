@@ -1,4 +1,4 @@
-#include "Debug/Debug.h"
+#include "Debug/Logger.h"
 #include "Architecture/EngineSystem.h"
 #include "Window/WindowSubsystem.hpp"
 
@@ -14,13 +14,13 @@ public:
 protected:
     bool Init() override
     {
-        LOG("INIT")
+        ENGINE_INFO("INIT");
         return true;
     }
 
     void Destroy() override
     {
-        LOG("Destroy")
+        ENGINE_INFO("Destroy");
     }
 
     void Tick() override
@@ -29,7 +29,11 @@ protected:
 
 int main(int argc, char* argv[])
 {
-    LOG("Hello World")
+    DeepEngine::Core::Debug::Logger::Initialize("Logs/engine.log");
+    ENGINE_INFO("Hello World");
+    ENGINE_INFO("FUCK UNITY :>");
+
+    // Logger x = Logger();
 
     auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
     subsystemsManager.CreateSubsystem<TestSubsystem>(2);
@@ -37,7 +41,7 @@ int main(int argc, char* argv[])
 
     if (!subsystemsManager.Init())
     {
-        LOG("Failed to initialize subsystems!!")
+        ENGINE_INFO("Failed to initialize subsystems!!");
         return -1;
     }
     

@@ -1,5 +1,5 @@
 #include "WindowSubsystem.hpp"
-#include "../Debug/Debug.h"
+#include "Debug/Logger.h"
 
 namespace DeepEngine
 {
@@ -41,14 +41,14 @@ namespace DeepEngine
         glfwSetErrorCallback(ErrorCallbackHandler);
         if (!glfwInit())
         {
-            LOG("Failed to initilize library")
+            ENGINE_INFO("Failed to initilize library");
             return false;
         }
         
         _window = glfwCreateWindow(_width, _height, _windowName, nullptr, nullptr);
         if (_window == nullptr)
         {
-            LOG("Failed to create GLFW Window")
+            ENGINE_INFO("Failed to create GLFW Window");
             return false;
         }
         glfwSetWindowSizeCallback(_window, WindowResizedHandler);
