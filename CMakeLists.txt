@@ -10,7 +10,7 @@ if(MSVC)
     # Multithread compilation
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
     # Show linking files
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /LTCG:STATUS")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /LTCG:STATUS")
 endif()
 
 include_directories("${SOURCE_DIR}/")

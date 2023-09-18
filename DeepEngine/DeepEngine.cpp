@@ -1,5 +1,5 @@
-#include "Debug/Logger.h"
 #include "Architecture/EngineSystem.h"
+#include "Debugs/Logger.h"
 #include "Window/WindowSubsystem.hpp"
 
 
@@ -31,7 +31,11 @@ int main(int argc, char* argv[])
 {
     DeepEngine::Core::Debug::Logger::Initialize("Logs/engine.log");
     ENGINE_INFO("Hello World");
+    ENGINE_TRACE("FUCK UNITY :>");
+    ENGINE_DEBUG("FUCK UNITY :>");
     ENGINE_INFO("FUCK UNITY :>");
+    ENGINE_WARN("FUCK UNITY :>");
+    ENGINE_ERR("FUCK UNITY :>");
 
     // Logger x = Logger();
 

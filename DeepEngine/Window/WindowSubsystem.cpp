@@ -1,5 +1,5 @@
 #include "WindowSubsystem.hpp"
-#include "Debug/Logger.h"
+#include "Debugs/Logger.h"
 
 namespace DeepEngine
 {
