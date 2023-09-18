@@ -14,9 +14,14 @@ if(MSVC)
 endif()
 
 include_directories("${SOURCE_DIR}/")
+include_directories("${3rd_PARTY_DIR}/glfw/include")
+include_directories("${3rd_PARTY_DIR}/spdlog/include")
+
+add_subdirectory("${3rd_PARTY_DIR}/glfw/")
+add_subdirectory("${3rd_PARTY_DIR}/spdlog/")
+set(${SPDLOG_ENABLE_PCH} ON)
 
 include(CMake/AttachVulkan.cmake)
-include(CMake/AttachGLFW.cmake)
 
 include(CMake/CollectSourceFiles.cmake)
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
@@ -25,6 +30,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 
 
 target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} spdlog::spdlog_header_only)
 target_link_libraries(${PROJECT_NAME} ${VULKAN_LIB_LIST} )
 
 
