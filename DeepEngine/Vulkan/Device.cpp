@@ -1,10 +1,27 @@
 #include "Device.hpp"
 #include "../Debug/Debug.h"
 
+//std lib headers
 #include <vector>
 
 namespace DeepEngine
 {
+    struct SwapChainSupportDetails
+    {
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
+
+    struct QueueFamilyIndices
+    {
+        uint32_t graphicsFamily;
+        uint32_t presentFamily;
+        bool graphicsFamilyHasValue = false;
+        bool presentFamilyHasValue = false;
+        bool isComplete() {return graphicsFamilyHasValue && presentFamilyHasValue; }
+    };
+    
     Device::Device()
     {
         vkDestroyInstance(_instance, nullptr);
@@ -58,4 +75,6 @@ namespace DeepEngine
             LOG(extension.extensionName)
         }
     }
+
+    
 }

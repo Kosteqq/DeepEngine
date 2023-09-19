@@ -6,7 +6,7 @@ set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/DeepEngine")
 set(BUILD_DIR "Build")
 set(3rd_PARTY_DIR "3rdParty")
 
-include_directories(".")
+include_directories("${SOURCE_DIR}/")
 
 include(CMake/AttachVulkan.cmake)
 include(CMake/AttachGLFW.cmake)
