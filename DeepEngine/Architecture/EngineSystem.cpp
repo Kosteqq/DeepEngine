@@ -1,6 +1,6 @@
 #include "EngineSystem.h"
 
-namespace DeepEngine::Architecture
+namespace DeepEngine::Core::Architecture
 {
     EngineSubsystemsManager::EngineSubsystemsManager() : _subsystems(16)
     {

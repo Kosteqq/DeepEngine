@@ -3,12 +3,12 @@
 #include "Window/WindowSubsystem.hpp"
 
 
-class TestSubsystem : DeepEngine::Architecture::EngineSubsystem
+class TestSubsystem : public DeepEngine::Core::Architecture::EngineSubsystem
 {
 public:
-    TestSubsystem(int x)
+    TestSubsystem(int x) : EngineSubsystem("Test Subsystem")
     {
-        
+        INFO("Constructor {0}", x);
     }
 
 protected:
@@ -31,15 +31,13 @@ int main(int argc, char* argv[])
 {
     DeepEngine::Core::Debug::Logger::Initialize("Logs/engine.log");
     ENGINE_INFO("Hello World");
-    ENGINE_TRACE("FUCK UNITY :>");
-    ENGINE_DEBUG("FUCK UNITY :>");
-    ENGINE_INFO("FUCK UNITY :>");
-    ENGINE_WARN("FUCK UNITY :>");
-    ENGINE_ERR("FUCK UNITY :>");
+    ENGINE_TRACE("TRACE");
+    ENGINE_DEBUG("DEBUG");
+    ENGINE_INFO("INFO");
+    ENGINE_WARN("WARNING");
+    ENGINE_ERR("ERROR");
 
-    // Logger x = Logger();
-
-    auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
+    auto subsystemsManager = DeepEngine::Core::Architecture::EngineSubsystemsManager();
     subsystemsManager.CreateSubsystem<TestSubsystem>(2);
     subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(600, 800, "fckUnity");
 

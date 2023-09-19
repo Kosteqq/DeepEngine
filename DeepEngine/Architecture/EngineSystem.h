@@ -1,9 +1,10 @@
 #pragma once
+#include "Debugs/Logger.h"
 #include <memory>
 #include <type_traits>
 #include <vector>
 
-namespace DeepEngine::Architecture
+namespace DeepEngine::Core::Architecture
 {
     class EngineSubsystemsManager;
 
@@ -12,9 +13,16 @@ namespace DeepEngine::Architecture
     protected:
         friend class EngineSubsystemsManager;
 
+        EngineSubsystem(const char* p_subsystemName)
+            : _subsystemLogger(Debug::Logger::CreateLoggerInstance(p_subsystemName))
+        { }
+
         virtual bool Init() = 0;
         virtual void Destroy() = 0;
         virtual void Tick() = 0;
+        
+    protected:
+        std::shared_ptr<Debug::Logger> _subsystemLogger; 
     };
 
     class EngineSubsystemsManager
@@ -39,3 +47,9 @@ namespace DeepEngine::Architecture
         std::vector<EngineSubsystem*> _subsystems;
     };
 }
+
+#define TRACE(...) LOG_TRACE(_subsystemLogger, __VA_ARGS__)  
+#define DEBUG(...) LOG_DEBUG(_subsystemLogger, __VA_ARGS__)  
+#define INFO(...) LOG_INFO(_subsystemLogger, __VA_ARGS__)  
+#define WARN(...) LOG_WARN(_subsystemLogger, __VA_ARGS__)  
+#define ERR(...) LOG_ERR(_subsystemLogger, __VA_ARGS__)  

@@ -7,7 +7,7 @@
 
 namespace DeepEngine
 {
-    class WindowSubsystem : public Architecture::EngineSubsystem
+    class WindowSubsystem : public Core::Architecture::EngineSubsystem
     {
         
     public:

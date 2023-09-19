@@ -21,6 +21,9 @@ add_subdirectory("${3rd_PARTY_DIR}/glfw/")
 add_subdirectory("${3rd_PARTY_DIR}/spdlog/")
 set(${SPDLOG_ENABLE_PCH} ON)
 
+add_subdirectory("${3rd_PARTY_DIR}/fmt/")
+set(${INSTALL} OFF)
+
 include(CMake/AttachVulkan.cmake)
 
 include(CMake/CollectSourceFiles.cmake)
@@ -31,6 +34,7 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 
 target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} spdlog::spdlog_header_only)
+target_link_libraries(${PROJECT_NAME} fmt)
 target_link_libraries(${PROJECT_NAME} ${VULKAN_LIB_LIST} )
 
 

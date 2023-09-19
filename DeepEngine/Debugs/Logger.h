@@ -45,6 +45,6 @@ namespace DeepEngine::Core::Debug
 
 #define LOG_TRACE(logger, ...) SPDLOG_LOGGER_TRACE(logger->GetLogger(), __VA_ARGS__)
 #define LOG_DEBUG(logger, ...) SPDLOG_LOGGER_DEBUG(logger->GetLogger(), __VA_ARGS__)
-#define LOG_INFO(logger, ...) SPDLOG_LOGGER_INFO(Dlogger->GetLogger(), __VA_ARGS__)
-#define LOG_WARN(logger, ...) SPDLOG_LOGGER_WARN(Dlogger->GetLogger(), __VA_ARGS__)
+#define LOG_INFO(logger, ...) SPDLOG_LOGGER_INFO(logger->GetLogger(), __VA_ARGS__)
+#define LOG_WARN(logger, ...) SPDLOG_LOGGER_WARN(logger->GetLogger(), __VA_ARGS__)
 #define LOG_ERR(logger, ...) SPDLOG_LOGGER_ERROR(logger->GetLogger(), __VA_ARGS__)
