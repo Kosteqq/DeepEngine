@@ -16,7 +16,7 @@ namespace DeepEngine::Core::Debug
         
         _fileSink = std::make_shared<spdlog::sinks::basic_file_sink_st>(p_filepath);
         _fileSink->set_level(spdlog::level::trace);
-        _fileSink->set_pattern("[%D %T] %-26s (%#) [%=16n][%^%=7l%$]: %v");
+        _fileSink->set_pattern("[%D %T] %-32s (%#) [%=16n][%^%=7l%$]: %v");
         
         _engineLogger = CreateLoggerInstance("Engine");
     }
@@ -32,7 +32,7 @@ namespace DeepEngine::Core::Debug
         {
             _consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_st>();
             _consoleSink->set_level(spdlog::level::trace);
-            _consoleSink->set_pattern("[%T]%=26s(%#) [%=16n][%^%=7l%$]: %v");
+            _consoleSink->set_pattern("[%T]%=32s(%#) [%=16n][%^%=7l%$]: %v");
         }
 
         auto* logger = new Logger(p_name);

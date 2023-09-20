@@ -1,6 +1,8 @@
 #include "InitializationTracker.h"
 #include "Logger.h"
 
+#include <fmt/format.h>
+
 namespace DeepEngine::Core::Debug
 {
     InitializationTracker::InitializationTracker() : _milestones(32)
@@ -52,20 +54,22 @@ namespace DeepEngine::Core::Debug
         for (int i = 0; i < instance->_milestones.size(); i++)
         {
             auto milestone = instance->_milestones.at(i);
+            auto milestoneName = fmt::format("{:<40}", fmt::format("\tMilestone \"{}\":", std::get<1>(milestone)));
 
             switch (std::get<0>(milestone))
             {
             case MilestoneState::UNDEFINED:
-                LOG_WARN(instance->_logger, "Milestone \"{0}\": Undefined", std::get<1>(milestone));
+                LOG_WARN(instance->_logger, "{0} {1}", milestoneName, "Undefined");
                 break;
             case MilestoneState::FAILED:
-                LOG_ERR(instance->_logger, "Milestone \"{0}\": Failed", std::get<1>(milestone));
+                LOG_ERR(instance->_logger, "{0} {1}", milestoneName, "Failed");
                 break;
             case MilestoneState::FULFILLED:
-                LOG_INFO(instance->_logger, "Milestone \"{0}\": Fulfiled", std::get<1>(milestone));
+                LOG_INFO(instance->_logger, "{0} {1}", milestoneName, "Passed");
                 break;
-                
             }
         }
+        
+        LOG_INFO(instance->_logger, "");
     }
 }

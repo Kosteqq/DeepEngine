@@ -1,5 +1,7 @@
 #pragma once
+#include "Debugs/InitializationMilestone.h"
 #include "Debugs/Logger.h"
+
 #include <memory>
 #include <type_traits>
 #include <vector>
@@ -13,8 +15,9 @@ namespace DeepEngine::Core::Architecture
     protected:
         friend class EngineSubsystemsManager;
 
-        EngineSubsystem(const char* p_subsystemName)
-            : _subsystemLogger(Debug::Logger::CreateLoggerInstance(p_subsystemName))
+        EngineSubsystem(const char* p_subsystemName) :
+            _subsystemLogger(Debug::Logger::CreateLoggerInstance(p_subsystemName)),
+            _initializeMilestone(Debug::InitializationMilestone::Create(p_subsystemName))
         { }
 
         virtual bool Init() = 0;
@@ -22,7 +25,8 @@ namespace DeepEngine::Core::Architecture
         virtual void Tick() = 0;
         
     protected:
-        std::shared_ptr<Debug::Logger> _subsystemLogger; 
+        std::shared_ptr<Debug::Logger> _subsystemLogger;
+        Debug::InitializationMilestone _initializeMilestone;
     };
 
     class EngineSubsystemsManager

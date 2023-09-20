@@ -35,8 +35,9 @@ int main(int argc, char* argv[])
 
     DEFINE_MILESTONE(FailedMilestone);
     DEFINE_MILESTONE(FulfiledMilestone);
-    FULFIL_MILESTONE(FailedMilestone);
-    FAIL_MILESTONE(FulfiledMilestone);
+    
+    FULFIL_MILESTONE(FulfiledMilestone);
+    FAIL_MILESTONE(FailedMilestone);
     
     ENGINE_INFO("Hello World");
     ENGINE_TRACE("TRACE");
@@ -54,6 +55,6 @@ int main(int argc, char* argv[])
         ENGINE_INFO("Failed to initialize subsystems!!");
         return -1;
     }
-    
+
     return 0;
 }

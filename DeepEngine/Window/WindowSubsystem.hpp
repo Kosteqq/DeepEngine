@@ -3,7 +3,7 @@
 //#define GLFW_INCLUDE_VULKAN
 #include <string>
 #include <GLFW/glfw3.h>
-#include "../Architecture/EngineSystem.h"
+#include "Architecture/EngineSystem.h"
 
 namespace DeepEngine
 {
@@ -31,6 +31,5 @@ namespace DeepEngine
 
         const char* _windowName;
         GLFWwindow* _window;
-        
     };
 }
