@@ -1,5 +1,7 @@
-#include "Architecture/EngineSystem.h"
 #include "Debugs/Logger.h"
+#include "Debugs/InitializationTracker.h"
+#include "Architecture/EngineSystem.h"
+#include "Debugs/InitializationMilestone.h"
 #include "Window/WindowSubsystem.hpp"
 
 
@@ -30,6 +32,12 @@ protected:
 int main(int argc, char* argv[])
 {
     DeepEngine::Core::Debug::Logger::Initialize("Logs/engine.log");
+
+    DEFINE_MILESTONE(FailedMilestone);
+    DEFINE_MILESTONE(FulfiledMilestone);
+    FULFIL_MILESTONE(FailedMilestone);
+    FAIL_MILESTONE(FulfiledMilestone);
+    
     ENGINE_INFO("Hello World");
     ENGINE_TRACE("TRACE");
     ENGINE_DEBUG("DEBUG");
@@ -39,7 +47,7 @@ int main(int argc, char* argv[])
 
     auto subsystemsManager = DeepEngine::Core::Architecture::EngineSubsystemsManager();
     subsystemsManager.CreateSubsystem<TestSubsystem>(2);
-    subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(600, 800, "fckUnity");
+    subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "fckUnity");
 
     if (!subsystemsManager.Init())
     {
