@@ -7,3 +7,6 @@
 [submodule "fmt"]
 	path = 3rdParty/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "ImGui"]
+	path = 3rdParty/ImGui
+	url = https://github.com/ocornut/imgui.git
