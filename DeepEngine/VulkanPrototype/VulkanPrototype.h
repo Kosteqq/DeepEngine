@@ -4,6 +4,7 @@
 
 #include "Debugs/Logger.h"
 #include "Architecture/EngineSystem.h"
+#include "GLFW/glfw3.h"
 
 namespace DeepEngine::Renderer
 {
@@ -55,9 +56,13 @@ namespace DeepEngine::Renderer
             uint32_t extensionCount = 0;
             vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);\
             INFO("Vulkan Extensions Count {0}", extensionCount);
-            VulkanPipeline();
 
-            return false;
+            if (!CreateVulkanInstance())
+            {
+                return false;
+            }
+
+            return true;
         }
         
         void Tick() override
@@ -69,6 +74,45 @@ namespace DeepEngine::Renderer
         {
             
         }
+
+    private:
+        bool CreateVulkanInstance()
+        {
+            VkApplicationInfo appInfo { };
+            appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+            appInfo.pNext = nullptr; // Point to extensions info
+            appInfo.pApplicationName = "Deep Engine Editor";
+            appInfo.applicationVersion = 0;
+            appInfo.pEngineName = "Deep Engine";
+            appInfo.engineVersion = 0;
+            appInfo.apiVersion = VK_API_VERSION_1_3;
+
+            uint32_t glfwExtensionCount = 0;
+            const char** glfwExtensions;
+            glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+            
+            VkInstanceCreateInfo instanceCreateInfo { };
+            instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+            instanceCreateInfo.pApplicationInfo = &appInfo;
+            instanceCreateInfo.enabledExtensionCount = glfwExtensionCount;
+            instanceCreateInfo.ppEnabledExtensionNames = glfwExtensions;
+            instanceCreateInfo.enabledLayerCount = 0;
+
+            if (vkCreateInstance(&instanceCreateInfo, nullptr, &_instance) != VK_SUCCESS)
+            {
+                FAIL_MILESTONE(CreateVkInstanceMS);
+                ENGINE_ERR("Failed to create instance");
+                return false;
+            }
+
+            return true;
+        }
+
+    private:
+        VkInstance _instance;
+
+    private:
+        DEFINE_MILESTONE(CreateVkInstanceMS);
     };
     
 }
