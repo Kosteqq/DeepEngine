@@ -11,28 +11,25 @@
             "id": "b6fb7dd317db1933",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "Code Hierarchy.canvas",
-                "viewState": {
-                  "x": 337.2437259558619,
-                  "y": 182.8207923381583,
-                  "zoom": 0.4166666666666667
-                }
+                "file": "_Nomenclature.md",
+                "mode": "preview",
+                "source": false
               }
             }
           },
           {
-            "id": "ee775cd10e8d4eb6",
+            "id": "8b7283f65fb53318",
             "type": "leaf",
             "state": {
               "type": "canvas",
               "state": {
-                "file": "Code Hierarchy.canvas",
+                "file": "Graf.canvas",
                 "viewState": {
-                  "x": 586.8634556420791,
-                  "y": -242.21926350333695,
-                  "zoom": -0.8970579039396103
+                  "x": 297.76008670952996,
+                  "y": 779.2498578464732,
+                  "zoom": -0.788940302359106
                 }
               }
             }
@@ -104,7 +101,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Code Hierarchy.canvas",
+                "file": "Graf.canvas",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -121,7 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Code Hierarchy.canvas",
+                "file": "Graf.canvas",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -144,7 +141,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Code Hierarchy.canvas"
+                "file": "Graf.canvas"
               }
             }
           }
@@ -165,14 +162,17 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "ee775cd10e8d4eb6",
+  "active": "8b7283f65fb53318",
   "lastOpenFiles": [
-    "Debug/Logger.md",
+    "Debug (Core)/Initialization Tracker.md",
+    "Debug (Core)/Debug Graph.canvas",
     "Code Hierarchy.canvas",
-    "Debug",
-    "Engine Subsystem (Core)/Engine Subsystem.md",
     "_Nomenclature.md",
     "Graf.canvas",
+    "Debug (Core)/Logger.md",
+    "Scene.md",
+    "Engine Subsystem (Core)/Engine Subsystem.md",
+    "Debug (Core)",
     "Engine Subsystem (Core)",
     "Bez nazwy 2.md",
     "Bez nazwy 1.md",

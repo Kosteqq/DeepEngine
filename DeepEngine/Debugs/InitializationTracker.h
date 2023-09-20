@@ -33,6 +33,6 @@ namespace DeepEngine::Core::Debug
 
         
         std::unordered_map<uint32_t, std::tuple<MilestoneState, const char*>> _milestones;
-        std::shared_ptr<Logger> _logger = Logger::CreateLoggerInstance("Initialization");;
+        std::shared_ptr<Logger> _logger = Logger::CreateLoggerInstance("Initialization");
     };
 }
