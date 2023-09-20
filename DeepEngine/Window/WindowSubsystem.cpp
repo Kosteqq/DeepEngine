@@ -1,9 +1,10 @@
 #include "WindowSubsystem.hpp"
-#include "../Debug/Debug.h"
+#include "Debugs/Logger.h"
 
 namespace DeepEngine
 {
-    WindowSubsystem::WindowSubsystem(int p_width, int p_height, const char* p_name) : _width{p_width}, _height{p_height}, _windowName{p_name}
+    WindowSubsystem::WindowSubsystem(int p_width, int p_height, const char* p_name)
+        : EngineSubsystem("Window Subsystem"), _width{p_width}, _height{p_height}, _windowName{p_name}
     {
         
     }
@@ -41,14 +42,14 @@ namespace DeepEngine
         glfwSetErrorCallback(ErrorCallbackHandler);
         if (!glfwInit())
         {
-            LOG("Failed to initilize library")
+            ERR("Failed to initilize library");
             return false;
         }
         
         _window = glfwCreateWindow(_width, _height, _windowName, nullptr, nullptr);
         if (_window == nullptr)
         {
-            LOG("Failed to create GLFW Window")
+            ERR("Failed to create GLFW Window");
             return false;
         }
         glfwSetWindowSizeCallback(_window, WindowResizedHandler);
@@ -58,7 +59,8 @@ namespace DeepEngine
         {
             glfwPollEvents();
         }
-        
+
+        INFO("Initialized with success");
 
         return true;
     }

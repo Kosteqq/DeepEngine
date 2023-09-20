@@ -3,11 +3,11 @@
 //#define GLFW_INCLUDE_VULKAN
 #include <string>
 #include <GLFW/glfw3.h>
-#include "../Architecture/EngineSystem.h"
+#include "Architecture/EngineSystem.h"
 
 namespace DeepEngine
 {
-    class WindowSubsystem : public Architecture::EngineSubsystem
+    class WindowSubsystem : public Core::Architecture::EngineSubsystem
     {
         
     public:
@@ -31,6 +31,5 @@ namespace DeepEngine
 
         const char* _windowName;
         GLFWwindow* _window;
-        
     };
 }

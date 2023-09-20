@@ -1,26 +1,28 @@
-#include "Debug/Debug.h"
+#include "Debugs/Logger.h"
+#include "Debugs/InitializationTracker.h"
 #include "Architecture/EngineSystem.h"
+#include "Debugs/InitializationMilestone.h"
 #include "Window/WindowSubsystem.hpp"
 
 
-class TestSubsystem : DeepEngine::Architecture::EngineSubsystem
+class TestSubsystem : public DeepEngine::Core::Architecture::EngineSubsystem
 {
 public:
-    TestSubsystem(int x)
+    TestSubsystem(int x) : EngineSubsystem("Test Subsystem")
     {
-        
+        INFO("Constructor {0}", x);
     }
 
 protected:
     bool Init() override
     {
-        LOG("INIT")
+        ENGINE_INFO("INIT");
         return true;
     }
 
     void Destroy() override
     {
-        LOG("Destroy")
+        ENGINE_INFO("Destroy");
     }
 
     void Tick() override
@@ -29,17 +31,30 @@ protected:
 
 int main(int argc, char* argv[])
 {
-    LOG("Hello World")
+    DeepEngine::Core::Debug::Logger::Initialize("Logs/engine.log");
 
-    auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
+    DEFINE_MILESTONE(FailedMilestone);
+    DEFINE_MILESTONE(FulfiledMilestone);
+    
+    FULFIL_MILESTONE(FulfiledMilestone);
+    FAIL_MILESTONE(FailedMilestone);
+    
+    ENGINE_INFO("Hello World");
+    ENGINE_TRACE("TRACE");
+    ENGINE_DEBUG("DEBUG");
+    ENGINE_INFO("INFO");
+    ENGINE_WARN("WARNING");
+    ENGINE_ERR("ERROR");
+
+    auto subsystemsManager = DeepEngine::Core::Architecture::EngineSubsystemsManager();
     subsystemsManager.CreateSubsystem<TestSubsystem>(2);
-    subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(600, 800, "fckUnity");
+    subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "fckUnity");
 
     if (!subsystemsManager.Init())
     {
-        LOG("Failed to initialize subsystems!!")
+        ENGINE_INFO("Failed to initialize subsystems!!");
         return -1;
     }
-    
+
     return 0;
 }
