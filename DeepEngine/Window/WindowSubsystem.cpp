@@ -14,7 +14,7 @@ namespace DeepEngine
         glfwDestroyWindow(_window);
         glfwTerminate();
     }
-    
+
     void WindowSubsystem::ErrorCallbackHandler(int error, const char* description)
     {
         fprintf(stderr, "Error: %s\n", description);
@@ -45,6 +45,9 @@ namespace DeepEngine
             ERR("Failed to initilize library");
             return false;
         }
+
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         
         _window = glfwCreateWindow(_width, _height, _windowName, nullptr, nullptr);
         if (_window == nullptr)
@@ -55,17 +58,14 @@ namespace DeepEngine
         glfwSetWindowSizeCallback(_window, WindowResizedHandler);
         glfwSetWindowUserPointer(_window, this);
 
-        while (!glfwWindowShouldClose(_window))
-        {
-            glfwPollEvents();
-        }
-
         INFO("Initialized with success");
 
         return true;
     }
     
-    
-
-
+    void WindowSubsystem::Tick()
+    {
+        glfwPollEvents();
+        // glfwWindowShouldClose(_window);
+    }
 }

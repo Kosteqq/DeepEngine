@@ -1,7 +1,6 @@
 #pragma once
 
-//#define GLFW_INCLUDE_VULKAN
-#include <string>
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include "Architecture/EngineSystem.h"
 
@@ -18,7 +17,7 @@ namespace DeepEngine
     protected:
         bool Init() override;
         void Destroy() override {}
-        void Tick() override {}
+        void Tick() override;
         
     private:
         

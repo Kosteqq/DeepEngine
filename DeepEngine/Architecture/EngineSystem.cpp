@@ -46,6 +46,11 @@ namespace DeepEngine::Core::Architecture
     {
         for (int i = 0; i < _subsystems.size(); i++)
         {
+            if (_subsystems[i] == nullptr)
+            {
+                continue;
+            }
+            
             _subsystems[i]->Tick();
         }
     }

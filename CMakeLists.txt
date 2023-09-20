@@ -16,6 +16,7 @@ endif()
 include_directories("${SOURCE_DIR}/")
 include_directories("${3rd_PARTY_DIR}/glfw/include")
 include_directories("${3rd_PARTY_DIR}/spdlog/include")
+include_directories("${3rd_PARTY_DIR}/glm")
 include_directories("${3rd_PARTY_DIR}/ImGui")
 
 add_subdirectory("${3rd_PARTY_DIR}/glfw/")
