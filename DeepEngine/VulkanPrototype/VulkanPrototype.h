@@ -15,6 +15,7 @@ namespace DeepEngine::Renderer
     public:
         VulkanPrototype() : EngineSubsystem("Vulkan Renderer Prot")
         {
+            _debugVkLogger = Core::Debug::Logger::CreateLoggerInstance("VK Validation Layer");
         }
 
     protected:
@@ -45,6 +46,11 @@ namespace DeepEngine::Renderer
             }
 
             if (!InitCallbackMessenger(debugCreateInfo))
+            {
+                return false;
+            }
+
+            if (!CreatePhysicalDevice())
             {
                 return false;
             }
@@ -303,7 +309,7 @@ namespace DeepEngine::Renderer
             
             if (p_messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
             {
-                ENGINE_TRACE(CALLBACK_FORMAT, messageType, p_callbackData->pMessage);
+                LOG_TRACE(_debugVkLogger, CALLBACK_FORMAT, messageType, p_callbackData->pMessage);
                 return VK_FALSE;
             }
             if (p_messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
@@ -329,6 +335,59 @@ namespace DeepEngine::Renderer
         VkDebugUtilsMessengerEXT _debugMessenger;
 
     private:
+        bool CreatePhysicalDevice()
+        {
+            uint32_t deviceCount = 0;
+            vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
+
+            if (deviceCount == 0)
+            {
+                ERR("Failed to find GPUs with Vulkan support!");
+                FAIL_MILESTONE(InitializePhysicalDeviceMS);
+                return false;
+            }
+
+            std::vector<VkPhysicalDevice> devices(deviceCount);
+            vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
+
+            auto physicalDevice = GetFirstSuitableDevice(devices);
+            if (physicalDevice == VK_NULL_HANDLE)
+            {
+                FAIL_MILESTONE(InitializePhysicalDeviceMS);
+                return false;
+            }
+
+            FULFIL_MILESTONE(InitializePhysicalDeviceMS);
+            return true;
+        }
+
+        VkPhysicalDevice GetFirstSuitableDevice(const std::vector<VkPhysicalDevice>& p_devices)
+        {
+            for (int i = 0; i < p_devices.size(); i++)
+            {
+                if (IsDeviceSuitable(p_devices[i]))
+                {
+                    return p_devices[i];
+                }
+            }
+
+            ERR("Failed to find any suitable GPU!");
+            return VK_NULL_HANDLE;
+        }
+
+        bool IsDeviceSuitable(const VkPhysicalDevice& device)
+        {
+            VkPhysicalDeviceProperties deviceProperties;
+            vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+            VkPhysicalDeviceFeatures deviceFeatures;
+            vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+            return true;
+        }
+
+        VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
+
+    private:
         std::vector<VkExtensionProperties> _availableExtensions;
         std::vector<VkLayerProperties> _availableLayers; 
         std::vector<const char*> _enabledExtensions;
@@ -343,6 +402,7 @@ namespace DeepEngine::Renderer
 
     private:
         DEFINE_MILESTONE(InitializeValidationLayerMS);
+        DEFINE_MILESTONE(InitializePhysicalDeviceMS);
         DEFINE_MILESTONE(CreateVkInstanceMS);
     };
     
