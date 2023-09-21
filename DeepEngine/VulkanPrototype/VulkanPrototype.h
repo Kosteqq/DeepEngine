@@ -55,7 +55,6 @@ namespace DeepEngine::Renderer
                 return false;
             }
 
-            FULFIL_MILESTONE(CreateVkInstanceMS);
             return true;
         }
         
@@ -124,6 +123,7 @@ namespace DeepEngine::Renderer
             }
 
             _initialized = true;
+            FULFIL_MILESTONE(CreateVkInstanceMS);
             return true;
         }
 
@@ -375,17 +375,50 @@ namespace DeepEngine::Renderer
             return VK_NULL_HANDLE;
         }
 
-        bool IsDeviceSuitable(const VkPhysicalDevice& device)
+        bool IsDeviceSuitable(const VkPhysicalDevice& p_device)
         {
             VkPhysicalDeviceProperties deviceProperties;
-            vkGetPhysicalDeviceProperties(device, &deviceProperties);
-
+            vkGetPhysicalDeviceProperties(p_device, &deviceProperties);
             VkPhysicalDeviceFeatures deviceFeatures;
-            vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-            return true;
+            vkGetPhysicalDeviceFeatures(p_device, &deviceFeatures);
+
+            QueueFamilyIndices indices = GetQueueFamilies(p_device);
+            
+            return indices.FoundAny;
         }
 
         VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
+
+    private:
+        struct QueueFamilyIndices
+        {
+            uint32_t GraphicsFamily;
+            bool FoundAny;
+        };
+
+        QueueFamilyIndices GetQueueFamilies(const VkPhysicalDevice& p_device)
+        {
+            QueueFamilyIndices indices {0, false };
+
+            uint32_t queueFamilyCount = 0;
+            vkGetPhysicalDeviceQueueFamilyProperties(p_device, &queueFamilyCount, nullptr);
+
+            std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+            vkGetPhysicalDeviceQueueFamilyProperties(p_device, &queueFamilyCount, queueFamilies.data());
+
+            int i = 0;
+            for (; i < queueFamilyCount; i++)
+            {
+                if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                {
+                    indices.GraphicsFamily = i;
+                    indices.FoundAny = true;
+                    return indices;
+                }
+            }
+
+            return indices;
+        }
 
     private:
         std::vector<VkExtensionProperties> _availableExtensions;
@@ -401,9 +434,9 @@ namespace DeepEngine::Renderer
         };
 
     private:
+        DEFINE_MILESTONE(CreateVkInstanceMS);
         DEFINE_MILESTONE(InitializeValidationLayerMS);
         DEFINE_MILESTONE(InitializePhysicalDeviceMS);
-        DEFINE_MILESTONE(CreateVkInstanceMS);
     };
     
 }
