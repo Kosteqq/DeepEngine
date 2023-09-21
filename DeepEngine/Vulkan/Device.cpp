@@ -3,26 +3,18 @@
 
 //std lib headers
 #include <vector>
+#include <string>
 
 namespace DeepEngine
 {
-    struct SwapChainSupportDetails
-    {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
-
-    struct QueueFamilyIndices
-    {
-        uint32_t graphicsFamily;
-        uint32_t presentFamily;
-        bool graphicsFamilyHasValue = false;
-        bool presentFamilyHasValue = false;
-        bool isComplete() {return graphicsFamilyHasValue && presentFamilyHasValue; }
-    };
+    
     
     Device::Device()
+    {
+        initVulkan();
+    }
+
+    Device::~Device()
     {
         vkDestroyInstance(_instance, nullptr);
     }
@@ -33,7 +25,7 @@ namespace DeepEngine
         CreateInstance();
     }
 
-    void Device::CreateInstance()
+    bool Device::CreateInstance()
     {
         VkApplicationInfo appInfo{};
         appInfo.pNext = nullptr;
@@ -50,16 +42,16 @@ namespace DeepEngine
         // create_info.flags = ;
         create_info.pApplicationInfo = &appInfo;
         create_info.enabledLayerCount = 0;
-        // create_info.enabledExtensionCount = ; 
+        create_info.enabledExtensionCount = glfwExtensionsCount; 
         // create_info.ppEnabledLayerNames =  ;
-        // create_info.enabledExtensionCount =  ;
-        // create_info.ppEnabledExtensionNames =  ;
+        create_info.ppEnabledExtensionNames = glfwExtensions ;
 
         VkResult result = vkCreateInstance(&create_info, nullptr, &_instance);
 
         if(vkCreateInstance(&create_info, nullptr, &_instance) != VK_SUCCESS)
         {
             LOG("failed to create instance!")
+            return false;
         }
 
         uint32_t extensionCount = 0;
@@ -74,7 +66,11 @@ namespace DeepEngine
         {
             LOG(extension.extensionName)
         }
+        return true;
     }
+
+    
+    
 
     
 }

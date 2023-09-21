@@ -1,5 +1,6 @@
 #include "Debug/Debug.h"
 #include "Architecture/EngineSystem.h"
+#include "Vulkan/Renderer.hpp"
 #include "Window/WindowSubsystem.hpp"
 
 
@@ -34,6 +35,7 @@ int main(int argc, char* argv[])
     auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
     subsystemsManager.CreateSubsystem<TestSubsystem>(2);
     subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(600, 800, "fckUnity");
+    subsystemsManager.CreateSubsystem<DeepEngine::RendererSubsystem>();
 
     if (!subsystemsManager.Init())
     {

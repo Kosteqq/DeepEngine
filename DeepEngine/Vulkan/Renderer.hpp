@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Architecture/EngineSystem.h"
+#include "Device.hpp"
 
 namespace DeepEngine
 {
@@ -22,5 +23,7 @@ namespace DeepEngine
         }
 
     private:
+
+        std::unique_ptr<Device> _device;
     };
 }
