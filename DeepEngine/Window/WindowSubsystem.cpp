@@ -3,6 +3,8 @@
 
 namespace DeepEngine
 {
+    bool WindowSubsystem::WantsToExit = false; 
+  
     WindowSubsystem::WindowSubsystem(int p_width, int p_height, const char* p_name)
         : EngineSubsystem("Window Subsystem"), _width{p_width}, _height{p_height}, _windowName{p_name}
     {
@@ -66,6 +68,9 @@ namespace DeepEngine
     void WindowSubsystem::Tick()
     {
         glfwPollEvents();
-        // glfwWindowShouldClose(_window);
+        if (glfwWindowShouldClose(_window))
+        {
+            WantsToExit = true;
+        }
     }
 }

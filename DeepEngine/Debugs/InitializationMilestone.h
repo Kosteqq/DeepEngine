@@ -37,6 +37,6 @@ namespace DeepEngine::Core::Debug
     };
 }
 
-#define DEFINE_MILESTONE(Name) auto (Name) = DeepEngine::Core::Debug::InitializationMilestone::Create(#Name)
+#define DEFINE_MILESTONE(Name) DeepEngine::Core::Debug::InitializationMilestone (Name) = DeepEngine::Core::Debug::InitializationMilestone::Create(#Name)
 #define FULFIL_MILESTONE(Name) Name.MarkFulfilled()
 #define FAIL_MILESTONE(Name) Name.MarkFailed()

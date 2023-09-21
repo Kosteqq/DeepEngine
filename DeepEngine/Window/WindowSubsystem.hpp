@@ -8,9 +8,10 @@ namespace DeepEngine
 {
     class WindowSubsystem : public Core::Architecture::EngineSubsystem
     {
+    public:
+        static bool WantsToExit;
         
     public:
-        
         WindowSubsystem(int p_width, int p_height, const char*);
         ~WindowSubsystem();
         
@@ -30,5 +31,6 @@ namespace DeepEngine
 
         const char* _windowName;
         GLFWwindow* _window;
+        
     };
 }
