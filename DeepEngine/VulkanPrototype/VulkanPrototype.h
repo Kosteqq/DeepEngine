@@ -12,6 +12,12 @@ namespace DeepEngine::Renderer
 {
     class VulkanPrototype : public Core::Architecture::EngineSubsystem
     {
+        struct QueueFamilyIndices
+        {
+            uint32_t GraphicsFamily;
+            bool FoundAny;
+        };
+        
     public:
         VulkanPrototype() : EngineSubsystem("Vulkan Renderer Prot")
         {
@@ -55,6 +61,11 @@ namespace DeepEngine::Renderer
                 return false;
             }
 
+            if (!InitializeLogicalDevice())
+            {
+                return false;
+            }
+
             return true;
         }
         
@@ -67,6 +78,9 @@ namespace DeepEngine::Renderer
         {
             if (_initialized)
             {
+                // Physical device will be destroy anyway
+                vkDestroyDevice(_logicalDevice, nullptr);
+                // Queue also will be destroy
                 DestroyDebugUtilsMessengerEXT(_instance, _debugMessenger, nullptr);
                 vkDestroyInstance(_instance, nullptr);
             }
@@ -350,8 +364,8 @@ namespace DeepEngine::Renderer
             std::vector<VkPhysicalDevice> devices(deviceCount);
             vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
 
-            auto physicalDevice = GetFirstSuitableDevice(devices);
-            if (physicalDevice == VK_NULL_HANDLE)
+            _physicalDevice = GetFirstSuitableDevice(devices);
+            if (_physicalDevice == VK_NULL_HANDLE)
             {
                 FAIL_MILESTONE(InitializePhysicalDeviceMS);
                 return false;
@@ -382,20 +396,15 @@ namespace DeepEngine::Renderer
             VkPhysicalDeviceFeatures deviceFeatures;
             vkGetPhysicalDeviceFeatures(p_device, &deviceFeatures);
 
-            QueueFamilyIndices indices = GetQueueFamilies(p_device);
+            // Set required features
             
-            return indices.FoundAny;
+            _queueFamilyIndices = GetQueueFamilies(p_device);
+            return _queueFamilyIndices.FoundAny;
         }
 
         VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
 
     private:
-        struct QueueFamilyIndices
-        {
-            uint32_t GraphicsFamily;
-            bool FoundAny;
-        };
-
         QueueFamilyIndices GetQueueFamilies(const VkPhysicalDevice& p_device)
         {
             QueueFamilyIndices indices {0, false };
@@ -420,6 +429,46 @@ namespace DeepEngine::Renderer
             return indices;
         }
 
+        QueueFamilyIndices _queueFamilyIndices;
+
+    private:
+        bool InitializeLogicalDevice()
+        {
+            VkDeviceQueueCreateInfo queueCreateInfo { };
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = _queueFamilyIndices.GraphicsFamily;
+            queueCreateInfo.queueCount = 1;
+
+            float queuePriority = 1.0f;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+
+            VkPhysicalDeviceFeatures deviceFeatures { };
+            // duplicate required features
+
+            VkDeviceCreateInfo createInfo { };
+            createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+            createInfo.pQueueCreateInfos = &queueCreateInfo;
+            createInfo.queueCreateInfoCount = 1;
+            createInfo.pEnabledFeatures = &deviceFeatures;
+            createInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
+            createInfo.ppEnabledLayerNames = _validationLayers.data();
+
+            if (vkCreateDevice(_physicalDevice, &createInfo, nullptr, &_logicalDevice) != VK_SUCCESS)
+            {
+                ERR("Failed to create logical device");
+                FAIL_MILESTONE(InitializeLogicalDeviceMS);
+                return false;
+            }
+
+            vkGetDeviceQueue(_logicalDevice, _queueFamilyIndices.GraphicsFamily, 0, &_graphicsQueue);
+            
+            FULFIL_MILESTONE(InitializeLogicalDeviceMS);
+            return true;
+        }
+
+        VkDevice _logicalDevice;
+        VkQueue _graphicsQueue;
+
     private:
         std::vector<VkExtensionProperties> _availableExtensions;
         std::vector<VkLayerProperties> _availableLayers; 
@@ -437,6 +486,7 @@ namespace DeepEngine::Renderer
         DEFINE_MILESTONE(CreateVkInstanceMS);
         DEFINE_MILESTONE(InitializeValidationLayerMS);
         DEFINE_MILESTONE(InitializePhysicalDeviceMS);
+        DEFINE_MILESTONE(InitializeLogicalDeviceMS);
     };
     
 }
