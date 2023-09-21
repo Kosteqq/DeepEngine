@@ -1,10 +1,10 @@
 #include "Renderer.hpp"
 
-#include "../Debug/Debug.h"
+#include "Debugs/Logger.h"
 
 namespace DeepEngine
 {
-    RendererSubsystem::RendererSubsystem()
+    RendererSubsystem::RendererSubsystem():EngineSubsystem("Renderer")
     {
         
     }
@@ -15,7 +15,7 @@ namespace DeepEngine
         _device = std::make_unique<Device>();
         if(!_device)
         {
-            LOG("Failed to initialize Device");
+            ERR("Failed to initialize Device");
             return false;
         }
         return true;

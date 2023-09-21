@@ -31,8 +31,8 @@ namespace DeepEngine::Core::Debug
         
     private:
         static std::shared_ptr<Logger> _engineLogger;
-        static std::shared_ptr<spdlog::sinks::stdout_color_sink_st> _consoleSink;
-        static std::shared_ptr<spdlog::sinks::basic_file_sink_st> _fileSink;
+        static std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> _consoleSink;
+        static std::shared_ptr<spdlog::sinks::basic_file_sink_mt> _fileSink;
     };
     
 }

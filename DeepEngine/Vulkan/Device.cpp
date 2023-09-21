@@ -1,5 +1,5 @@
 #include "Device.hpp"
-#include "../Debug/Debug.h"
+#include "Debugs/Logger.h"
 
 //std lib headers
 #include <vector>
@@ -27,6 +27,11 @@ namespace DeepEngine
 
     bool Device::CreateInstance()
     {
+        if (enableValidationLayers && !checkValidationLayerSupport())
+        {
+            ENGINE_ERR("validation layers requested, but not available");
+        }
+        
         VkApplicationInfo appInfo{};
         appInfo.pNext = nullptr;
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -50,7 +55,7 @@ namespace DeepEngine
 
         if(vkCreateInstance(&create_info, nullptr, &_instance) != VK_SUCCESS)
         {
-            LOG("failed to create instance!")
+            ENGINE_ERR("failed to create instance!");
             return false;
         }
 
@@ -60,15 +65,43 @@ namespace DeepEngine
         std::vector<VkExtensionProperties> extensions(extensionCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
         
-        LOG("avaible extensions: /n")
+        ENGINE_INFO("avaible extensions: /n");
 
         for(const auto& extension : extensions)
         {
-            LOG(extension.extensionName)
+            ENGINE_INFO(extension.extensionName);
         }
         return true;
     }
 
+    bool Device::checkValidationLayerSupport() {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+        std::vector<VkLayerProperties> avaibleLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, avaibleLayers.data());
+
+        for(const char* layerName : validationLayers)
+        {
+            bool layerFound = false;
+
+            for (const auto& layerProperties : avaibleLayers)
+            {
+                if (strcmp(layerName, layerProperties.layerName) == 0)
+                {
+                    layerFound = true;
+                    break;
+                }
+            }
+            if(!layerFound)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    
     
     
 

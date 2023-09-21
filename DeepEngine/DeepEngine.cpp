@@ -2,6 +2,8 @@
 #include "Debugs/InitializationTracker.h"
 #include "Architecture/EngineSystem.h"
 #include "Debugs/InitializationMilestone.h"
+#include "Vulkan/Device.hpp"
+#include "Vulkan/Renderer.hpp"
 #include "Window/WindowSubsystem.hpp"
 
 
@@ -49,6 +51,7 @@ int main(int argc, char* argv[])
     auto subsystemsManager = DeepEngine::Core::Architecture::EngineSubsystemsManager();
     subsystemsManager.CreateSubsystem<TestSubsystem>(2);
     subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "fckUnity");
+    subsystemsManager.CreateSubsystem<DeepEngine::RendererSubsystem>();
 
     if (!subsystemsManager.Init())
     {

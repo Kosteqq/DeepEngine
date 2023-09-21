@@ -3,8 +3,8 @@
 namespace DeepEngine::Core::Debug
 {
     std::shared_ptr<Logger> Logger::_engineLogger = nullptr;
-    std::shared_ptr<spdlog::sinks::stdout_color_sink_st> Logger::_consoleSink = nullptr;
-    std::shared_ptr<spdlog::sinks::basic_file_sink_st> Logger::_fileSink = nullptr;
+    std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> Logger::_consoleSink = nullptr;
+    std::shared_ptr<spdlog::sinks::basic_file_sink_mt> Logger::_fileSink = nullptr;
 
     Logger::Logger(const char* p_name) : _logger(p_name, { _consoleSink, _fileSink })
     {
@@ -14,7 +14,7 @@ namespace DeepEngine::Core::Debug
     {
         spdlog::set_level(spdlog::level::trace);
         
-        _fileSink = std::make_shared<spdlog::sinks::basic_file_sink_st>(p_filepath);
+        _fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(p_filepath);
         _fileSink->set_level(spdlog::level::trace);
         _fileSink->set_pattern("[%D %T] %-32s (%#) [%=16n][%^%=7l%$]: %v");
         
@@ -30,7 +30,7 @@ namespace DeepEngine::Core::Debug
     { 
         if (_consoleSink == nullptr)
         {
-            _consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_st>();
+            _consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
             _consoleSink->set_level(spdlog::level::trace);
             _consoleSink->set_pattern("[%T]%=32s(%#) [%=16n][%^%=7l%$]: %v");
         }

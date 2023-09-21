@@ -5,7 +5,7 @@
 
 namespace DeepEngine
 {
-    class RendererSubsystem : public Architecture::EngineSubsystem
+    class RendererSubsystem : public Core::Architecture::EngineSubsystem
     {
     public:
         RendererSubsystem();

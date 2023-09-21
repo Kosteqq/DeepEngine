@@ -26,14 +26,17 @@ namespace DeepEngine
     class Device 
     {
     public:
+        Device();
+        ~Device();
+
 #ifdef NDEBUG
         const bool enableValidationLayers = false;
 #else
         const bool enableValidationLayers = true;
-        
 #endif
-        Device();
-        ~Device();
+        
+        const std::vector<const char*> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+        bool checkValidationLayerSupport();
         
     protected:
       
