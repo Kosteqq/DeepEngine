@@ -23,11 +23,24 @@ namespace DeepEngine::Renderer
             vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);\
             INFO("Vulkan Extensions Count {0}", extensionCount);
 
+            GetSupportedValidationLayers();
+            for (int i = 0; i < _availableLayers.size(); i++)
+            {
+                if (!IsLayerAvailable(_availableLayers[i].layerName))
+                {
+                    FAIL_MILESTONE(InitializeValidationLayerMS);
+                    return false;
+                }
+            }
+
+            FULFIL_MILESTONE(InitializeValidationLayerMS);
+            
             if (!CreateVulkanInstance())
             {
                 return false;
             }
 
+            FULFIL_MILESTONE(CreateVkInstanceMS);
             return true;
         }
         
@@ -72,7 +85,11 @@ namespace DeepEngine::Renderer
             instanceCreateInfo.pApplicationInfo = &appInfo;
             instanceCreateInfo.enabledExtensionCount = _enabledExtensions.size();
             instanceCreateInfo.ppEnabledExtensionNames = enabledExtensionNames.get();
-            instanceCreateInfo.enabledLayerCount = 0;
+            // Replace to disable debug
+            // instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
+            // instanceCreateInfo.ppEnabledLayerNames = _validationLayers.data();
+            instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
+            instanceCreateInfo.ppEnabledLayerNames = _validationLayers.data();
 
             if (vkCreateInstance(&instanceCreateInfo, nullptr, &_instance) != VK_SUCCESS)
             {
@@ -121,7 +138,7 @@ namespace DeepEngine::Renderer
 
             for (int i = 0; i < glfwExtensionCount; i++)
             {
-                if (!IsExtensionsAvailable(glfwExtensions[i]))
+                if (!IsExtensionAvailable(glfwExtensions[i]))
                 {
                     return false;
                 }
@@ -150,7 +167,7 @@ namespace DeepEngine::Renderer
             _enabledExtensions.push_back(p_extensionName);
         }
 
-        bool IsExtensionsAvailable(const char* p_extensionName)
+        bool IsExtensionAvailable(const char* p_extensionName)
         {
             for (int i = 0; i < _availableExtensions.size(); i++)
             {
@@ -163,14 +180,50 @@ namespace DeepEngine::Renderer
             return false;
         }
 
+        bool IsLayerAvailable(const char* p_layerName)
+        {
+            for (int i = 0; i < _availableLayers.size(); i++)
+            {
+                if (strcmp(_availableLayers[i].layerName, p_layerName) == 0)
+                {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        void GetSupportedValidationLayers()
+        {
+            uint32_t layerCount;
+            vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+            _availableLayers = std::vector<VkLayerProperties>(layerCount);
+            vkEnumerateInstanceLayerProperties(&layerCount, _availableLayers.data());
+
+
+            DEBUG("Found Layers:");
+            for (int i = 0; i < _availableLayers.size(); i++)
+            {
+                DEBUG("\t{0}: {1}", _availableLayers[i].layerName, _availableLayers[i].specVersion);
+            }
+        }
+
     private:
         std::vector<VkExtensionProperties> _availableExtensions;
+        std::vector<VkLayerProperties> _availableLayers; 
         std::vector<const char*> _enabledExtensions;
         VkInstance _instance;
 
         bool _initialized;
 
+        const std::vector<const char*> _validationLayers =
+        {
+            "VK_LAYER_KHRONOS_validation",
+        };
+
     private:
+        DEFINE_MILESTONE(InitializeValidationLayerMS);
         DEFINE_MILESTONE(CreateVkInstanceMS);
     };
     
