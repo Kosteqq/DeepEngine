@@ -1,0 +1,32 @@
+{
+	"nodes":[
+		{"id":"41b48571575cf381","x":1080,"y":-640,"width":1680,"height":1040,"type":"group","label":"Initialization Tracker"},
+		{"id":"f9a4860a3f2a762c","type":"group","x":-360,"y":-640,"width":1340,"height":880,"label":"Logger"},
+		{"id":"e5ed2429a5d5499c","type":"file","file":"Debug (Core)/Logger.md","x":-340,"y":-600,"width":400,"height":480},
+		{"id":"b1dc410f5d2b7b81","type":"text","text":"spdlog","x":212,"y":-600,"width":113,"height":50,"color":"6"},
+		{"id":"1840e3e7c8ccd02a","type":"text","text":"Logger.h","x":212,"y":-336,"width":250,"height":50},
+		{"id":"fb94849f9051d8c2","type":"text","text":"Global Engine Logger:\n* ENGINE_TRACE  (message)\n* ENGINE_DEBUG (message)\n* ENGINE_INFO    (message)\n* ENGINE_WARN  (message)\n* ENGINE_ERR      (message)","x":108,"y":-120,"width":292,"height":220,"color":"5"},
+		{"id":"f3b984e31466366b","type":"text","text":"Custom Logger\n* LOG_TRACE  (Logger, message)\n* LOG_DEBUG (Logger, message)\n* LOG_INFO    (Logger, message)\n* LOG_WANR  (Logger, message)\n* LOG_ERR      (Logger, message)\n\nCreateLoggerInstance(const char* p_name);  \nCreateLoggerInstance(const std::string& p_name);","x":420,"y":-120,"width":460,"height":320,"color":"5"},
+		{"id":"148b016b8d9eb59f","x":1100,"y":-600,"width":400,"height":480,"type":"file","file":"Debug (Core)/Initialization Tracker.md"},
+		{"id":"29459d04a3f88c04","x":1569,"y":-190,"width":250,"height":50,"color":"5","type":"text","text":"RegisterSummary()"},
+		{"id":"dd172169985500b3","type":"text","text":"fmt","x":1706,"y":-600,"width":113,"height":50,"color":"6"},
+		{"id":"5ec0418bae355569","x":1706,"y":-368,"width":250,"height":50,"type":"text","text":"Initialization Tracker"},
+		{"id":"b00ae0030a4dbad0","type":"text","text":"FulfilMilestone()","x":1569,"y":-130,"width":250,"height":50,"color":"5"},
+		{"id":"bb92f6c5c90a3fb9","type":"text","text":"FailMilestone()","x":1569,"y":-70,"width":250,"height":50,"color":"5"},
+		{"id":"202b5bc246075be9","type":"text","text":"LogSummary()","x":1569,"y":10,"width":250,"height":50,"color":"5"},
+		{"id":"5bbdedf95bc809c6","type":"text","text":"MarkFulfilled()","x":2056,"y":120,"width":250,"height":50,"color":"5"},
+		{"id":"a584a1943201bd05","type":"text","text":"MarkFailed()","x":2056,"y":185,"width":250,"height":50,"color":"5"},
+		{"id":"1e10578f1252b69e","type":"text","text":"Initialization Milestone","x":2056,"y":-15,"width":289,"height":50},
+		{"id":"db9c965737bf8125","type":"text","text":"static Create(name)","x":2056,"y":60,"width":250,"height":50,"color":"5"},
+		{"id":"569567dda96c80ac","type":"text","text":"Logger (\"Initialization\")","x":1980,"y":-520,"width":274,"height":50,"color":"4"}
+	],
+	"edges":[
+		{"id":"7e7787020234486d","fromNode":"fb94849f9051d8c2","fromSide":"top","toNode":"1840e3e7c8ccd02a","toSide":"bottom","toEnd":"none"},
+		{"id":"bee66f27004129d9","fromNode":"1840e3e7c8ccd02a","fromSide":"top","toNode":"b1dc410f5d2b7b81","toSide":"bottom"},
+		{"id":"3c7a1b43b81d19ca","fromNode":"1840e3e7c8ccd02a","fromSide":"bottom","toNode":"f3b984e31466366b","toSide":"top","toEnd":"none"},
+		{"id":"036a8c7132e4f129","fromNode":"1e10578f1252b69e","fromSide":"top","toNode":"5ec0418bae355569","toSide":"bottom"},
+		{"id":"66b46f7fd04d7a94","fromNode":"5ec0418bae355569","fromSide":"top","toNode":"dd172169985500b3","toSide":"bottom"},
+		{"id":"72bfe18e542f966d","fromNode":"5ec0418bae355569","fromSide":"top","toNode":"569567dda96c80ac","toSide":"left","toEnd":"none"},
+		{"id":"f64c91b88e5bd24f","fromNode":"29459d04a3f88c04","fromSide":"top","toNode":"5ec0418bae355569","toSide":"bottom"}
+	]
+}

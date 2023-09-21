@@ -1,3 +1,12 @@
 [submodule "glfw"]
 	path = 3rdParty/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "spdlog"]
+	path = 3rdParty/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "fmt"]
+	path = 3rdParty/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "ImGui"]
+	path = 3rdParty/ImGui
+	url = https://github.com/ocornut/imgui.git
