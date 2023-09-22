@@ -1,12 +1,13 @@
 #pragma once
 #include <fstream>
-#include <vulkan/vulkan.h>
 
+#include <vulkan/vulkan.h>
 #include <fmt/format.h>
+#include "GLFW/glfw3.h"
 
 #include "Debugs/Logger.h"
 #include "Architecture/EngineSystem.h"
-#include "GLFW/glfw3.h"
+#include "Instance/VulkanInstance.h"
 
 namespace DeepEngine::Renderer
 {
@@ -22,16 +23,19 @@ namespace DeepEngine::Renderer
         VulkanPrototype() : EngineSubsystem("Vulkan Renderer Prot")
         {
             _debugVkLogger = Core::Debug::Logger::CreateLoggerInstance("VK Validation Layer");
+            _vulkanLogger = Core::Debug::Logger::CreateLoggerInstance("VULKAN");
+
+            _vulkanInstance = VulkanInstance(_vulkanLogger);
+        }
+
+        ~VulkanPrototype()
+        {
+            _vulkanInstance.Terminate();
         }
 
     protected:
         bool Init() override
         {
-            _initialized = false;
-             uint32_t extensionCount = 0;
-            vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);\
-            INFO("Vulkan Extensions Count {0}", extensionCount);
-
             GetSupportedValidationLayers();
             for (int i = 0; i < _availableLayers.size(); i++)
             {
@@ -42,11 +46,15 @@ namespace DeepEngine::Renderer
                 }
             }
 
-            FULFIL_MILESTONE(InitializeValidationLayerMS);
-
             auto debugCreateInfo = CreateDebugInfo();
             
-            if (!CreateVulkanInstance(debugCreateInfo))
+            if (!EnableExtensions())
+            {
+                ERR("Failed to enable at least one of extensions!");
+                return false;
+            }
+            
+            if (_vulkanInstance.Init({ }))
             {
                 return false;
             }
@@ -87,135 +95,25 @@ namespace DeepEngine::Renderer
         }
 
     private:
-        bool CreateVulkanInstance(const VkDebugUtilsMessengerCreateInfoEXT& p_debugInfo)
-        {
-            GetExtensions();
-
-            if (!CheckGlfwExtensionsMatch())
-            {
-                FAIL_MILESTONE(CreateVkInstanceMS);
-                ENGINE_ERR("GLFW requred extensions all not available");
-                return false;
-            }
-
-            if (!IsExtensionAvailable(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
-            {
-                FAIL_MILESTONE(CreateVkInstanceMS);
-                ENGINE_ERR("Extension VK_EXT_DEBUG_UTILS_EXTENSION_NAME is not supported!");
-                return false;
-            }
-            EnableExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
-            VkApplicationInfo appInfo { };
-            appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-            appInfo.pNext = nullptr; // Point to extensions info
-            appInfo.pApplicationName = "Deep Engine Editor";
-            appInfo.applicationVersion = 0;
-            appInfo.pEngineName = "Deep Engine";
-            appInfo.engineVersion = 0;
-            appInfo.apiVersion = VK_API_VERSION_1_3;
-            
-            auto enabledExtensionNames = GetEnabledExtensionNames();
-
-            VkInstanceCreateInfo instanceCreateInfo { };
-            instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-            instanceCreateInfo.pApplicationInfo = &appInfo;
-            instanceCreateInfo.enabledExtensionCount = _enabledExtensions.size();
-            instanceCreateInfo.ppEnabledExtensionNames = enabledExtensionNames.get();
-            // Replace to disable debug
-            // instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
-            // instanceCreateInfo.ppEnabledLayerNames = _validationLayers.data();
-            instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
-            instanceCreateInfo.ppEnabledLayerNames = _validationLayers.data();
-            instanceCreateInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&p_debugInfo;
-
-            if (vkCreateInstance(&instanceCreateInfo, nullptr, &_instance) != VK_SUCCESS)
-            {
-                FAIL_MILESTONE(CreateVkInstanceMS);
-                ENGINE_ERR("Failed to create instance");
-                return false;
-            }
-
-            _initialized = true;
-            FULFIL_MILESTONE(CreateVkInstanceMS);
-            return true;
-        }
-
-        void GetExtensions()
-        {
-            uint32_t extensionsCount = 0;
-            vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr);
-            
-            _availableExtensions = std::vector<VkExtensionProperties> (extensionsCount);
-            vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, _availableExtensions.data());
-
-            DEBUG("Found Extension:");
-            for (int i = 0; i < _availableExtensions.size(); i++)
-            {
-                DEBUG("\t{0}: {1}", _availableExtensions[i].extensionName, _availableExtensions[i].specVersion);
-            }
-        }
-
-        std::unique_ptr<const char*> GetEnabledExtensionNames()
-        {
-            const char** names = new const char*[_enabledExtensions.size()];
-            std::unique_ptr<const char*> namesPtr { names };
-
-            for (int i = 0; i < _enabledExtensions.size(); i++)
-            {
-                names[i] = _enabledExtensions[i];
-            }
-
-            return std::move(namesPtr);
-        }
-
-        bool CheckGlfwExtensionsMatch()
+        bool EnableExtensions()
         {
             uint32_t glfwExtensionCount = 0;
-            const char** glfwExtensions;
-            glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+            const char** glfwExtensions= glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
             for (int i = 0; i < glfwExtensionCount; i++)
             {
-                if (!IsExtensionAvailable(glfwExtensions[i]))
+                if (!_vulkanInstance.TryEnableExtension(glfwExtensions[i]))
                 {
                     return false;
                 }
-                
-                EnableExtension(glfwExtensions[i]);
+            }
+            
+            if (!_vulkanInstance.TryEnableExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
+            {
+                return false;
             }
 
             return true;
-        }
-
-        void EnableExtension(const VkExtensionProperties& p_extension)
-        {
-            EnableExtension(p_extension.extensionName);
-        }
-
-        void EnableExtension(const char* p_extensionName)
-        {
-            for (int i = 0; i < _availableExtensions.size(); i++)
-            {
-                if (strcmp(_availableExtensions[i].extensionName, p_extensionName) == 0)
-                {
-                    _enabledExtensions.push_back(p_extensionName);
-                    return;
-                }
-            }
-        }
-
-        bool IsExtensionAvailable(const char* p_extensionName)
-        {
-            for (int i = 0; i < _availableExtensions.size(); i++)
-            {
-                if (strcmp(_availableExtensions[i].extensionName, p_extensionName) == 0)
-                {
-                    return true;
-                }
-            }
-            
-            return false;
         }
 
     private:
@@ -349,62 +247,6 @@ namespace DeepEngine::Renderer
         VkDebugUtilsMessengerEXT _debugMessenger;
 
     private:
-        bool CreatePhysicalDevice()
-        {
-            uint32_t deviceCount = 0;
-            vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
-
-            if (deviceCount == 0)
-            {
-                ERR("Failed to find GPUs with Vulkan support!");
-                FAIL_MILESTONE(InitializePhysicalDeviceMS);
-                return false;
-            }
-
-            std::vector<VkPhysicalDevice> devices(deviceCount);
-            vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
-
-            _physicalDevice = GetFirstSuitableDevice(devices);
-            if (_physicalDevice == VK_NULL_HANDLE)
-            {
-                FAIL_MILESTONE(InitializePhysicalDeviceMS);
-                return false;
-            }
-
-            FULFIL_MILESTONE(InitializePhysicalDeviceMS);
-            return true;
-        }
-
-        VkPhysicalDevice GetFirstSuitableDevice(const std::vector<VkPhysicalDevice>& p_devices)
-        {
-            for (int i = 0; i < p_devices.size(); i++)
-            {
-                if (IsDeviceSuitable(p_devices[i]))
-                {
-                    return p_devices[i];
-                }
-            }
-
-            ERR("Failed to find any suitable GPU!");
-            return VK_NULL_HANDLE;
-        }
-
-        bool IsDeviceSuitable(const VkPhysicalDevice& p_device)
-        {
-            VkPhysicalDeviceProperties deviceProperties;
-            vkGetPhysicalDeviceProperties(p_device, &deviceProperties);
-            VkPhysicalDeviceFeatures deviceFeatures;
-            vkGetPhysicalDeviceFeatures(p_device, &deviceFeatures);
-
-            // Set required features
-            
-            _queueFamilyIndices = GetQueueFamilies(p_device);
-            return _queueFamilyIndices.FoundAny;
-        }
-
-        VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
-
-    private:
         QueueFamilyIndices GetQueueFamilies(const VkPhysicalDevice& p_device)
         {
             QueueFamilyIndices indices {0, false };
@@ -472,15 +314,16 @@ namespace DeepEngine::Renderer
     private:
         std::vector<VkExtensionProperties> _availableExtensions;
         std::vector<VkLayerProperties> _availableLayers; 
-        std::vector<const char*> _enabledExtensions;
-        VkInstance _instance;
-
-        bool _initialized;
 
         const std::vector<const char*> _validationLayers =
         {
             "VK_LAYER_KHRONOS_validation",
         };
+
+    private:
+        VulkanInstance _vulkanInstance;
+
+        std::shared_ptr<Core::Debug::Logger> _vulkanLogger;
 
     private:
         DEFINE_MILESTONE(CreateVkInstanceMS);
