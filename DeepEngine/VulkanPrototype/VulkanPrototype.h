@@ -3,7 +3,6 @@
 
 #include <vulkan/vulkan.h>
 #include <fmt/format.h>
-#include "GLFW/glfw3.h"
 
 #include "Debugs/Logger.h"
 #include "Architecture/EngineSystem.h"
@@ -11,6 +10,7 @@
 #include "Instance/VulkanInstance.h"
 #include "Instance/VulkanLogicalLayer.h"
 #include "Instance/VulkanPhysicalLayer.h"
+#include "Window/WindowSubsystem.hpp"
 
 namespace DeepEngine::Renderer
 {
@@ -28,6 +28,7 @@ namespace DeepEngine::Renderer
             _logicalLayer->Terminate();
             // Physical device will be destroy anyway
 
+            vkDestroySurfaceKHR(_vulkanInstance->GetInstance(), _surface, nullptr);
             _vulkanInstance->Terminate();
             _vulkanDebug->Terminate();
 
@@ -80,6 +81,18 @@ namespace DeepEngine::Renderer
             }
             FULFIL_MILESTONE(CreateVulkanInstance);
 
+            // DIRTY
+            auto glfwWindow = _subsystemsManager->GetSubsystem<WindowSubsystem>()->GetGlfwWindow();
+
+            if (glfwCreateWindowSurface(_vulkanInstance->GetInstance(), glfwWindow, nullptr, &_surface))
+            {
+                return false;
+            }
+            
+            
+            // \DIRTY
+            
+
             _physicalLayer = new VulkanPhysicalLayer(_vulkanLogger, _vulkanInstance);
 
             if (!_physicalLayer->Init())
@@ -89,9 +102,9 @@ namespace DeepEngine::Renderer
             }
             FULFIL_MILESTONE(InitializeVulkanPhysicalDevice);
 
-            _logicalLayer = new VulkanLogicalLayer(_vulkanLogger, _physicalLayer);
+            _logicalLayer = new VulkanLogicalLayer(_vulkanLogger, _physicalLayer, _surface);
             // For now only single queue is supported!
-            _logicalLayer->AddQueue(VK_QUEUE_GRAPHICS_BIT);
+            _logicalLayer->AddQueue(0, VK_QUEUE_GRAPHICS_BIT, true);
 
             if (!_logicalLayer->Init(_vulkanDebug))
             {
@@ -111,7 +124,7 @@ namespace DeepEngine::Renderer
         void Destroy() override
         {
         }
-
+        
     private:
         bool EnableExtensions()
         {
@@ -133,6 +146,9 @@ namespace DeepEngine::Renderer
 
             return true;
         }
+
+    private:
+        VkSurfaceKHR _surface;
 
     private:
         VulkanDebug* _vulkanDebug;

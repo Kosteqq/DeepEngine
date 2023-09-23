@@ -1,4 +1,6 @@
 #pragma once
+#include <unordered_map>
+
 #include "Debugs/Logger.h"
 #include "VulkanPhysicalLayer.h"
 #include "VulkanDebug.h"
@@ -9,7 +11,8 @@ namespace DeepEngine::Renderer
     class VulkanLogicalLayer
     {
     public:
-        VulkanLogicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, const VulkanPhysicalLayer* p_physicalLayer);
+        VulkanLogicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, const VulkanPhysicalLayer* p_physicalLayer,
+            const VkSurfaceKHR& p_surface);
         ~VulkanLogicalLayer();
 
         bool Init(const VulkanDebug* p_vulkanDebug);
@@ -17,23 +20,25 @@ namespace DeepEngine::Renderer
 
         const VkDevice& GetLogicalDevice() const
         { return _logicalDevice; }
-        const VkQueue& GetGraphicsQueue() const
-        { return _graphicsQueue; }
+        VkQueue& GetGraphicsQueue(const uint32_t p_id)
+        { return _queueMap[p_id]; }
 
-        void AddQueue(VkQueueFlagBits p_queueFeatures);
+        bool AddQueue(uint32_t p_id, VkQueueFlagBits p_queueFeatures, bool p_requireSurfaceSupport);
         
     private:
         bool _initialized = false;
         
         const VulkanInstance* _instance = nullptr;
         const VulkanPhysicalLayer* _physicalLayer = nullptr;
+        const VkSurfaceKHR& _surface;
         
         VkDevice _logicalDevice;
-        VkQueue _graphicsQueue;
-
-        std::vector<VkDeviceQueueCreateInfo> _createQueuesInfo { };
+        std::unordered_map<uint32_t, VkQueue> _queueMap;
         std::vector<VkQueueFamilyProperties> _availableQueueFamilies;
 
+        std::vector<VkDeviceQueueCreateInfo> _createQueuesInfo;
+        std::vector<uint32_t> _createQueueIds;
+        
         std::shared_ptr<Core::Debug::Logger> _logger;
     };
 }

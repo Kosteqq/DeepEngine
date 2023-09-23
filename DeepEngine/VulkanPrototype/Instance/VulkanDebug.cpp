@@ -71,10 +71,10 @@ namespace DeepEngine::Renderer
     {
         _vkInstance = p_vkInstance;
         
-        LOG_DEBUG(_debugVkLogger, "Creating Vulkan messenger");
+        LOG_DEBUG(_vulkanLogger, "Creating Vulkan messenger");
         for (int i = 0; i < _availableLayers.size(); i++)
         {
-            LOG_DEBUG(_debugVkLogger, "{:<45} (v.{}): [{}]",
+            LOG_DEBUG(_vulkanLogger, "{:<45} (v.{}): [{}]",
                 _availableLayers[i].layerName,
                 _availableLayers[i].specVersion,
                 IsLayerEnabled(_enabledLayers, _availableLayers[i].layerName));
@@ -83,7 +83,7 @@ namespace DeepEngine::Renderer
         const auto result = CreateDebugUtilsMessengerEXT(*_vkInstance, &_createInfo, nullptr, &_debugMessenger);
         if (result != VK_SUCCESS)
         {
-            LOG_ERR(_debugVkLogger, "Failed to create Vulkan debug messenger.\nDriver returned result: {0}", string_VkResult(result));
+            LOG_ERR(_vulkanLogger, "Failed to create Vulkan debug messenger.\nDriver returned result: {0}", string_VkResult(result));
             return false;
         }
 
@@ -96,7 +96,7 @@ namespace DeepEngine::Renderer
         if (_initialized)
         {
             _initialized = false;
-            LOG_INFO(_debugVkLogger, "Terminating Vulkan debug messenger");
+            LOG_INFO(_vulkanLogger, "Terminating Vulkan debug messenger");
             DestroyDebugUtilsMessengerEXT(*_vkInstance, _debugMessenger, nullptr);
         }
     }
@@ -105,18 +105,18 @@ namespace DeepEngine::Renderer
     {
         if (IsLayerEnabled(_enabledLayers, p_layerName))
         {
-            LOG_TRACE(_debugVkLogger, "Trying to enable already enabled \"{0}\" layer!", p_layerName);
+            LOG_TRACE(_vulkanLogger, "Trying to enable already enabled \"{0}\" layer!", p_layerName);
             return true;
         }
         
         if (IsLayerAvailable(p_layerName))
         {
-            LOG_TRACE(_debugVkLogger, "Add \"{0}\" layer to enable", p_layerName);
+            LOG_TRACE(_vulkanLogger, "Add \"{0}\" layer to enable", p_layerName);
             _enabledLayers.push_back(p_layerName);
             return true;
         }
 
-        LOG_ERR(_debugVkLogger, "Failed to enable \"{0}\" layer!", p_layerName);
+        LOG_ERR(_vulkanLogger, "Failed to enable \"{0}\" layer!", p_layerName);
         return false;
     }
 

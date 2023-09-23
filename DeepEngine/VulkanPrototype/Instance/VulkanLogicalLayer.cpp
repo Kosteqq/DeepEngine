@@ -4,10 +4,13 @@
 
 namespace DeepEngine::Renderer
 {
-    VulkanLogicalLayer::VulkanLogicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, const VulkanPhysicalLayer* p_physicalLayer)
-        : _logger(p_logger), _physicalLayer(p_physicalLayer)
+    VulkanLogicalLayer::VulkanLogicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, const VulkanPhysicalLayer* p_physicalLayer,
+            const VkSurfaceKHR& p_surface)
+        : _logger(p_logger), _physicalLayer(p_physicalLayer), _surface(p_surface)
     {
         _createQueuesInfo.reserve(5);
+        _createQueueIds.reserve(5);
+        _queueMap.reserve(5);
 
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(p_physicalLayer->GetDevice(), &queueFamilyCount, nullptr);
@@ -31,7 +34,7 @@ namespace DeepEngine::Renderer
         VkDeviceCreateInfo createInfo { };
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.pQueueCreateInfos = _createQueuesInfo.data();
-        createInfo.queueCreateInfoCount = _createQueuesInfo.size();
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(_createQueuesInfo.size());
         createInfo.pEnabledFeatures = &deviceFeatures;
         createInfo.enabledLayerCount = static_cast<uint32_t>(p_vulkanDebug->GetEnabledLayers().size());
         createInfo.ppEnabledLayerNames = p_vulkanDebug->GetEnabledLayers().data();
@@ -43,7 +46,12 @@ namespace DeepEngine::Renderer
             return false;
         }
 
-        vkGetDeviceQueue(_logicalDevice, _createQueuesInfo[0].queueFamilyIndex, 0, &_graphicsQueue);
+        for (uint32_t i = 0; i < _createQueuesInfo.size(); i++)
+        {
+            VkQueue queue;
+            vkGetDeviceQueue(_logicalDevice, _createQueuesInfo[i].queueFamilyIndex, 0, &queue);
+            _queueMap[_createQueueIds[i]] = queue;
+        }
         return true;
     }
 
@@ -57,13 +65,16 @@ namespace DeepEngine::Renderer
         }
     }
 
-    void VulkanLogicalLayer::AddQueue(VkQueueFlagBits p_queueFeatures)
+    bool VulkanLogicalLayer::AddQueue(uint32_t p_id, VkQueueFlagBits p_queueFeatures, bool p_requireSurfaceSupport)
     {
         uint32_t familyIndex = 0;
         bool found = false;
         for (uint32_t i = 0; i < _availableQueueFamilies.size(); i++)
         {
-            if (_availableQueueFamilies[i].queueFlags & p_queueFeatures)
+            VkBool32 presentSupport = false;
+            vkGetPhysicalDeviceSurfaceSupportKHR(_physicalLayer->GetDevice(), i, _surface, &presentSupport);
+            
+            if ((presentSupport || !p_requireSurfaceSupport) && _availableQueueFamilies[i].queueFlags & p_queueFeatures)
             {
                 familyIndex = i;
                 found = true;
@@ -74,7 +85,7 @@ namespace DeepEngine::Renderer
         if (!found)
         {
             LOG_ERR(_logger, "Failed to find proper queue family");
-            return;
+            return false;
         }
         
         VkDeviceQueueCreateInfo queueCreateInfo { };
@@ -87,5 +98,7 @@ namespace DeepEngine::Renderer
         queueCreateInfo.pQueuePriorities = &queuePriority;
 
         _createQueuesInfo.push_back(queueCreateInfo);
+        _createQueueIds.push_back(p_id);
+        return true;
     }
 }
