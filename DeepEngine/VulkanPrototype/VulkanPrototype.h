@@ -101,6 +101,11 @@ namespace DeepEngine::Renderer
                 return false;
             }
             FULFIL_MILESTONE(InitializeVulkanPhysicalDevice);
+            
+            if (!_physicalLayer->TryEnableExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME))
+            {
+                return false;
+            }
 
             _logicalLayer = new VulkanLogicalLayer(_vulkanLogger, _physicalLayer, _surface);
             // For now only single queue is supported!

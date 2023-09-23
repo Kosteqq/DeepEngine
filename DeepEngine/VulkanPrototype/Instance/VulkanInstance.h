@@ -26,8 +26,7 @@ namespace DeepEngine::Renderer
         inline bool TryEnableExtension(const std::string& p_extensionName);
         bool TryEnableExtension(const char* p_extensionName);
 
-        bool IsLayerEnabled(const char* p_layerName) const;
-
+        bool IsExtensionsEnabled(const char* p_extensionName) const;
 
         const std::vector<VkExtensionProperties>& GetAvailableExtensions() const
         { return _availableExtensions; }
@@ -42,8 +41,8 @@ namespace DeepEngine::Renderer
         bool _initialized = false;
         VkInstance _vkInstance = VK_NULL_HANDLE;
 
-        std::vector<VkExtensionProperties> _availableExtensions { };
-        std::vector<const char*> _enabledExtensionNames { };
+        std::vector<VkExtensionProperties> _availableExtensions;
+        std::vector<const char*> _enabledExtensionNames;
         
         std::shared_ptr<Core::Debug::Logger> _logger;
   };

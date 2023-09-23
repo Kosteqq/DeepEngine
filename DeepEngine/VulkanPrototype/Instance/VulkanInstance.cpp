@@ -33,7 +33,7 @@ namespace DeepEngine::Renderer
             LOG_DEBUG(_logger, "{:<45} (v.{}): [{}]",
                 _availableExtensions[i].extensionName,
                 _availableExtensions[i].specVersion,
-                IsLayerEnabled(_availableExtensions[i].extensionName));
+                IsExtensionsEnabled(_availableExtensions[i].extensionName));
         }
         
         VkApplicationInfo appInfo;
@@ -85,13 +85,13 @@ namespace DeepEngine::Renderer
             }
         }
             
-        LOG_WARN(_logger, "Extension \"{0}\" is unabailable!", p_extensionName);
+        LOG_WARN(_logger, "Extension \"{0}\" is unavailable!", p_extensionName);
         return false;
     }
     
     bool VulkanInstance::TryEnableExtension(const char* p_extensionName)
     {
-        if (IsLayerEnabled(p_extensionName))
+        if (IsExtensionsEnabled(p_extensionName))
         {
             LOG_TRACE(_logger, "Trying to enable already enabled \"{0}\" extension!", p_extensionName);
             return true;
@@ -108,11 +108,11 @@ namespace DeepEngine::Renderer
         return false;
     }
 
-    bool VulkanInstance::IsLayerEnabled(const char* p_layerName) const
+    bool VulkanInstance::IsExtensionsEnabled(const char* p_extensionName) const
     {
         for (int i = 0; i < _enabledExtensionNames.size(); i++)
         {
-            if (strcmp(_enabledExtensionNames[i], p_layerName) == 0)
+            if (strcmp(_enabledExtensionNames[i], p_extensionName) == 0)
             {
                 return true;
             }

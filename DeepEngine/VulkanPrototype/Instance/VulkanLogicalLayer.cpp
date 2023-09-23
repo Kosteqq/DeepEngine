@@ -28,14 +28,16 @@ namespace DeepEngine::Renderer
     {
         LOG_DEBUG(_logger, "Initializing logical device");
 
-        VkPhysicalDeviceFeatures deviceFeatures { };
-        // duplicate required features
+        VkPhysicalDeviceFeatures deviceFeatures;
+        vkGetPhysicalDeviceFeatures(_physicalLayer->GetDevice(), &deviceFeatures);
 
         VkDeviceCreateInfo createInfo { };
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.pQueueCreateInfos = _createQueuesInfo.data();
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(_createQueuesInfo.size());
         createInfo.pEnabledFeatures = &deviceFeatures;
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(_physicalLayer->GetEnabledExtensionNames().size());
+        createInfo.ppEnabledExtensionNames = _physicalLayer->GetEnabledExtensionNames().data();
         createInfo.enabledLayerCount = static_cast<uint32_t>(p_vulkanDebug->GetEnabledLayers().size());
         createInfo.ppEnabledLayerNames = p_vulkanDebug->GetEnabledLayers().data();
 
