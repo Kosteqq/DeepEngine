@@ -2,18 +2,14 @@
 
 namespace DeepEngine::Renderer
 {
-    
-    VulkanPhysicalLayer::VulkanPhysicalLayer(const VulkanInstance& p_instance,
-        std::shared_ptr<Core::Debug::Logger> p_logger)
-        : _instance(p_instance), _logger(p_logger)
-    {
-            
-    }
+    VulkanPhysicalLayer::VulkanPhysicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, VulkanInstance* p_instance)
+        : _logger(p_logger), _instance(p_instance)
+    { }
 
     bool VulkanPhysicalLayer::Init()
     {
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(_instance->GetInstance(), &deviceCount, nullptr);
         
         if (deviceCount == 0)
         {
@@ -21,28 +17,32 @@ namespace DeepEngine::Renderer
             return false;
         }
         
-        std::vector<VkPhysicalDevice> devices;
-        vkEnumeratePhysicalDevices(_instance.GetInstance(), &deviceCount, devices.data());
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(_instance->GetInstance(), &deviceCount, devices.data());
         
         _physicalDevice = GetBestDevice(devices);
         return true;
     }
-    
-    VkPhysicalDevice VulkanPhysicalLayer::GetBestDevice(const std::vector<VkPhysicalDevice>& p_devices)
+
+    const VkPhysicalDevice& VulkanPhysicalLayer::GetBestDevice(std::vector<VkPhysicalDevice>& p_devices)
     {
+        uint32_t prevDeviceRate = 0;
+        VkPhysicalDevice& bestDevice = p_devices[0];
+        
         for (int i = 0; i < p_devices.size(); i++)
         {
-            if (RateDevice(p_devices[i]))
+            uint32_t rate = RateDevice(p_devices[i]);
+            if (rate > prevDeviceRate)
             {
-                return p_devices[i];
+                prevDeviceRate = rate;
+                bestDevice = p_devices[i];
             }
         }
 
-        LOG_ERR(_logger, "Failed to find any suitable GPU!");
-        return VK_NULL_HANDLE;
+        return bestDevice;
     }
     
-    bool VulkanPhysicalLayer::RateDevice(const VkPhysicalDevice& p_device)
+    uint32_t VulkanPhysicalLayer::RateDevice(const VkPhysicalDevice& p_device)
     {
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(p_device, &deviceProperties);
@@ -52,6 +52,6 @@ namespace DeepEngine::Renderer
         // Set required features
         // _queueFamilyIndices = GetQueueFamilies(p_device);
             
-        return true;
+        return 1;
     }
 }

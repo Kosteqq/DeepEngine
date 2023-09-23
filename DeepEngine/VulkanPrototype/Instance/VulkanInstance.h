@@ -4,6 +4,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
+#include "VulkanDebug.h"
 #include "Debugs/Logger.h"
 
 namespace DeepEngine::Renderer
@@ -11,11 +12,10 @@ namespace DeepEngine::Renderer
     class VulkanInstance
     {
     public:
-        VulkanInstance() = default;
         VulkanInstance(std::shared_ptr<Core::Debug::Logger> p_logger);
         ~VulkanInstance();
         
-        bool Init(const std::vector<const char*>& p_validationLayers);
+        bool Init(VulkanDebug* p_vulkanDebug);
         void Terminate();
 
         inline bool IsExtensionAvailable(const VkExtensionProperties& p_extension) const;
@@ -26,19 +26,22 @@ namespace DeepEngine::Renderer
         inline bool TryEnableExtension(const std::string& p_extensionName);
         bool TryEnableExtension(const char* p_extensionName);
 
+        bool IsLayerEnabled(const char* p_layerName) const;
+
+
         const std::vector<VkExtensionProperties>& GetAvailableExtensions() const
         { return _availableExtensions; }
 
         const std::vector<const char*>& GetEnabledExtensionNames() const
         { return _enabledExtensionNames; }
         
-        const VkInstance& GetInstance() const
+        VkInstance& GetInstance()
         { return _vkInstance; }
 
     private:
         bool _initialized = false;
         VkInstance _vkInstance = VK_NULL_HANDLE;
-        
+
         std::vector<VkExtensionProperties> _availableExtensions { };
         std::vector<const char*> _enabledExtensionNames { };
         

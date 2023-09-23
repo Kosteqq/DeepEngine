@@ -7,30 +7,17 @@ namespace DeepEngine::Renderer
 {
     void GetExtensions(std::vector<VkExtensionProperties>* p_extensions)
     {
-        uint32_t extensionsCount = 0;
-        vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr);
-
-        p_extensions->resize(extensionsCount);
-        vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, p_extensions->data());
-    }
-
-    bool IsExtensionEnabled(const std::vector<const char*>& p_enabledExtensions, const char* p_extensionName)
-    {
-        for (int i = 0; i < p_enabledExtensions.size(); i++)
-        {
-            if (strcmp(p_enabledExtensions[i], p_extensionName) == 0)
-            {
-                return true;
-            }
-        }
-        return false;
     }
     
     VulkanInstance::VulkanInstance(std::shared_ptr<Core::Debug::Logger> p_logger)
         : _logger(p_logger)
     {
-        _enabledExtensionNames.reserve(10);
-        GetExtensions(&_availableExtensions);
+        uint32_t extensionsCount = 0;
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr);
+
+        _enabledExtensionNames.reserve(extensionsCount);
+        _availableExtensions = std::vector<VkExtensionProperties>(extensionsCount);
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, _availableExtensions.data());
     }
 
     VulkanInstance::~VulkanInstance()
@@ -38,13 +25,15 @@ namespace DeepEngine::Renderer
         Terminate();
     }
 
-    bool VulkanInstance::Init(const std::vector<const char*>& p_validationLayers)
+    bool VulkanInstance::Init(VulkanDebug* p_vulkanDebug)
     {
         LOG_DEBUG(_logger, "Creating Vulkan Instance");
         for (int i = 0; i < _availableExtensions.size(); i++)
         {
-            LOG_DEBUG(_logger, "{>20}{}: [{}]", _availableExtensions[i].extensionName, _availableExtensions[i].specVersion,
-                IsExtensionEnabled(_enabledExtensionNames, _availableExtensions[i].extensionName));
+            LOG_DEBUG(_logger, "{:<45} (v.{}): [{}]",
+                _availableExtensions[i].extensionName,
+                _availableExtensions[i].specVersion,
+                IsLayerEnabled(_availableExtensions[i].extensionName));
         }
         
         VkApplicationInfo appInfo;
@@ -56,16 +45,14 @@ namespace DeepEngine::Renderer
         appInfo.engineVersion = 0;
         appInfo.apiVersion = VK_API_VERSION_1_3;
             
-        auto enabledExtensionNames = GetEnabledExtensionNames();
-
         VkInstanceCreateInfo instanceCreateInfo { };
         instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instanceCreateInfo.pApplicationInfo = &appInfo;
         instanceCreateInfo.enabledExtensionCount = (uint32_t)_enabledExtensionNames.size();
         instanceCreateInfo.ppEnabledExtensionNames = _enabledExtensionNames.data();
-        instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(p_validationLayers.size());
-        instanceCreateInfo.ppEnabledLayerNames = p_validationLayers.data();
-        // instanceCreateInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&p_debugInfo;
+        instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(p_vulkanDebug->GetEnabledLayers().size());
+        instanceCreateInfo.ppEnabledLayerNames = p_vulkanDebug->GetEnabledLayers().data();
+        instanceCreateInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&p_vulkanDebug->GetCreateInfo();
 
         const auto result = vkCreateInstance(&instanceCreateInfo, nullptr, &_vkInstance);
         if (result != VK_SUCCESS)
@@ -104,7 +91,7 @@ namespace DeepEngine::Renderer
     
     bool VulkanInstance::TryEnableExtension(const char* p_extensionName)
     {
-        if (IsExtensionEnabled(_enabledExtensionNames, p_extensionName))
+        if (IsLayerEnabled(p_extensionName))
         {
             LOG_TRACE(_logger, "Trying to enable already enabled \"{0}\" extension!", p_extensionName);
             return true;
@@ -112,12 +99,24 @@ namespace DeepEngine::Renderer
         
         if (IsExtensionAvailable(p_extensionName))
         {
-            LOG_TRACE(_logger, "Add \"{0}\" extension to enable");
+            LOG_TRACE(_logger, "Add \"{0}\" extension to enable", p_extensionName);
             _enabledExtensionNames.push_back(p_extensionName);
             return true;
         }
 
         LOG_ERR(_logger, "Failed to enable \"{0}\" extension!", p_extensionName);
+        return false;
+    }
+
+    bool VulkanInstance::IsLayerEnabled(const char* p_layerName) const
+    {
+        for (int i = 0; i < _enabledExtensionNames.size(); i++)
+        {
+            if (strcmp(_enabledExtensionNames[i], p_layerName) == 0)
+            {
+                return true;
+            }
+        }
         return false;
     }
     

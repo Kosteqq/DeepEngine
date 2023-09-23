@@ -9,15 +9,19 @@ namespace DeepEngine::Renderer
     class VulkanPhysicalLayer
     {
     public:
-        VulkanPhysicalLayer(const VulkanInstance& p_instance, std::shared_ptr<Core::Debug::Logger> p_logger);
+        VulkanPhysicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, VulkanInstance* p_instance);
+        
         bool Init();
 
-    private:
-        VkPhysicalDevice GetBestDevice(const std::vector<VkPhysicalDevice>& p_devices);
-        bool RateDevice(const VkPhysicalDevice& p_device);
+        const VkPhysicalDevice& GetDevice() const
+        { return _physicalDevice; }
 
     private:
-        const VulkanInstance& _instance;
+        const VkPhysicalDevice& GetBestDevice(std::vector<VkPhysicalDevice>& p_devices);
+        uint32_t RateDevice(const VkPhysicalDevice& p_device);
+
+    private:
+        VulkanInstance* _instance = nullptr;
         VkPhysicalDevice _physicalDevice = VK_NULL_HANDLE;
         
         std::shared_ptr<Core::Debug::Logger> _logger;
