@@ -31,7 +31,8 @@ namespace DeepEngine::Renderer
         const VulkanInstance* _instance = nullptr;
         const VulkanPhysicalLayer* _physicalLayer = nullptr;
         const VkSurfaceKHR& _surface;
-        
+        float _queuePriority = 1;
+
         VkDevice _logicalDevice;
         std::unordered_map<uint32_t, VkQueue> _queueMap;
         std::vector<VkQueueFamilyProperties> _availableQueueFamilies;

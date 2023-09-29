@@ -31,7 +31,7 @@ namespace DeepEngine::Renderer
         _availableExtensions = std::vector<VkExtensionProperties>(extensionCount);
         vkEnumerateDeviceExtensionProperties(_physicalDevice, nullptr, &extensionCount, _availableExtensions.data());
         
-        LOG_DEBUG(_logger, "Found Vulkan physical device");
+        LOG_DEBUG(_logger, "Found Vulkan physical device (with {} extensions)", _availableExtensions.size());
         for (int i = 0; i < _availableExtensions.size(); i++)
         {
             LOG_DEBUG(_logger, "{:<45} (v.{}): [{}]",

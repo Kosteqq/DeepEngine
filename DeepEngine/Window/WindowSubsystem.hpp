@@ -21,6 +21,11 @@ namespace DeepEngine
 
         GLFWwindow* GetGlfwWindow() const
         { return _window; }
+
+        void GetFramebufferSize(uint32_t* p_width, uint32_t* p_height) const
+        {
+            return glfwGetFramebufferSize(_window, reinterpret_cast<int*>(p_width), reinterpret_cast<int*>(p_height));
+        }
         
     protected:
         bool Init() override;

@@ -96,8 +96,7 @@ namespace DeepEngine::Renderer
         queueCreateInfo.queueCount = 1;
 
         // TODO (Kostek): Check when its useful
-        float queuePriority = 1.0f;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
+        queueCreateInfo.pQueuePriorities = &_queuePriority;
 
         _createQueuesInfo.push_back(queueCreateInfo);
         _createQueueIds.push_back(p_id);

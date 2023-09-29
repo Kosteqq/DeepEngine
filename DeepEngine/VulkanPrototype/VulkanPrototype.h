@@ -10,6 +10,8 @@
 #include "Instance/VulkanInstance.h"
 #include "Instance/VulkanLogicalLayer.h"
 #include "Instance/VulkanPhysicalLayer.h"
+#include "Instance/VulkanPipeline.h"
+#include "Instance/VulkanSwapChain.h"
 #include "Window/WindowSubsystem.hpp"
 
 namespace DeepEngine::Renderer
@@ -24,6 +26,8 @@ namespace DeepEngine::Renderer
 
         ~VulkanPrototype()
         {
+            _pipeline->Terminate();
+            _swapChain->Terminate();
             // Queue also will be destroy
             _logicalLayer->Terminate();
             // Physical device will be destroy anyway
@@ -32,10 +36,12 @@ namespace DeepEngine::Renderer
             _vulkanInstance->Terminate();
             _vulkanDebug->Terminate();
 
-            delete _vulkanDebug;
-            delete _vulkanInstance;
-            delete _physicalLayer;
+            delete _pipeline;
+            delete _swapChain;
             delete _logicalLayer;
+            delete _physicalLayer;
+            delete _vulkanInstance;
+            delete _vulkanDebug;
         }
 
     protected:
@@ -118,6 +124,18 @@ namespace DeepEngine::Renderer
             }
             FULFIL_MILESTONE(InitializeVulkanLogicalDevice);
 
+            uint32_t width = 0;
+            uint32_t height = 0;
+            _subsystemsManager->GetSubsystem<WindowSubsystem>()->GetFramebufferSize(&width, &height);
+            _swapChain = new VulkanSwapChain(_vulkanLogger, _physicalLayer, _logicalLayer, _surface, width, height);
+            
+            if (!_swapChain->Init())
+            {
+                return false;
+            }
+
+            _pipeline = new VulkanPipeline(_vulkanLogger, _logicalLayer, _swapChain);
+
             return true;
         }
         
@@ -160,6 +178,8 @@ namespace DeepEngine::Renderer
         VulkanInstance* _vulkanInstance;
         VulkanPhysicalLayer* _physicalLayer;
         VulkanLogicalLayer* _logicalLayer;
+        VulkanSwapChain* _swapChain;
+        VulkanPipeline* _pipeline;
         
         std::shared_ptr<Core::Debug::Logger> _vulkanLogger;
 
