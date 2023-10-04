@@ -1,8 +1,12 @@
 #pragma once
 #include <chrono>
-#include <deque>
-#include <iostream>
 #include <fmt/format.h>
+
+#define TIMER(name)                                                                                 \
+    static DeepEngine::Core::Debug::TimerTracker __timerTracker;                                    \
+    DeepEngine::Core::Debug::Timer __timerInstance = __timerTracker.CreateTimer(__FUNCTION__, name) \
+
+#define PRINT_TIMER_SUMMARY() DeepEngine::Core::Debug::TimerTracker::PrintSummary()
 
 namespace DeepEngine::Core::Debug
 {
@@ -11,11 +15,13 @@ namespace DeepEngine::Core::Debug
     class Timer
     {
     public:
-        Timer(const Timer& other) = default;
+        Timer(const Timer& p_other) = default;
         
-        Timer(float* p_durationResult)
-            : _startTime(std::chrono::steady_clock::now()), _durationResult(p_durationResult)
+        Timer(float* p_durationResult, uint64_t* p_totalMilliseconds)
+            : _startTime(std::chrono::steady_clock::now())
         {
+            _durationResult = p_durationResult;
+            _totalMilliseconds = p_totalMilliseconds;
         }
         
         ~Timer()
@@ -24,91 +30,116 @@ namespace DeepEngine::Core::Debug
 
             using namespace std::literals;
             *_durationResult = (endTime - _startTime) / 1ns;
-            *_durationResult /=  1000000.f;
+            *_durationResult /= 1000000.f;
+
+            *_totalMilliseconds += (endTime - _startTime) / 1ms;
         }
 
     private:
         std::chrono::time_point<std::chrono::steady_clock> _startTime;
+        uint64_t* _totalMilliseconds;
         float* _durationResult;
     };
-    
+
     class TimerTracker
     {
     public:
         TimerTracker()
         {
+            std::memset(_durations, 0, sizeof(float) * _durationsLength);
+            _currentDurationIndex = 0;
+            _maxIndex = 0;
+            _totalMilliseconds = 0;
+            
             _trackerInstances.push_back(this);
-            _initialized = false;
         }
 
-        Timer CreateTimer(const std::string& p_funcName)
+        ~TimerTracker()
         {
-            if (!_initialized)
+            delete _funcName;
+            delete _name;
+        }
+
+        Timer CreateTimer(const char* p_funcName, const char* p_name)
+        {
+            if (_funcName == nullptr)
             {
-                _funcName = p_funcName;
-                _initialized = true;
+                _funcName = new char[strlen(p_funcName) + 1];
+                _name = new char[strlen(p_name) + 1];
+
+                strcpy(const_cast<char*>(_funcName), p_funcName);
+                strcpy(const_cast<char*>(_name), p_name);
             }
             
-            _durations.push_back(0);
-            return Timer(&_durations[_durations.size() - 1]);
-        }
+            float* currentDuration = &_durations[_currentDurationIndex];
+            _currentDurationIndex++;
 
+            if (_currentDurationIndex >= _durationsLength)
+            {
+                _currentDurationIndex = 0;
+            }
+            
+            _maxIndex = std::max(_currentDurationIndex, _maxIndex);
+            return Timer(currentDuration, &_totalMilliseconds);
+        }
+        
         static void PrintSummary()
         {
-            fmt::print(
-                "/{0:-^147}\\\n"
-                "{1}\n"
-                "|{0:-^147}|\n",
-                "",
-                fmt::format("| {:^85} | {:^12} | {:^12} | {:^12} | {:^12} |", "FUNCTION", "MIN", "MAX", "AVERAGE", "TOTAL"));
+            std::string summary;
             
             for (int i = 0; i < _trackerInstances.size(); i++)
             {
-                std::cout <<  _trackerInstances[i]->GetTimerSummary() << '\n';
+                summary += _trackerInstances[i]->GetTimerSummary() + '\n';
             }
             
-            fmt::print("\\{:-^147}/\n", "");
+            fmt::print(
+                "/{0:-^147}\\\n"
+                "{1}\n"
+                "|{0:-^147}|\n"
+                "{2}"
+                "\\{0:-^147}/\n",
+                "",
+                fmt::format("| {:^85} | {:^12} | {:^12} | {:^12} | {:^12} |", "FUNCTION", "MIN", "MAX", "AVERAGE", "TOTAL"),
+                summary);
         }
         
     private:
-        std::string GetTimerSummary()
+        std::string GetTimerSummary() const
         {
-            float totalDuration = 0;
             float minDuration = _durations[0];
             float maxDuration = _durations[0];
             
             float averageDuration = 0.f;
             float buffer = 0.f;
             
-            for (int i = 0; i < _durations.size(); i++)
+            for (int i = 0; i < _maxIndex; i++)
             {
                 buffer += _durations[i];
-                totalDuration += _durations[i];
                 minDuration = std::min(minDuration, _durations[i]);
                 maxDuration = std::max(maxDuration, _durations[i]);
 
-                if (i % 100 == 0 || i == _durations.size() - 1)
+                if (i % 100 == 0 || i == _maxIndex - 1)
                 {
-                    averageDuration += buffer / _durations.size();
+                    averageDuration += buffer / _maxIndex;
                     buffer = 0.f;
                 }
             }
 
-            // float avarageDuration = totalDuration / (float)_durations.size();
-            
-            return fmt::format("| {:<85} | {:^10.2f}ms | {:^10.2f}ms | {:^10.2f}ms | {:^10.2f}ms |", _funcName.c_str(),
-                minDuration, maxDuration, averageDuration, totalDuration);
+            return fmt::format("| {:<70} {:>14} | {:^10.2f}ms | {:^10.2f}ms | {:^10.2f}ms | {:^10}ms |",
+                _funcName, _name, minDuration, maxDuration, averageDuration, _totalMilliseconds);
         }
 
     private:
-        bool _initialized;
-        std::string _funcName;
+        const char* _funcName;
+        const char* _name;
+
+        uint64_t _totalMilliseconds;
         
-        std::deque<float> _durations;
+        const uint32_t _durationsLength = 1000;
+        uint32_t _currentDurationIndex;
+        uint32_t _maxIndex;
+        float _durations[1000];
+        
         static std::vector<TimerTracker*> _trackerInstances;
     };
 }
-
-#define TIMER()                                                                                 \
-    static DeepEngine::Core::Debug::TimerTracker __timerTracker;                                \
-    DeepEngine::Core::Debug::Timer __timerInstance = __timerTracker.CreateTimer(__FUNCTION__)   \
