@@ -2,6 +2,7 @@
 #include "Debugs/InitializationTracker.h"
 #include "Architecture/EngineSystem.h"
 #include "Debugs/InitializationMilestone.h"
+#include "Debugs/Timer.h"
 #include "Window/WindowSubsystem.hpp"
 
 
@@ -29,32 +30,37 @@ protected:
     { }
 };
 
+
 int main(int argc, char* argv[])
 {
-    DeepEngine::Core::Debug::Logger::Initialize("Logs/engine.log");
-
-    DEFINE_MILESTONE(FailedMilestone);
-    DEFINE_MILESTONE(FulfiledMilestone);
-    
-    FULFIL_MILESTONE(FulfiledMilestone);
-    FAIL_MILESTONE(FailedMilestone);
-    
-    ENGINE_INFO("Hello World");
-    ENGINE_TRACE("TRACE");
-    ENGINE_DEBUG("DEBUG");
-    ENGINE_INFO("INFO");
-    ENGINE_WARN("WARNING");
-    ENGINE_ERR("ERROR");
-
-    auto subsystemsManager = DeepEngine::Core::Architecture::EngineSubsystemsManager();
-    subsystemsManager.CreateSubsystem<TestSubsystem>(2);
-    subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "fckUnity");
-
-    if (!subsystemsManager.Init())
     {
-        ENGINE_INFO("Failed to initialize subsystems!!");
-        return -1;
+        TIMER("Main");
+        DeepEngine::Core::Debug::Logger::Initialize("Logs/engine.log");
+
+        DEFINE_MILESTONE(FailedMilestone);
+        DEFINE_MILESTONE(FulfiledMilestone);
+        
+        FULFIL_MILESTONE(FulfiledMilestone);
+        FAIL_MILESTONE(FailedMilestone);
+        
+        ENGINE_INFO("Hello World");
+        ENGINE_TRACE("TRACE");
+        ENGINE_DEBUG("DEBUG");
+        ENGINE_INFO("INFO");
+        ENGINE_WARN("WARNING");
+        ENGINE_ERR("ERROR");
+
+        auto subsystemsManager = DeepEngine::Core::Architecture::EngineSubsystemsManager();
+        subsystemsManager.CreateSubsystem<TestSubsystem>(2);
+        subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "fckUnity");
+
+        if (!subsystemsManager.Init())
+        {
+            ENGINE_INFO("Failed to initialize subsystems!!");
+            return -1;
+        }
     }
 
+    PRINT_TIMER_SUMMARY();
     return 0;
 }

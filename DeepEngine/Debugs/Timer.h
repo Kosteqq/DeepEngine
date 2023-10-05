@@ -4,7 +4,7 @@
 
 #define TIMER(name)                                                                                 \
     static DeepEngine::Core::Debug::TimerTracker __timerTracker;                                    \
-    DeepEngine::Core::Debug::Timer __timerInstance = __timerTracker.CreateTimer(__FUNCTION__, name) \
+    DeepEngine::Core::Debug::Timer __timerInstance = __timerTracker.CreateTimer(__func__, name) \
 
 #define PRINT_TIMER_SUMMARY() DeepEngine::Core::Debug::TimerTracker::PrintSummary()
 
@@ -125,7 +125,7 @@ namespace DeepEngine::Core::Debug
                 }
             }
 
-            return fmt::format("| {:<70} {:>14} | {:^10.2f}ms | {:^10.2f}ms | {:^10.2f}ms | {:^10}ms |",
+            return fmt::format("| {:<50} {:>34} | {:^10.2f}ms | {:^10.2f}ms | {:^10.2f}ms | {:^10}ms |",
                 _funcName, _name, minDuration, maxDuration, averageDuration, _totalMilliseconds);
         }
 

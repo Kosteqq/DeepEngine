@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "Debugs/Timer.h"
+
 namespace DeepEngine::Core::Architecture
 {
     class EngineSubsystemsManager;
@@ -43,6 +45,7 @@ namespace DeepEngine::Core::Architecture
         requires std::is_base_of_v<EngineSubsystem, T>
         void CreateSubsystem(Args... p_args)
         {
+            TIMER("Creating submodule");
             auto newSubmodule = new T(std::forward<Args>(p_args)...);
             _subsystems.push_back(reinterpret_cast<EngineSubsystem*>(newSubmodule));
         }
