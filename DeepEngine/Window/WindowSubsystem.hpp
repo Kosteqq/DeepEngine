@@ -4,12 +4,18 @@
 #include <string>
 #include <GLFW/glfw3.h>
 #include "Architecture/EngineSystem.h"
+#include "Architecture/EngineEvents.h"
 
 namespace DeepEngine
 {
-    class WindowSubsystem : public Core::Architecture::EngineSubsystem
     class WindowSubsystem : Architecture::EngineSubsystem, Architecture::EventListener<Events::OnWindowResized>
     {
+    protected:
+        bool EventHandler(const Events::OnWindowResized* p_event) override
+        {
+            INFO("Window resized {}x{}", p_event->Width, p_event->Height);
+            return false;
+        }
         
     public:
         
@@ -22,8 +28,6 @@ namespace DeepEngine
         void Tick() override {}
         
     private:
-        
-        
         static void ErrorCallbackHandler(int error, const char* description);
         static void WindowResizedHandler(GLFWwindow* p_window, int p_width, int p_height);
 

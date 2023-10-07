@@ -1,14 +1,18 @@
 #pragma once
+#include <iostream>
+#include <functional>
+
 #include "Debugs/InitializationMilestone.h"
 #include "Debugs/Logger.h"
+#include "Debugs/Timing.h"
+#include "Events.h"
 
 #include <memory>
 #include <type_traits>
 #include <vector>
 
-#include "Debugs/Timer.h"
 
-namespace DeepEngine::Core::Architecture
+namespace DeepEngine::Architecture
 {
     class EngineSubsystemsManager;
 
@@ -25,6 +29,11 @@ namespace DeepEngine::Core::Architecture
         virtual bool Init() = 0;
         virtual void Destroy() = 0;
         virtual void Tick() = 0;
+
+    private:
+        void BindFunctions()
+        {
+        }
         
     protected:
         std::shared_ptr<Debug::Logger> _subsystemLogger;
