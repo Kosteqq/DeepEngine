@@ -8,6 +8,7 @@
 namespace DeepEngine
 {
     class WindowSubsystem : public Core::Architecture::EngineSubsystem
+    class WindowSubsystem : Architecture::EngineSubsystem, Architecture::EventListener<Events::OnWindowResized>
     {
         
     public:

@@ -2,11 +2,11 @@
 #include "Debugs/InitializationTracker.h"
 #include "Architecture/EngineSystem.h"
 #include "Debugs/InitializationMilestone.h"
-#include "Debugs/Timer.h"
+#include "Debugs\Timing.h"
 #include "Window/WindowSubsystem.hpp"
 
 
-class TestSubsystem : public DeepEngine::Core::Architecture::EngineSubsystem
+class TestSubsystem : public DeepEngine::Architecture::EngineSubsystem
 {
 public:
     TestSubsystem(int x) : EngineSubsystem("Test Subsystem")
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 {
     {
         TIMER("Main");
-        DeepEngine::Core::Debug::Logger::Initialize("Logs/engine.log");
+        DeepEngine::Debug::Logger::Initialize("Logs/engine.log");
 
         DEFINE_MILESTONE(FailedMilestone);
         DEFINE_MILESTONE(FulfiledMilestone);
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
         ENGINE_WARN("WARNING");
         ENGINE_ERR("ERROR");
 
-        auto subsystemsManager = DeepEngine::Core::Architecture::EngineSubsystemsManager();
+        auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
         subsystemsManager.CreateSubsystem<TestSubsystem>(2);
         subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "fckUnity");
 

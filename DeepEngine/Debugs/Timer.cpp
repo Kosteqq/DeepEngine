@@ -1,6 +1,6 @@
-#include "Timer.h"
+#include "Timing.h"
 
-namespace DeepEngine::Core::Debug
+namespace DeepEngine::Debug
 {
     std::vector<TimerTracker*> TimerTracker::_trackerInstances;
 }

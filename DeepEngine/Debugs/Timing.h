@@ -3,12 +3,12 @@
 #include <fmt/format.h>
 
 #define TIMER(name)                                                                                 \
-    static DeepEngine::Core::Debug::TimerTracker __timerTracker;                                    \
-    DeepEngine::Core::Debug::Timer __timerInstance = __timerTracker.CreateTimer(__func__, name) \
+    static DeepEngine::Debug::TimerTracker __timerTracker;                                    \
+    DeepEngine::Debug::Timer __timerInstance = __timerTracker.CreateTimer(__func__, name) \
 
-#define PRINT_TIMER_SUMMARY() DeepEngine::Core::Debug::TimerTracker::PrintSummary()
+#define PRINT_TIMER_SUMMARY() DeepEngine::Debug::TimerTracker::PrintSummary()
 
-namespace DeepEngine::Core::Debug
+namespace DeepEngine::Debug
 {
     class Timer;
     

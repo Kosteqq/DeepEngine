@@ -4,7 +4,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
-namespace DeepEngine::Core::Debug
+namespace DeepEngine::Debug
 {
 
     class Logger
@@ -37,11 +37,11 @@ namespace DeepEngine::Core::Debug
     
 }
 
-#define ENGINE_TRACE(...) SPDLOG_LOGGER_TRACE(DeepEngine::Core::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
-#define ENGINE_DEBUG(...) SPDLOG_LOGGER_DEBUG(DeepEngine::Core::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
-#define ENGINE_INFO(...) SPDLOG_LOGGER_INFO(DeepEngine::Core::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
-#define ENGINE_WARN(...) SPDLOG_LOGGER_WARN(DeepEngine::Core::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
-#define ENGINE_ERR(...) SPDLOG_LOGGER_ERROR(DeepEngine::Core::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
+#define ENGINE_TRACE(...) SPDLOG_LOGGER_TRACE(DeepEngine::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
+#define ENGINE_DEBUG(...) SPDLOG_LOGGER_DEBUG(DeepEngine::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
+#define ENGINE_INFO(...) SPDLOG_LOGGER_INFO(DeepEngine::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
+#define ENGINE_WARN(...) SPDLOG_LOGGER_WARN(DeepEngine::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
+#define ENGINE_ERR(...) SPDLOG_LOGGER_ERROR(DeepEngine::Debug::Logger::GetBaseEngineLogger()->GetLogger(), __VA_ARGS__)
 
 #define LOG_TRACE(logger, ...) SPDLOG_LOGGER_TRACE(logger->GetLogger(), __VA_ARGS__)
 #define LOG_DEBUG(logger, ...) SPDLOG_LOGGER_DEBUG(logger->GetLogger(), __VA_ARGS__)
