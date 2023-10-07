@@ -1,6 +1,6 @@
 #include "EngineSystem.h"
 
-namespace DeepEngine::Core::Architecture
+namespace DeepEngine::Architecture
 {
     EngineSubsystemsManager::EngineSubsystemsManager() : _subsystemsMap(16)
     {
@@ -30,6 +30,7 @@ namespace DeepEngine::Core::Architecture
                 return false;
             }
             _subsystems[i]->_initializeMilestone.MarkFulfilled();
+            _subsystems[i]->BindFunctions();
         }
         return true;
     }
@@ -47,7 +48,4 @@ namespace DeepEngine::Core::Architecture
             _subsystems[i]->Tick();
         }
     }
-
-
-
 }

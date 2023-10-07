@@ -62,6 +62,12 @@ namespace DeepEngine
 
         INFO("Initialized with success");
 
+        Events::OnWindowResized event;
+        event.Width = 1920;
+        event.Height = 1080;
+        
+        Architecture::PublishEvent(event);
+
         return true;
     }
     

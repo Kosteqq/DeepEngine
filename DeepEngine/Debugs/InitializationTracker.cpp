@@ -3,7 +3,7 @@
 
 #include <fmt/format.h>
 
-namespace DeepEngine::Core::Debug
+namespace DeepEngine::Debug
 {
     InitializationTracker::InitializationTracker() : _milestones(32)
     { }

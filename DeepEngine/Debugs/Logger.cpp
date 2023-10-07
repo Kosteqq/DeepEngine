@@ -1,6 +1,6 @@
 #include "Logger.h"
 
-namespace DeepEngine::Core::Debug
+namespace DeepEngine::Debug
 {
     std::shared_ptr<Logger> Logger::_engineLogger = nullptr;
     std::shared_ptr<spdlog::sinks::stdout_color_sink_st> Logger::_consoleSink = nullptr;

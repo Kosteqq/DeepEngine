@@ -1,13 +1,19 @@
 #pragma once
+#include <iostream>
+#include <functional>
+
 #include "Debugs/InitializationMilestone.h"
 #include "Debugs/Logger.h"
+#include "Debugs/Timing.h"
+#include "Events.h"
 
 #include <memory>
 #include <typeindex>
 #include <type_traits>
 #include <vector>
 
-namespace DeepEngine::Core::Architecture
+
+namespace DeepEngine::Architecture
 {
     class EngineSubsystemsManager;
 
@@ -66,24 +72,9 @@ namespace DeepEngine::Core::Architecture
         requires std::is_base_of_v<EngineSubsystem, T>
         void CreateSubsystem(Args... p_args)
         {
-            auto newSubmodule = reinterpret_cast<EngineSubsystem*>(new T(std::forward<Args>(p_args)...));
-            newSubmodule->_subsystemsManager = this;
-            _subsystems.push_back((newSubmodule));
-            _subsystemsMap[typeid(T)] = newSubmodule;
-        }
-
-        template <typename T>
-        requires std::is_base_of_v<EngineSubsystem, T>
-        const SubsystemPtr<T> GetSubsystem()
-        {
-            return SubsystemPtr<T>((T*)_subsystemsMap[typeid(T)]);
-        }
-
-        template <typename T>
-        requires std::is_base_of_v<EngineSubsystem, T>
-        const SubsystemPtr<T> GetSubsystem(const std::type_index p_type)
-        {
-            return SubsystemPtr<T>((T*)_subsystemsMap[p_type]);
+            TIMER("Creating submodule");
+            auto newSubmodule = new T(std::forward<Args>(p_args)...);
+            _subsystems.push_back(reinterpret_cast<EngineSubsystem*>(newSubmodule));
         }
 
     private:
