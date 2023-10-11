@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#define NOMINMAX
 #include <vulkan/vulkan_core.h>
 
 #include "VulkanDebug.h"
@@ -12,7 +13,7 @@ namespace DeepEngine::Renderer
     class VulkanInstance
     {
     public:
-        VulkanInstance(std::shared_ptr<Core::Debug::Logger> p_logger);
+        VulkanInstance(std::shared_ptr<Debug::Logger> p_logger);
         ~VulkanInstance();
         
         bool Init(VulkanDebug* p_vulkanDebug);
@@ -44,6 +45,6 @@ namespace DeepEngine::Renderer
         std::vector<VkExtensionProperties> _availableExtensions;
         std::vector<const char*> _enabledExtensionNames;
         
-        std::shared_ptr<Core::Debug::Logger> _logger;
+        std::shared_ptr<Debug::Logger> _logger;
   };
 }

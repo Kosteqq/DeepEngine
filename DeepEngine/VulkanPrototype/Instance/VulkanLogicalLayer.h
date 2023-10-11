@@ -11,7 +11,7 @@ namespace DeepEngine::Renderer
     class VulkanLogicalLayer
     {
     public:
-        VulkanLogicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, const VulkanPhysicalLayer* p_physicalLayer,
+        VulkanLogicalLayer(std::shared_ptr<Debug::Logger> p_logger, const VulkanPhysicalLayer* p_physicalLayer,
             const VkSurfaceKHR& p_surface);
         ~VulkanLogicalLayer();
 
@@ -40,6 +40,6 @@ namespace DeepEngine::Renderer
         std::vector<VkDeviceQueueCreateInfo> _createQueuesInfo;
         std::vector<uint32_t> _createQueueIds;
         
-        std::shared_ptr<Core::Debug::Logger> _logger;
+        std::shared_ptr<Debug::Logger> _logger;
     };
 }

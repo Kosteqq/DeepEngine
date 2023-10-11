@@ -1,6 +1,7 @@
 #pragma once
 #include <fstream>
 
+#define NOMINMAX
 #include <vulkan/vulkan.h>
 #include <fmt/format.h>
 
@@ -10,22 +11,25 @@
 #include "Instance/VulkanInstance.h"
 #include "Instance/VulkanLogicalLayer.h"
 #include "Instance/VulkanPhysicalLayer.h"
-#include "Instance/VulkanPipeline.h"
+#include "Instance/VulkanRenderPass.h"
+#include "Instance\VulkanPipelineLayout.h"
 #include "Instance/VulkanSwapChain.h"
 #include "Window/WindowSubsystem.hpp"
 
 namespace DeepEngine::Renderer
 {
-    class VulkanPrototype : public Core::Architecture::EngineSubsystem
+    class VulkanPrototype : public Architecture::EngineSubsystem, Architecture::EventListener<Events::OnCreateGlfwContext>
     {
     public:
         VulkanPrototype() : EngineSubsystem("Vulkan Renderer Prot")
         {
-            _vulkanLogger = Core::Debug::Logger::CreateLoggerInstance("VULKAN");
+            _vulkanLogger = Debug::Logger::CreateLoggerInstance("VULKAN");
         }
 
         ~VulkanPrototype()
         {
+            _pipeline->Terminate();
+            _renderPass->Terminate();
             _pipeline->Terminate();
             _swapChain->Terminate();
             // Queue also will be destroy
@@ -37,11 +41,19 @@ namespace DeepEngine::Renderer
             _vulkanDebug->Terminate();
 
             delete _pipeline;
+            delete _renderPass;
             delete _swapChain;
             delete _logicalLayer;
             delete _physicalLayer;
             delete _vulkanInstance;
             delete _vulkanDebug;
+        }
+
+    protected:
+        bool EventHandler(const Events::OnCreateGlfwContext* p_event) override
+        {
+            _glfwWindow = p_event->GLFWWindow;
+            return false;
         }
 
     protected:
@@ -88,9 +100,12 @@ namespace DeepEngine::Renderer
             FULFIL_MILESTONE(CreateVulkanInstance);
 
             // DIRTY
-            auto glfwWindow = _subsystemsManager->GetSubsystem<WindowSubsystem>()->GetGlfwWindow();
-
-            if (glfwCreateWindowSurface(_vulkanInstance->GetInstance(), glfwWindow, nullptr, &_surface))
+            if (_glfwWindow == nullptr)
+            {
+                ERR("GLFW context is null but should be already created!");
+            }
+            
+            if (glfwCreateWindowSurface(_vulkanInstance->GetInstance(), _glfwWindow, nullptr, &_surface))
             {
                 return false;
             }
@@ -126,7 +141,7 @@ namespace DeepEngine::Renderer
 
             uint32_t width = 0;
             uint32_t height = 0;
-            _subsystemsManager->GetSubsystem<WindowSubsystem>()->GetFramebufferSize(&width, &height);
+            // _subsystemsManager->GetSubsystem<WindowSubsystem>()->GetFramebufferSize(&width, &height);
             _swapChain = new VulkanSwapChain(_vulkanLogger, _physicalLayer, _logicalLayer, _surface, width, height);
             
             if (!_swapChain->Init())
@@ -134,7 +149,19 @@ namespace DeepEngine::Renderer
                 return false;
             }
 
-            _pipeline = new VulkanPipeline(_vulkanLogger, _logicalLayer, _swapChain);
+            _renderPass = new VulkanRenderPass(_vulkanLogger, _logicalLayer, _swapChain);
+
+            if (!_renderPass->Initialize())
+            {
+                return false;
+            }
+
+            _pipeline = new VulkanPipeline(_vulkanLogger, _logicalLayer, _swapChain, _renderPass);
+
+            if (!_pipeline->Initialize())
+            {
+                return false;
+            }
 
             return true;
         }
@@ -172,6 +199,7 @@ namespace DeepEngine::Renderer
 
     private:
         VkSurfaceKHR _surface;
+        GLFWwindow* _glfwWindow;
 
     private:
         VulkanDebug* _vulkanDebug;
@@ -179,9 +207,10 @@ namespace DeepEngine::Renderer
         VulkanPhysicalLayer* _physicalLayer;
         VulkanLogicalLayer* _logicalLayer;
         VulkanSwapChain* _swapChain;
+        VulkanRenderPass* _renderPass;
         VulkanPipeline* _pipeline;
         
-        std::shared_ptr<Core::Debug::Logger> _vulkanLogger;
+        std::shared_ptr<Debug::Logger> _vulkanLogger;
 
     private:
         DEFINE_MILESTONE(CreateVulkanInstance);

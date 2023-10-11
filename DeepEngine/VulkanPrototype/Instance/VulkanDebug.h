@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#define NOMINMAX
 #include <vulkan/vulkan.h>
 
 #include "Debugs/Logger.h"
@@ -9,7 +10,7 @@ namespace DeepEngine::Renderer
     class VulkanDebug
     {
     public:
-        VulkanDebug(std::shared_ptr<Core::Debug::Logger> p_vulkanLogger,
+        VulkanDebug(std::shared_ptr<Debug::Logger> p_vulkanLogger,
             VkDebugUtilsMessageSeverityFlagsEXT p_logLevels, VkDebugUtilsMessageTypeFlagsEXT p_logTypes);
         ~VulkanDebug();
 
@@ -49,7 +50,7 @@ namespace DeepEngine::Renderer
         std::vector<const char*> _enabledLayers; 
         std::vector<VkLayerProperties> _availableLayers; 
 
-        std::shared_ptr<Core::Debug::Logger> _debugVkLogger;
-        std::shared_ptr<Core::Debug::Logger> _vulkanLogger;
+        std::shared_ptr<Debug::Logger> _debugVkLogger;
+        std::shared_ptr<Debug::Logger> _vulkanLogger;
     };
 }

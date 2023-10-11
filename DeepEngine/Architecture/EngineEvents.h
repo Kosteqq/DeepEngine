@@ -15,5 +15,10 @@ namespace DeepEngine::Events
         uint32_t Height;
     };
 
+    DECLARE_EVENT(OnCreateGlfwContext)
+    {
+        GLFWwindow* GLFWWindow;
+    };
+
 }
     

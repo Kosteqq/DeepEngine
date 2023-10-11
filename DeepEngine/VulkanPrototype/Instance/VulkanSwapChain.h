@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <limits>
 #include <algorithm>
+#define NOMINMAX
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_enum_string_helper.h>
 
@@ -13,7 +14,7 @@ namespace DeepEngine::Renderer
     class VulkanSwapChain
     {
     public:
-        VulkanSwapChain(std::shared_ptr<Core::Debug::Logger> p_logger,
+        VulkanSwapChain(std::shared_ptr<Debug::Logger> p_logger,
             const VulkanPhysicalLayer* p_physicalLayer, const VulkanLogicalLayer* p_logicalLayer,
             const VkSurfaceKHR& p_surface, uint32_t p_width, uint32_t p_height)
             : _logger(p_logger), _physicalLayer(p_physicalLayer), _logicalLayer(p_logicalLayer),
@@ -111,7 +112,7 @@ namespace DeepEngine::Renderer
         {
             for (uint32_t i = 0; i < p_availableFormats.size(); i++)
             {
-                if (p_availableFormats[i].format == VK_FORMAT_R8G8B8A8_SRGB
+                if (p_availableFormats[i].format == _imageFormat
                     && p_availableFormats[i].colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
                 {
                     return p_availableFormats[i];
@@ -177,7 +178,12 @@ namespace DeepEngine::Renderer
         VkExtent2D GetExtent() const
         { return _extent; }
 
+        VkFormat GetImageFormat() const
+        { return _imageFormat; }
+
     private:
+        const VkFormat _imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+        
         uint32_t _width;
         uint32_t _height;
         VkSwapchainKHR _swapChain;
@@ -188,7 +194,7 @@ namespace DeepEngine::Renderer
         VkPresentModeKHR _present;
         VkExtent2D _extent;
 
-        std::shared_ptr<Core::Debug::Logger> _logger;
+        std::shared_ptr<Debug::Logger> _logger;
         const VulkanPhysicalLayer* _physicalLayer;
         const VulkanLogicalLayer* _logicalLayer;
         const VkSurfaceKHR& _surface;

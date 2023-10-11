@@ -2,7 +2,7 @@
 
 namespace DeepEngine::Renderer
 {
-    VulkanPhysicalLayer::VulkanPhysicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, VulkanInstance* p_instance)
+    VulkanPhysicalLayer::VulkanPhysicalLayer(std::shared_ptr<Debug::Logger> p_logger, VulkanInstance* p_instance)
         : _logger(p_logger), _instance(p_instance)
     { }
 

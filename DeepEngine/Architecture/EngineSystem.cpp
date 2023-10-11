@@ -30,7 +30,6 @@ namespace DeepEngine::Architecture
                 return false;
             }
             _subsystems[i]->_initializeMilestone.MarkFulfilled();
-            _subsystems[i]->BindFunctions();
         }
         return true;
     }

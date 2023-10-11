@@ -1,4 +1,5 @@
 #pragma once
+#define NOMINMAX
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
@@ -11,15 +12,8 @@
 
 namespace DeepEngine
 {
-    class WindowSubsystem : Architecture::EngineSubsystem, Architecture::EventListener<Events::OnWindowResized>
+    class WindowSubsystem : Architecture::EngineSubsystem
     {
-    protected:
-        bool EventHandler(const Events::OnWindowResized* p_event) override
-        {
-            INFO("Window resized {}x{}", p_event->Width, p_event->Height);
-            return false;
-        }
-        
     public:
         WindowSubsystem(int p_width, int p_height, const char*);
         ~WindowSubsystem();
@@ -31,6 +25,9 @@ namespace DeepEngine
         {
             return glfwGetFramebufferSize(_window, reinterpret_cast<int*>(p_width), reinterpret_cast<int*>(p_height));
         }
+
+        bool WantsToExit()
+        { return _wantToExit; }
         
     protected:
         bool Init() override;
@@ -43,6 +40,8 @@ namespace DeepEngine
 
         int _width;
         int _height;
+
+        bool _wantToExit = false;
 
         const char* _windowName;
         GLFWwindow* _window;

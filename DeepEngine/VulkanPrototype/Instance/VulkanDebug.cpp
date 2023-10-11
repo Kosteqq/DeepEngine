@@ -42,11 +42,11 @@ namespace DeepEngine::Renderer
         return false;
     }
     
-    VulkanDebug::VulkanDebug(std::shared_ptr<Core::Debug::Logger> p_vulkanLogger,
+    VulkanDebug::VulkanDebug(std::shared_ptr<Debug::Logger> p_vulkanLogger,
             VkDebugUtilsMessageSeverityFlagsEXT p_logLevels, VkDebugUtilsMessageTypeFlagsEXT p_logTypes)
                 : _vulkanLogger(p_vulkanLogger)
     {
-        _debugVkLogger = Core::Debug::Logger::CreateLoggerInstance("Vulkan Callback");
+        _debugVkLogger = Debug::Logger::CreateLoggerInstance("Vulkan Callback");
 
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -167,19 +167,19 @@ namespace DeepEngine::Renderer
             break;
         }
         
-        if (p_messageLevel >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+        if (p_messageLevel == VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
         {
             LOG_TRACE(instance->_debugVkLogger, CALLBACK_FORMAT, messageType, p_callbackData->pMessage);
         }
-        else if (p_messageLevel >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+        else if (p_messageLevel == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
         {
             LOG_INFO(instance->_debugVkLogger, CALLBACK_FORMAT, messageType, p_callbackData->pMessage);
         }
-        else if (p_messageLevel >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+        else if (p_messageLevel == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
         {
             LOG_WARN(instance->_debugVkLogger, CALLBACK_FORMAT, messageType, p_callbackData->pMessage);
         }
-        else if (p_messageLevel >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+        else if (p_messageLevel == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
         {
             LOG_ERR(instance->_debugVkLogger, CALLBACK_FORMAT, messageType, p_callbackData->pMessage);
         }

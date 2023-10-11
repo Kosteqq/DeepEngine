@@ -4,7 +4,7 @@
 
 namespace DeepEngine::Renderer
 {
-    VulkanLogicalLayer::VulkanLogicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, const VulkanPhysicalLayer* p_physicalLayer,
+    VulkanLogicalLayer::VulkanLogicalLayer(std::shared_ptr<Debug::Logger> p_logger, const VulkanPhysicalLayer* p_physicalLayer,
             const VkSurfaceKHR& p_surface)
         : _logger(p_logger), _physicalLayer(p_physicalLayer), _surface(p_surface)
     {

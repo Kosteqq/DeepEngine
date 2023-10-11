@@ -1,6 +1,7 @@
 #pragma once
 #include <fstream>
 #include <memory>
+#define NOMINMAX
 #include <vulkan/vulkan.h>
 
 #include "VulkanLogicalLayer.h"
@@ -14,9 +15,17 @@ namespace DeepEngine::Renderer
     class VulkanPipeline
     {
     public:
-        VulkanPipeline(std::shared_ptr<Core::Debug::Logger> p_logger, const VulkanLogicalLayer* p_logicalLayer,
-            const VulkanSwapChain* p_swapchain)
-            : _logger(p_logger), _logicalLayer(p_logicalLayer), _swapchain(p_swapchain)
+        VulkanPipeline(std::shared_ptr<Debug::Logger> p_logger, const VulkanLogicalLayer* p_logicalLayer,
+            const VulkanSwapChain* p_swapchain, const VulkanRenderPass* p_renderPass)
+            : _logger(p_logger), _logicalLayer(p_logicalLayer), _swapchain(p_swapchain), _renderPass(p_renderPass)
+        { }
+
+        ~VulkanPipeline()
+        {
+            Terminate();
+        }
+
+        bool Initialize()
         {
             VkShaderModule vertModule;
             CreateShaderModule("../DeepEngine/VulkanPrototype/Instance/Shader/vert.spv", &vertModule);
@@ -132,28 +141,65 @@ namespace DeepEngine::Renderer
 
             const auto result = vkCreatePipelineLayout(_logicalLayer->GetLogicalDevice(), &pipelineLayoutCreateInfo,
             nullptr, &_pipelineLayout);
+
+            if (result != VK_SUCCESS)
+            {
+                vkDestroyShaderModule(_logicalLayer->GetLogicalDevice(), vertModule, nullptr);
+                vkDestroyShaderModule(_logicalLayer->GetLogicalDevice(), fragModule, nullptr);
+                LOG_ERR(_logger, "Failed to create pipeline layout with returned result {}", string_VkResult(result));
+                return false;
+            }
+
+            const std::vector<VkPipelineShaderStageCreateInfo> stages = {
+                vertCreateInfo,
+                fragCreateInfo,
+            };
+            
+            VkGraphicsPipelineCreateInfo pipelineInfo { };
+            pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+            pipelineInfo.stageCount = 2;
+            pipelineInfo.pStages = stages.data();
+
+            pipelineInfo.pVertexInputState = &vertexBufferCreateInfo;
+            pipelineInfo.pInputAssemblyState = &inputAssemblyCreateInfo;
+            pipelineInfo.pViewportState = &viewportState;
+            pipelineInfo.pRasterizationState = &rasterizerCreateInfo;
+            pipelineInfo.pMultisampleState = &multisampleCreateInfo;
+            pipelineInfo.pDepthStencilState = nullptr; // optional
+            pipelineInfo.pColorBlendState = &colorBlendingCreateInfo;
+            pipelineInfo.pDynamicState = &dynamicState;
+            
+            pipelineInfo.layout = _pipelineLayout;
+            
+            pipelineInfo.renderPass = _renderPass->GetVulkanRenderPass();
+            pipelineInfo.subpass = 0;
+
+            pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+            pipelineInfo.basePipelineIndex = -1;
+
+            const auto result2 = vkCreateGraphicsPipelines(_logicalLayer->GetLogicalDevice(),
+                VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline);
             
             vkDestroyShaderModule(_logicalLayer->GetLogicalDevice(), vertModule, nullptr);
             vkDestroyShaderModule(_logicalLayer->GetLogicalDevice(), fragModule, nullptr);
 
-            if (result != VK_SUCCESS)
+            if (result2 != VK_SUCCESS)
             {
                 LOG_ERR(_logger, "Failed to create pipeline with returned result {}", string_VkResult(result));
-                return;
+                return false;
             }
 
-            _initialized = true;
-        }
+            LOG_INFO(_logger, "Created vulkan pipeline");
 
-        ~VulkanPipeline()
-        {
-            Terminate();
+            _initialized = true;
+            return true;
         }
 
         void Terminate()
         {
             if (_initialized)
             {
+                vkDestroyPipeline(_logicalLayer->GetLogicalDevice(), _pipeline, nullptr);
                 vkDestroyPipelineLayout(_logicalLayer->GetLogicalDevice(), _pipelineLayout, nullptr);
                 _initialized = false;
             }
@@ -208,11 +254,14 @@ namespace DeepEngine::Renderer
 
     private:
         VkPipelineLayout _pipelineLayout;
+        VkPipeline _pipeline;
+        
         bool _initialized;
 
         const VulkanLogicalLayer* _logicalLayer;
         const VulkanSwapChain* _swapchain;
-        std::shared_ptr<Core::Debug::Logger> _logger;
+        const VulkanRenderPass* _renderPass;
+        std::shared_ptr<Debug::Logger> _logger;
     };
     
 }

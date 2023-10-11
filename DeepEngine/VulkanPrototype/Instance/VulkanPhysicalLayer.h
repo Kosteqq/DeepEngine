@@ -2,6 +2,7 @@
 #include "Debugs/Logger.h"
 #include "VulkanInstance.h"
 
+#define NOMINMAX
 #include <vulkan/vulkan.h>
 
 namespace DeepEngine::Renderer
@@ -9,7 +10,7 @@ namespace DeepEngine::Renderer
     class VulkanPhysicalLayer
     {
     public:
-        VulkanPhysicalLayer(std::shared_ptr<Core::Debug::Logger> p_logger, VulkanInstance* p_instance);
+        VulkanPhysicalLayer(std::shared_ptr<Debug::Logger> p_logger, VulkanInstance* p_instance);
         
         bool Init();
 
@@ -40,6 +41,6 @@ namespace DeepEngine::Renderer
         std::vector<VkExtensionProperties> _availableExtensions;
         std::vector<const char*> _enabledExtensionNames;
         
-        std::shared_ptr<Core::Debug::Logger> _logger;
+        std::shared_ptr<Debug::Logger> _logger;
     };
 }

@@ -125,8 +125,8 @@ namespace DeepEngine::Debug
                 }
             }
 
-            return fmt::format("| {:<50} {:>34} | {:^10.2f}ms | {:^10.2f}ms | {:^10.2f}ms | {:^10}ms |",
-                _funcName, _name, minDuration, maxDuration, averageDuration, _totalMilliseconds);
+            return fmt::format("| {:<64} {:>20} | {:^10.2f}ms | {:^10.2f}ms | {:^10.2f}ms | {:^10}ms |",
+                _name, _funcName, minDuration, maxDuration, averageDuration, _totalMilliseconds);
         }
 
     private:

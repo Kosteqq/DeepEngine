@@ -9,7 +9,7 @@ namespace DeepEngine::Renderer
     {
     }
     
-    VulkanInstance::VulkanInstance(std::shared_ptr<Core::Debug::Logger> p_logger)
+    VulkanInstance::VulkanInstance(std::shared_ptr<Debug::Logger> p_logger)
         : _logger(p_logger)
     {
         uint32_t extensionsCount = 0;

@@ -70,11 +70,12 @@ namespace DeepEngine::Architecture
     public:
         template <typename T, class... Args>
         requires std::is_base_of_v<EngineSubsystem, T>
-        void CreateSubsystem(Args... p_args)
+        T* CreateSubsystem(Args... p_args)
         {
-            TIMER("Creating submodule");
+            TIMER(fmt::format("Creating submodule: \"{}\"", typeid(T).name()).c_str());
             auto newSubmodule = new T(std::forward<Args>(p_args)...);
             _subsystems.push_back(reinterpret_cast<EngineSubsystem*>(newSubmodule));
+            return newSubmodule; 
         }
 
     private:

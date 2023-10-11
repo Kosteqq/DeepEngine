@@ -3,8 +3,6 @@
 
 namespace DeepEngine
 {
-    bool WindowSubsystem::WantsToExit = false; 
-  
     WindowSubsystem::WindowSubsystem(int p_width, int p_height, const char* p_name)
         : EngineSubsystem("Window Subsystem"), _width{p_width}, _height{p_height}, _windowName{p_name}
     {
@@ -60,6 +58,10 @@ namespace DeepEngine
         glfwSetWindowSizeCallback(_window, WindowResizedHandler);
         glfwSetWindowUserPointer(_window, this);
 
+        Events::OnCreateGlfwContext windowEvent;
+        windowEvent.GLFWWindow = _window;
+        Architecture::PublishEvent(windowEvent);
+        
         INFO("Initialized with success");
 
         Events::OnWindowResized event;
@@ -76,7 +78,11 @@ namespace DeepEngine
         glfwPollEvents();
         if (glfwWindowShouldClose(_window))
         {
-            WantsToExit = true;
+            if (!_wantToExit)
+            {
+                _wantToExit = true;
+                Architecture::PublishEvent(Events::OnCloseRequested());
+            }
         }
     }
 }
