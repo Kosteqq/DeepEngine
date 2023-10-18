@@ -7,6 +7,7 @@
 
 #include "Debugs/Logger.h"
 #include "Architecture/EngineSystem.h"
+#include "Instance/VulkanCommandPool.h"
 #include "Instance/VulkanDebug.h"
 #include "Instance/VulkanInstance.h"
 #include "Instance/VulkanLogicalLayer.h"
@@ -28,6 +29,13 @@ namespace DeepEngine::Renderer
 
         ~VulkanPrototype()
         {
+            _commandPool->Terminate();
+            
+            for (auto framebuffer : _swapChainFramebuffers)
+                {
+                    vkDestroyFramebuffer(_logicalLayer->GetLogicalDevice(), framebuffer, nullptr);
+            }
+            
             _pipeline->Terminate();
             _renderPass->Terminate();
             _pipeline->Terminate();
@@ -40,6 +48,7 @@ namespace DeepEngine::Renderer
             _vulkanInstance->Terminate();
             _vulkanDebug->Terminate();
 
+            delete _commandPool;
             delete _pipeline;
             delete _renderPass;
             delete _swapChain;
@@ -139,11 +148,9 @@ namespace DeepEngine::Renderer
             }
             FULFIL_MILESTONE(InitializeVulkanLogicalDevice);
 
-            uint32_t width = 0;
-            uint32_t height = 0;
-            // _subsystemsManager->GetSubsystem<WindowSubsystem>()->GetFramebufferSize(&width, &height);
+            uint32_t width = 800;
+            uint32_t height = 600;
             _swapChain = new VulkanSwapChain(_vulkanLogger, _physicalLayer, _logicalLayer, _surface, width, height);
-            
             if (!_swapChain->Init())
             {
                 return false;
@@ -163,11 +170,76 @@ namespace DeepEngine::Renderer
                 return false;
             }
 
+            CreateFramebuffers();
+
+            _commandPool = new VulkanCommandPool(_vulkanLogger, _logicalLayer);
+            if (!_commandPool->Init())
+            {
+                return false;
+            }
+
             return true;
         }
         
         void Tick() override
         {
+            const auto fence = _commandPool->GetInFlightFence();
+            
+            vkWaitForFences(_logicalLayer->GetLogicalDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+            vkResetFences(_logicalLayer->GetLogicalDevice(), 1, &fence);
+
+            uint32_t imageIndex;
+            vkAcquireNextImageKHR(
+                _logicalLayer->GetLogicalDevice(),
+                _swapChain->GetSwapChain(),
+                UINT64_MAX,
+                _commandPool->GetImageAvailableSemaphore(),
+                VK_NULL_HANDLE,
+                &imageIndex);
+
+
+            _commandPool->RecordCommandBuffer(_swapChainFramebuffers[imageIndex], _renderPass, _swapChain, _pipeline);
+
+            // those two correlates with each other 
+            VkSemaphore waitSemaphores[] = { _commandPool->GetImageAvailableSemaphore() };
+            VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+            
+            const auto commandBuff = _commandPool->GetCommandBuffer();
+            
+            VkSemaphore finishSemaphores[] = { _commandPool->GetRenderFinishedSemaphore() };
+            
+            VkSubmitInfo submitInfo { };
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.waitSemaphoreCount = 1;
+            submitInfo.pWaitSemaphores = waitSemaphores;
+            submitInfo.pWaitDstStageMask = waitStages;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &commandBuff;
+            submitInfo.signalSemaphoreCount = 1;
+            submitInfo.pSignalSemaphores = finishSemaphores;
+
+            auto result = vkQueueSubmit(_logicalLayer->GetGraphicsQueue(0), 1, &submitInfo, fence);
+            if (result != VK_SUCCESS)
+            {
+                LOG_ERR(_vulkanLogger, "Failed to submit draw command with returned result {}", string_VkResult(result));
+            }
+
+            VkSwapchainKHR swapChains[] = { _swapChain->GetSwapChain() };
+            
+            VkPresentInfoKHR presentInfo { };
+            presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+            presentInfo.waitSemaphoreCount = 1;
+            presentInfo.pWaitSemaphores = finishSemaphores;
+            presentInfo.swapchainCount = 1;
+            presentInfo.pSwapchains = swapChains;
+            presentInfo.pImageIndices = &imageIndex;
+            presentInfo.pResults = nullptr;
+
+            result = vkQueuePresentKHR(_logicalLayer->GetGraphicsQueue(0), &presentInfo);
+            if (result != VK_SUCCESS)
+            {
+                LOG_ERR(_vulkanLogger, "Failed to present swapchain with returned result {}", string_VkResult(result));
+            }
             
         }
 
@@ -197,6 +269,36 @@ namespace DeepEngine::Renderer
             return true;
         }
 
+        bool CreateFramebuffers()
+        {
+            const auto imageViews =  _swapChain->GetSwapChainImageViews();
+            _swapChainFramebuffers.resize(imageViews.size());
+            for (uint32_t i = 0; i < imageViews.size(); i++)
+            {
+                VkImageView attachments[] { imageViews[i] };
+                
+                VkFramebufferCreateInfo framebufferCreateInfo { };
+                framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+                framebufferCreateInfo.renderPass = _renderPass->GetVulkanRenderPass();
+                framebufferCreateInfo.attachmentCount = 1;
+                framebufferCreateInfo.pAttachments = attachments;
+                framebufferCreateInfo.width = _swapChain->GetExtent().width;
+                framebufferCreateInfo.height = _swapChain->GetExtent().height;
+                framebufferCreateInfo.layers = 1;
+
+                const auto result = vkCreateFramebuffer(_logicalLayer->GetLogicalDevice(), &framebufferCreateInfo,
+                    nullptr, &_swapChainFramebuffers[i]);
+
+                if (result != VK_SUCCESS)
+                {
+                    LOG_ERR(_vulkanLogger, "Failed to create framebuffer\nResult: {}", string_VkResult(result));
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
     private:
         VkSurfaceKHR _surface;
         GLFWwindow* _glfwWindow;
@@ -209,7 +311,10 @@ namespace DeepEngine::Renderer
         VulkanSwapChain* _swapChain;
         VulkanRenderPass* _renderPass;
         VulkanPipeline* _pipeline;
+        VulkanCommandPool* _commandPool;
         
+        std::vector<VkFramebuffer> _swapChainFramebuffers;
+ 
         std::shared_ptr<Debug::Logger> _vulkanLogger;
 
     private:

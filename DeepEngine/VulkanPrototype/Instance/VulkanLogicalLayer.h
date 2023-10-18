@@ -22,6 +22,8 @@ namespace DeepEngine::Renderer
         { return _logicalDevice; }
         VkQueue& GetGraphicsQueue(const uint32_t p_id)
         { return _queueMap[p_id]; }
+        const std::vector<uint32_t>& GetQueuesFamilies() const
+        { return _createQueueIds; }
 
         bool AddQueue(uint32_t p_id, VkQueueFlagBits p_queueFeatures, bool p_requireSurfaceSupport);
         

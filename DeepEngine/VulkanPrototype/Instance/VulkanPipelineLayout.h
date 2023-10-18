@@ -6,6 +6,7 @@
 
 #include "VulkanLogicalLayer.h"
 #include "VulkanSwapChain.h"
+#include "VulkanRenderPass.h"
 #include "Architecture/EngineSystem.h"
 #include "Debugs/Logger.h"
 
@@ -114,12 +115,12 @@ namespace DeepEngine::Renderer
             colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             colorBlendAttachment.blendEnable = VK_FALSE;
             // Optional...
-            colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-            colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-            colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-            colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-            colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-            colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+            //colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+            //colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+            //colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+            //colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            //colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+            //colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 
             VkPipelineColorBlendStateCreateInfo colorBlendingCreateInfo { };
             colorBlendingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -204,6 +205,9 @@ namespace DeepEngine::Renderer
                 _initialized = false;
             }
         }
+
+        VkPipeline GetPipeline() const
+        { return _pipeline; }
         
     private:
         std::vector<char> ReadFile(const std::string& p_filename)

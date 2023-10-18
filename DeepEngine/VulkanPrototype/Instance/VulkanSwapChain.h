@@ -82,7 +82,6 @@ namespace DeepEngine::Renderer
             createInfo.clipped = VK_TRUE;
             createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-            
             VkResult result = vkCreateSwapchainKHR(_logicalLayer->GetLogicalDevice(), &createInfo, nullptr, &_swapChain);
             if (result != VK_SUCCESS)
             {
@@ -94,6 +93,35 @@ namespace DeepEngine::Renderer
             vkGetSwapchainImagesKHR(_logicalLayer->GetLogicalDevice(), _swapChain, &imagesCount, nullptr);
             _swapChainImages.resize(imagesCount);
             vkGetSwapchainImagesKHR(_logicalLayer->GetLogicalDevice(), _swapChain, &imagesCount, _swapChainImages.data());
+
+            
+            _swapChainImageViews.resize(_swapChainImages.size());
+            for (uint32_t i = 0; i < _swapChainImageViews.size(); i++)
+            {
+                VkImageViewCreateInfo createInfo { };
+                createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                createInfo.image = _swapChainImages[i];
+                createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                createInfo.format = _format.format;
+
+                createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+                createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+                createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+                createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+                createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                createInfo.subresourceRange.baseMipLevel = 0;
+                createInfo.subresourceRange.levelCount = 1;
+                createInfo.subresourceRange.baseArrayLayer = 0;
+                createInfo.subresourceRange.layerCount = 1;
+
+                const auto result = vkCreateImageView(_logicalLayer->GetLogicalDevice(), &createInfo, nullptr, &_swapChainImageViews[i]);
+                if (result != VK_SUCCESS)
+                {
+                    LOG_ERR(_logger, "Faied to swapchain image view[{}]: {}", i, string_VkResult(result));
+                    return false;
+                }
+            }
             
             return true;
         }
@@ -145,44 +173,20 @@ namespace DeepEngine::Renderer
             };
         }
 
-        bool CreateSwapChainImageViews()
-        {
-            _swapChainImageViews.resize(_swapChainImages.size());
-            for (uint32_t i = 0; i < _swapChainImageViews.size(); i++)
-            {
-                VkImageViewCreateInfo createInfo { };
-                createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-                createInfo.image = _swapChainImages[i];
-                createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                createInfo.format = _format.format;
-
-                createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-                createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-                createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-                createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-                createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                createInfo.subresourceRange.baseMipLevel = 0;
-                createInfo.subresourceRange.levelCount = 1;
-                createInfo.subresourceRange.baseArrayLayer = 0;
-                createInfo.subresourceRange.layerCount = 1;
-
-                const auto result = vkCreateImageView(_logicalLayer->GetLogicalDevice(), &createInfo, nullptr, &_swapChainImageViews[i]);
-                if (result != VK_SUCCESS)
-                {
-                    LOG_ERR(_logger, "Faied to swapchain image view[{}]: {}", i, string_VkResult(result));
-                }
-            }
-        }
-
         VkExtent2D GetExtent() const
         { return _extent; }
 
         VkFormat GetImageFormat() const
         { return _imageFormat; }
 
+        VkSwapchainKHR GetSwapChain() const
+        { return _swapChain; }
+
+        const std::vector<VkImageView>& GetSwapChainImageViews() const
+        { return _swapChainImageViews; }
+
     private:
-        const VkFormat _imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+        const VkFormat _imageFormat = VK_FORMAT_B8G8R8A8_SRGB;
         
         uint32_t _width;
         uint32_t _height;

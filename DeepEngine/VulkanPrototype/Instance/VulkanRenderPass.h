@@ -6,7 +6,6 @@
 #include <vulkan/vk_enum_string_helper.h>
 
 #include "VulkanSwapChain.h"
-#include "Architecture/EngineSystem.h"
 #include "Debugs/Logger.h"
 
 namespace DeepEngine::Renderer
@@ -41,12 +40,24 @@ namespace DeepEngine::Renderer
             subpass.colorAttachmentCount = 1;
             subpass.pColorAttachments = &colorAttachmentRef;
 
+            VkSubpassDependency dependency { };
+            dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // Take last operating 
+            dependency.dstSubpass = 0; // ours
+            
+            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Wait for finish reading from it from another process
+            dependency.srcAccessMask = 0;
+
+            dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
             VkRenderPassCreateInfo renderPassCreateInfo { };
             renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
             renderPassCreateInfo.attachmentCount = 1;
             renderPassCreateInfo.pAttachments = &colorAttachment;
             renderPassCreateInfo.subpassCount = 1;
             renderPassCreateInfo.pSubpasses = &subpass;
+            renderPassCreateInfo.dependencyCount = 1;
+            renderPassCreateInfo.pDependencies = &dependency;
 
             const auto result = vkCreateRenderPass(_logicalLayer->GetLogicalDevice(), &renderPassCreateInfo, nullptr, &_renderPass);
 
