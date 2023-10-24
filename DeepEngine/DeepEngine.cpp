@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
 
         auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
         subsystemsManager.CreateSubsystem<TestSubsystem>(2);
-        auto windowSubsystem = subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "fckUnity");
+        auto windowSubsystem = subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "1800 lines for fucking triangle (:");
     	subsystemsManager.CreateSubsystem<DeepEngine::Renderer::VulkanPrototype>();
 
         if (!subsystemsManager.Init())

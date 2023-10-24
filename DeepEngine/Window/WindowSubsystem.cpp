@@ -37,6 +37,13 @@ namespace DeepEngine
         
     }
 
+    void WindowSubsystem::WindowFramebufferResizedHandler(GLFWwindow* p_window, uint32_t p_width, uint32_t p_height)
+    {
+        Events::OnWindowFramebufferResized framebufferResized;
+        glfwGetFramebufferSize(p_window, &framebufferResized.Width, &framebufferResized.Height);
+        Architecture::PublishEvent(framebufferResized);
+    }
+
     bool WindowSubsystem::Init()
     {
         glfwSetErrorCallback(ErrorCallbackHandler);
@@ -47,7 +54,7 @@ namespace DeepEngine
         }
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         
         _window = glfwCreateWindow(_width, _height, _windowName, nullptr, nullptr);
         if (_window == nullptr)
@@ -69,6 +76,10 @@ namespace DeepEngine
         event.Height = 1080;
         
         Architecture::PublishEvent(event);
+
+        Events::OnWindowFramebufferResized framebufferResized;
+        glfwGetFramebufferSize(_window, &framebufferResized.Width, &framebufferResized.Height);
+        Architecture::PublishEvent(framebufferResized);
 
         return true;
     }

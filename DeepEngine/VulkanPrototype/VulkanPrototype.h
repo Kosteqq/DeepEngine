@@ -19,21 +19,31 @@
 
 namespace DeepEngine::Renderer
 {
-    class VulkanPrototype : public Architecture::EngineSubsystem, Architecture::EventListener<Events::OnCreateGlfwContext>
+    class VulkanPrototype : public Architecture::EngineSubsystem,
+        Architecture::EventListener<Events::OnCreateGlfwContext>,
+        Architecture::EventListener<Events::OnWindowFramebufferResized>
     {
+        const int MAX_FRAMES_IN_FLIGHT = 2;
+        
     public:
         VulkanPrototype() : EngineSubsystem("Vulkan Renderer Prot")
         {
             _vulkanLogger = Debug::Logger::CreateLoggerInstance("VULKAN");
+            _commandPools.resize(MAX_FRAMES_IN_FLIGHT);
         }
 
         ~VulkanPrototype()
         {
-            _commandPool->Terminate();
+            vkDeviceWaitIdle(_logicalLayer->GetLogicalDevice());
+
+            for (uint32_t i = 0; i < _commandPools.size(); i++)
+            {
+                _commandPools[i]->Terminate();
+            }
             
             for (auto framebuffer : _swapChainFramebuffers)
-                {
-                    vkDestroyFramebuffer(_logicalLayer->GetLogicalDevice(), framebuffer, nullptr);
+            {
+                vkDestroyFramebuffer(_logicalLayer->GetLogicalDevice(), framebuffer, nullptr);
             }
             
             _pipeline->Terminate();
@@ -48,7 +58,11 @@ namespace DeepEngine::Renderer
             _vulkanInstance->Terminate();
             _vulkanDebug->Terminate();
 
-            delete _commandPool;
+
+            for (uint32_t i = 0; i < _commandPools.size(); i++)
+            {
+                delete _commandPools[i];
+            }
             delete _pipeline;
             delete _renderPass;
             delete _swapChain;
@@ -62,6 +76,13 @@ namespace DeepEngine::Renderer
         bool EventHandler(const Events::OnCreateGlfwContext* p_event) override
         {
             _glfwWindow = p_event->GLFWWindow;
+            return false;
+        }
+        bool EventHandler(const Events::OnWindowFramebufferResized* p_event) override
+        {
+            _swapchainIsOutOfDate = true;
+            _framebufferWidth = p_event->Width;
+            _framebufferHeight = p_event->Height;
             return false;
         }
 
@@ -148,10 +169,9 @@ namespace DeepEngine::Renderer
             }
             FULFIL_MILESTONE(InitializeVulkanLogicalDevice);
 
-            uint32_t width = 800;
-            uint32_t height = 600;
-            _swapChain = new VulkanSwapChain(_vulkanLogger, _physicalLayer, _logicalLayer, _surface, width, height);
-            if (!_swapChain->Init())
+            _swapchainIsOutOfDate = false;
+            _swapChain = new VulkanSwapChain(_vulkanLogger, _physicalLayer, _logicalLayer, _surface);
+            if (!_swapChain->Init(_framebufferWidth, _framebufferHeight))
             {
                 return false;
             }
@@ -171,42 +191,58 @@ namespace DeepEngine::Renderer
             }
 
             CreateFramebuffers();
-
-            _commandPool = new VulkanCommandPool(_vulkanLogger, _logicalLayer);
-            if (!_commandPool->Init())
+            
+            for (uint32_t i = 0; i < _commandPools.size(); i++)
             {
-                return false;
+                _commandPools[i] = new VulkanCommandPool(_vulkanLogger, _logicalLayer);
+                if (!_commandPools[i]->Init())
+                {
+                    return false;
+                }
             }
 
             return true;
         }
+
+        uint32_t _currentFrame = 0;
         
         void Tick() override
         {
-            const auto fence = _commandPool->GetInFlightFence();
+            const auto currentCommandPool = _commandPools[_currentFrame];
+            const auto fence = currentCommandPool->GetInFlightFence();
             
             vkWaitForFences(_logicalLayer->GetLogicalDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
-            vkResetFences(_logicalLayer->GetLogicalDevice(), 1, &fence);
 
             uint32_t imageIndex;
-            vkAcquireNextImageKHR(
+            const auto acquireResult = vkAcquireNextImageKHR(
                 _logicalLayer->GetLogicalDevice(),
                 _swapChain->GetSwapChain(),
                 UINT64_MAX,
-                _commandPool->GetImageAvailableSemaphore(),
+                currentCommandPool->GetImageAvailableSemaphore(),
                 VK_NULL_HANDLE,
                 &imageIndex);
 
+            if (acquireResult == VK_SUBOPTIMAL_KHR)
+            {
+                _swapchainIsOutOfDate = true;
+            }
+            if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR)
+            {
+                RecreateSwapchain();
+                return;
+            }
+            vkResetFences(_logicalLayer->GetLogicalDevice(), 1, &fence);
 
-            _commandPool->RecordCommandBuffer(_swapChainFramebuffers[imageIndex], _renderPass, _swapChain, _pipeline);
+
+            currentCommandPool->RecordCommandBuffer(_swapChainFramebuffers[imageIndex], _renderPass, _swapChain, _pipeline);
 
             // those two correlates with each other 
-            VkSemaphore waitSemaphores[] = { _commandPool->GetImageAvailableSemaphore() };
+            VkSemaphore waitSemaphores[] = { currentCommandPool->GetImageAvailableSemaphore() };
             VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
             
-            const auto commandBuff = _commandPool->GetCommandBuffer();
+            const auto commandBuff = currentCommandPool->GetCommandBuffer();
             
-            VkSemaphore finishSemaphores[] = { _commandPool->GetRenderFinishedSemaphore() };
+            VkSemaphore finishSemaphores[] = { currentCommandPool->GetRenderFinishedSemaphore() };
             
             VkSubmitInfo submitInfo { };
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -219,6 +255,7 @@ namespace DeepEngine::Renderer
             submitInfo.pSignalSemaphores = finishSemaphores;
 
             auto result = vkQueueSubmit(_logicalLayer->GetGraphicsQueue(0), 1, &submitInfo, fence);
+            
             if (result != VK_SUCCESS)
             {
                 LOG_ERR(_vulkanLogger, "Failed to submit draw command with returned result {}", string_VkResult(result));
@@ -236,11 +273,16 @@ namespace DeepEngine::Renderer
             presentInfo.pResults = nullptr;
 
             result = vkQueuePresentKHR(_logicalLayer->GetGraphicsQueue(0), &presentInfo);
-            if (result != VK_SUCCESS)
+            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _swapchainIsOutOfDate)
+            {
+                RecreateSwapchain();
+            }
+            else if (result != VK_SUCCESS)
             {
                 LOG_ERR(_vulkanLogger, "Failed to present swapchain with returned result {}", string_VkResult(result));
             }
-            
+
+            _currentFrame = (_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         }
 
         void Destroy() override
@@ -248,6 +290,20 @@ namespace DeepEngine::Renderer
         }
         
     private:
+        void RecreateSwapchain()
+        {
+            _swapchainIsOutOfDate = false;
+
+            _swapChain->RecreateSwapChain(_framebufferWidth, _framebufferHeight);
+            
+            for (auto framebuffer : _swapChainFramebuffers)
+            {
+                vkDestroyFramebuffer(_logicalLayer->GetLogicalDevice(), framebuffer, nullptr);
+            }
+
+            CreateFramebuffers();
+        }
+
         bool EnableExtensions()
         {
             uint32_t glfwExtensionCount = 0;
@@ -300,8 +356,11 @@ namespace DeepEngine::Renderer
         }
 
     private:
+        bool _swapchainIsOutOfDate;
         VkSurfaceKHR _surface;
         GLFWwindow* _glfwWindow;
+        uint32_t _framebufferWidth;
+        uint32_t _framebufferHeight;
 
     private:
         VulkanDebug* _vulkanDebug;
@@ -311,7 +370,8 @@ namespace DeepEngine::Renderer
         VulkanSwapChain* _swapChain;
         VulkanRenderPass* _renderPass;
         VulkanPipeline* _pipeline;
-        VulkanCommandPool* _commandPool;
+
+        std::vector<VulkanCommandPool*> _commandPools;
         
         std::vector<VkFramebuffer> _swapChainFramebuffers;
  

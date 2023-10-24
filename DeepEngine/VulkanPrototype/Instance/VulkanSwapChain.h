@@ -16,12 +16,12 @@ namespace DeepEngine::Renderer
     public:
         VulkanSwapChain(std::shared_ptr<Debug::Logger> p_logger,
             const VulkanPhysicalLayer* p_physicalLayer, const VulkanLogicalLayer* p_logicalLayer,
-            const VkSurfaceKHR& p_surface, uint32_t p_width, uint32_t p_height)
+            const VkSurfaceKHR& p_surface)
             : _logger(p_logger), _physicalLayer(p_physicalLayer), _logicalLayer(p_logicalLayer),
-                _surface(p_surface), _width(p_width), _height(p_height)
+                _surface(p_surface)
         { }
 
-        bool Init()
+        bool Init(uint32_t p_width, uint32_t p_height)
         {
             const VkPhysicalDevice& device = _physicalLayer->GetDevice();
             
@@ -47,7 +47,7 @@ namespace DeepEngine::Renderer
 
             _format = GetBestFormat(availableFormats); 
             _present = GetBestPresentMode(availablePresentModes);
-            _extent = GetSwapExtent(capabilities);
+            _extent = GetSwapExtent(capabilities, p_width, p_height);
 
             uint32_t minFramesCount = capabilities.minImageCount;
             // If max frames is 0, there is no limit
@@ -136,6 +136,14 @@ namespace DeepEngine::Renderer
             }
         }
 
+        void RecreateSwapChain(uint32_t p_width, uint32_t p_height)
+        {
+            vkDeviceWaitIdle(_logicalLayer->GetLogicalDevice());
+
+            Terminate();
+            Init(p_width, p_height);
+        }
+
         VkSurfaceFormatKHR GetBestFormat(std::vector<VkSurfaceFormatKHR> p_availableFormats)
         {
             for (uint32_t i = 0; i < p_availableFormats.size(); i++)
@@ -164,12 +172,12 @@ namespace DeepEngine::Renderer
             return p_availablePresentModes[0];
         }
 
-        VkExtent2D GetSwapExtent(const VkSurfaceCapabilitiesKHR& p_capabilities)
+        VkExtent2D GetSwapExtent(const VkSurfaceCapabilitiesKHR& p_capabilities, uint32_t p_width, uint32_t p_height)
         {
             return VkExtent2D
             {
-                std::clamp(_width, p_capabilities.minImageExtent.width, p_capabilities.maxImageExtent.width),
-                std::clamp(_height, p_capabilities.minImageExtent.height, p_capabilities.maxImageExtent.height),
+                std::clamp(p_width, p_capabilities.minImageExtent.width, p_capabilities.maxImageExtent.width),
+                std::clamp(p_height, p_capabilities.minImageExtent.height, p_capabilities.maxImageExtent.height),
             };
         }
 
@@ -188,8 +196,6 @@ namespace DeepEngine::Renderer
     private:
         const VkFormat _imageFormat = VK_FORMAT_B8G8R8A8_SRGB;
         
-        uint32_t _width;
-        uint32_t _height;
         VkSwapchainKHR _swapChain;
         std::vector<VkImage> _swapChainImages;
         std::vector<VkImageView> _swapChainImageViews;
