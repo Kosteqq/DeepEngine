@@ -37,7 +37,8 @@ namespace DeepEngine
     private:
         static void ErrorCallbackHandler(int error, const char* description);
         static void WindowResizedHandler(GLFWwindow* p_window, int p_width, int p_height);
-        static void WindowFramebufferResizedHandler(GLFWwindow* p_window, uint32_t p_width, uint32_t p_height);
+        static void WindowFramebufferResizedHandler(GLFWwindow* p_window, int p_width, int p_height);
+        static void WindowMinimizedHandler(GLFWwindow* p_window, int p_minimized);
 
         int _width;
         int _height;

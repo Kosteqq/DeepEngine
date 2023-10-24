@@ -37,11 +37,20 @@ namespace DeepEngine
         
     }
 
-    void WindowSubsystem::WindowFramebufferResizedHandler(GLFWwindow* p_window, uint32_t p_width, uint32_t p_height)
+    void WindowSubsystem::WindowFramebufferResizedHandler(GLFWwindow* p_window, int p_width, int p_height)
     {
-        Events::OnWindowFramebufferResized framebufferResized;
-        glfwGetFramebufferSize(p_window, &framebufferResized.Width, &framebufferResized.Height);
-        Architecture::PublishEvent(framebufferResized);
+        ENGINE_INFO("Window changed framebuffer size to: {}x{}", p_width, p_height);
+        Events::OnWindowFramebufferResized event;
+        glfwGetFramebufferSize(p_window, &event.Width, &event.Height);
+        Architecture::PublishEvent(event);
+    }
+
+    void WindowSubsystem::WindowMinimizedHandler(GLFWwindow* p_window, int p_minimized)
+    {
+        ENGINE_INFO("Window changed minimized mode to: {}", p_minimized == 1);
+        Events::OnWindowChangeMinimized event;
+        event.MinimizedMode = p_minimized == 1;
+        Architecture::PublishEvent(event);
     }
 
     bool WindowSubsystem::Init()
@@ -63,6 +72,8 @@ namespace DeepEngine
             return false;
         }
         glfwSetWindowSizeCallback(_window, WindowResizedHandler);
+        glfwSetFramebufferSizeCallback(_window, WindowFramebufferResizedHandler);
+        glfwSetWindowIconifyCallback(_window, WindowMinimizedHandler);
         glfwSetWindowUserPointer(_window, this);
 
         Events::OnCreateGlfwContext windowEvent;

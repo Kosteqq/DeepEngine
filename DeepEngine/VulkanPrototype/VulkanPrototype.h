@@ -21,7 +21,8 @@ namespace DeepEngine::Renderer
 {
     class VulkanPrototype : public Architecture::EngineSubsystem,
         Architecture::EventListener<Events::OnCreateGlfwContext>,
-        Architecture::EventListener<Events::OnWindowFramebufferResized>
+        Architecture::EventListener<Events::OnWindowFramebufferResized>,
+        Architecture::EventListener<Events::OnWindowChangeMinimized>
     {
         const int MAX_FRAMES_IN_FLIGHT = 2;
         
@@ -83,6 +84,12 @@ namespace DeepEngine::Renderer
             _swapchainIsOutOfDate = true;
             _framebufferWidth = p_event->Width;
             _framebufferHeight = p_event->Height;
+            return false;
+        }
+        bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override
+        {
+            _swapchainIsOutOfDate = true;
+            _windowIsMinimized = p_event->MinimizedMode;
             return false;
         }
 
@@ -208,6 +215,11 @@ namespace DeepEngine::Renderer
         
         void Tick() override
         {
+            if (_windowIsMinimized)
+            {
+                return;
+            }
+            
             const auto currentCommandPool = _commandPools[_currentFrame];
             const auto fence = currentCommandPool->GetInFlightFence();
             
@@ -292,6 +304,11 @@ namespace DeepEngine::Renderer
     private:
         void RecreateSwapchain()
         {
+            if (_windowIsMinimized)
+            {
+                return;
+            }
+            
             _swapchainIsOutOfDate = false;
 
             _swapChain->RecreateSwapChain(_framebufferWidth, _framebufferHeight);
@@ -357,6 +374,7 @@ namespace DeepEngine::Renderer
 
     private:
         bool _swapchainIsOutOfDate;
+        bool _windowIsMinimized = false;
         VkSurfaceKHR _surface;
         GLFWwindow* _glfwWindow;
         uint32_t _framebufferWidth;

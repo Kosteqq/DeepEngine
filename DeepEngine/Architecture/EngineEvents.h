@@ -15,6 +15,17 @@ namespace DeepEngine::Events
         uint32_t Height;
     };
 
+    DECLARE_EVENT(OnWindowFramebufferResized)
+    {
+        int32_t Width;
+        int32_t Height;
+    };
+
+    DECLARE_EVENT(OnWindowChangeMinimized)
+    {
+        bool MinimizedMode;
+    };
+
     DECLARE_EVENT(OnCreateGlfwContext)
     {
         GLFWwindow* GLFWWindow;
