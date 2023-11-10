@@ -94,7 +94,7 @@ namespace DeepEngine::Renderer
         }
         
         bool RecordCommandBuffer(VkFramebuffer p_frameBuffer, VulkanRenderPass* p_renderPass,
-            VulkanSwapChain* p_swapChain, VulkanPipeline* p_pipeline)
+            VulkanSwapChain* p_swapChain, VulkanPipeline* p_pipeline, VertexBuffer* p_vertexBuffer)
         {
             VkCommandBufferBeginInfo beginInfo { };
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -137,7 +137,11 @@ namespace DeepEngine::Renderer
             scissor.extent = p_swapChain->GetExtent();
             vkCmdSetScissor(_commandBuffer, 0, 1, &scissor);
 
-            vkCmdDraw(_commandBuffer, 3, 1, 0, 0);
+            VkBuffer vertexBuffers[] = { p_vertexBuffer->GetBuffer() };
+            VkDeviceSize offsets[] = { 0 };
+            vkCmdBindVertexBuffers(_commandBuffer, 0, 1, vertexBuffers, offsets);
+
+            vkCmdDraw(_commandBuffer, p_vertexBuffer->GetVertexCount(), 1, 0, 0);
             vkCmdEndRenderPass(_commandBuffer);
 
             const auto result = vkEndCommandBuffer(_commandBuffer);
@@ -148,6 +152,42 @@ namespace DeepEngine::Renderer
             }
             
             return true;
+        }
+
+        void CopyBuffer(VkBuffer p_src, VkBuffer p_dst, VkDeviceSize p_size, VkQueue p_queue)
+        {
+            VkCommandBufferAllocateInfo allocInfo { };
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            allocInfo.commandPool = _commandPool;
+            allocInfo.commandBufferCount = 1;
+
+            VkCommandBuffer commandBuffer;
+            vkAllocateCommandBuffers(_logicalLayer->GetLogicalDevice(), &allocInfo, &commandBuffer);
+
+            VkCommandBufferBeginInfo beginInfo { };
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+            vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+            VkBufferCopy copyRegion { };
+            copyRegion.srcOffset = 0;
+            copyRegion.dstOffset = 0;
+            copyRegion.size = p_size;
+            vkCmdCopyBuffer(commandBuffer, p_src, p_dst, 1, &copyRegion);
+
+            vkEndCommandBuffer(commandBuffer);
+
+            VkSubmitInfo submitInfo { };
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &commandBuffer;
+
+            vkQueueSubmit(p_queue, 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(p_queue);
+
+            vkFreeCommandBuffers(_logicalLayer->GetLogicalDevice(), _commandPool, 1, &commandBuffer);
         }
 
         VkSemaphore GetImageAvailableSemaphore() const

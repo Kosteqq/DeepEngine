@@ -13,9 +13,10 @@
 #include "Instance/VulkanLogicalLayer.h"
 #include "Instance/VulkanPhysicalLayer.h"
 #include "Instance/VulkanRenderPass.h"
-#include "Instance\VulkanPipelineLayout.h"
+#include "Instance/VulkanPipelineLayout.h"
 #include "Instance/VulkanSwapChain.h"
 #include "Window/WindowSubsystem.hpp"
+#include "Instance/VertexBuffer.h"
 
 namespace DeepEngine::Renderer
 {
@@ -51,6 +52,8 @@ namespace DeepEngine::Renderer
             _renderPass->Terminate();
             _pipeline->Terminate();
             _swapChain->Terminate();
+
+            _vertexBuff->Terminate();
             // Queue also will be destroy
             _logicalLayer->Terminate();
             // Physical device will be destroy anyway
@@ -67,6 +70,7 @@ namespace DeepEngine::Renderer
             delete _pipeline;
             delete _renderPass;
             delete _swapChain;
+            delete _vertexBuff;
             delete _logicalLayer;
             delete _physicalLayer;
             delete _vulkanInstance;
@@ -208,6 +212,15 @@ namespace DeepEngine::Renderer
                 }
             }
 
+            _vertexBuff = new VertexBuffer(_vulkanLogger, _logicalLayer, _physicalLayer);
+            if (!_vertexBuff->Init())
+            {
+                return false;
+            }
+
+            _commandPools[0]->CopyBuffer(_vertexBuff->GetStagingBuffer(), _vertexBuff->GetBuffer(),
+                _vertexBuff->GetBufferSize(), _logicalLayer->GetGraphicsQueue(0));
+
             return true;
         }
 
@@ -246,7 +259,7 @@ namespace DeepEngine::Renderer
             vkResetFences(_logicalLayer->GetLogicalDevice(), 1, &fence);
 
 
-            currentCommandPool->RecordCommandBuffer(_swapChainFramebuffers[imageIndex], _renderPass, _swapChain, _pipeline);
+            currentCommandPool->RecordCommandBuffer(_swapChainFramebuffers[imageIndex], _renderPass, _swapChain, _pipeline, _vertexBuff);
 
             // those two correlates with each other 
             VkSemaphore waitSemaphores[] = { currentCommandPool->GetImageAvailableSemaphore() };
@@ -388,6 +401,7 @@ namespace DeepEngine::Renderer
         VulkanSwapChain* _swapChain;
         VulkanRenderPass* _renderPass;
         VulkanPipeline* _pipeline;
+        VertexBuffer* _vertexBuff;
 
         std::vector<VulkanCommandPool*> _commandPools;
         

@@ -78,7 +78,7 @@ namespace DeepEngine
 
         Events::OnCreateGlfwContext windowEvent;
         windowEvent.GLFWWindow = _window;
-        Architecture::PublishEvent(windowEvent);
+        Architecture::PublishEvent<Events::OnCreateGlfwContext>(windowEvent);
         
         INFO("Initialized with success");
 

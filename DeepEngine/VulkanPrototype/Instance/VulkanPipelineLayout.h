@@ -4,6 +4,7 @@
 #define NOMINMAX
 #include <vulkan/vulkan.h>
 
+#include "VertexBuffer.h"
 #include "VulkanLogicalLayer.h"
 #include "VulkanSwapChain.h"
 #include "VulkanRenderPass.h"
@@ -55,12 +56,15 @@ namespace DeepEngine::Renderer
             dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
             dynamicState.pDynamicStates = dynamicStates.data();
 
+            constexpr auto bindingDesc = VertexBuffer::Vertex::GetBindingDesc();
+            constexpr auto attribiutesDesc = VertexBuffer::Vertex::GetAttributeDesc();
+
             VkPipelineVertexInputStateCreateInfo vertexBufferCreateInfo { };
             vertexBufferCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-            vertexBufferCreateInfo.vertexBindingDescriptionCount = 0;
-            vertexBufferCreateInfo.pVertexBindingDescriptions = nullptr;
-            vertexBufferCreateInfo.vertexAttributeDescriptionCount = 0;
-            vertexBufferCreateInfo.pVertexAttributeDescriptions = nullptr;
+            vertexBufferCreateInfo.vertexBindingDescriptionCount = 1;
+            vertexBufferCreateInfo.pVertexBindingDescriptions = &bindingDesc;
+            vertexBufferCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribiutesDesc.size());
+            vertexBufferCreateInfo.pVertexAttributeDescriptions = attribiutesDesc.data();
 
             VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo { };
             inputAssemblyCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
