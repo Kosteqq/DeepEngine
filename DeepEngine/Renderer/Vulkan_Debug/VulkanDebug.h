@@ -6,27 +6,28 @@
 
 #include "Debugs/Logger.h"
 
-#define VULkAN_TRACE(mess, ...) LOG_TRACE(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetInstance(), mess, __VA_ARGS___)
-#define VULkAN_DEBUG(mess, ...) LOG_DEBUG(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetInstance(), mess, __VA_ARGS___)
-#define VULkAN_INFO(mess, ...) LOG_INFO(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetInstance(), mess, __VA_ARGS___)
-#define VULkAN_WARN(mess, ...) LOG_WARN(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetInstance(), mess, __VA_ARGS___)
-#define VULkAN_ERR(mess, ...) LOG_ERR(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetInstance(), mess, __VA_ARGS___)
+#define VULKAN_TRACE(mess, ...) LOG_TRACE(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
+#define VULKAN_DEBUG(mess, ...) LOG_DEBUG(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
+#define VULKAN_INFO(mess, ...) LOG_INFO(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
+#define VULKAN_WARN(mess, ...) LOG_WARN(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
+#define VULKAN_ERR(mess, ...) LOG_ERR(DeepEngine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
 
-#define VULKAN_CHECK_CREATE(result, message, ...)               \
-    if (result != VK_SUCCESS)                                   \
-    {                                                           \
-        VULKAN_ERR("Vulkan create assertion failed!\n"          \
-                "Returned result: {}\n"                         \
-                "Message: {}",                                  \
-                string_VkResult(result), message, __VA_ARGS__); \
-        return false;                                           \
-    }                                                           \
+#define VULKAN_CHECK_CREATE(Result, FailMessage, ...)               \
+    if (Result != VK_SUCCESS)                                       \
+    {                                                               \
+        VULKAN_ERR("Vulkan create assertion failed!\n"              \
+                "Message: {}"                                       \
+                "Returned result: {}\n",                            \
+                string_VkResult(Result), FailMessage, __VA_ARGS__); \
+        return false;                                               \
+    }                                                               \
 
 #ifdef MESSENGER_UTILS
 #endif
 #   define VULKAN_PREINITIALIZE_MESSENGER(LogLevels, LogTypes) DeepEngine::Renderer::Vulkan::VulkanDebugger::PreInitialize(LogLevels, LogTypes) 
 #   define VULKAN_INITIALIZE_MESSENGER(VkInstance) DeepEngine::Renderer::Vulkan::VulkanDebugger::Initialize(VkInstance)
-#   define ENABLED_MESSENGER_VALIDATION_LAYERS DeepEngine::Renderer::Vulkan::VulkanDebugger::GetEnabledValidationLayers()
+#   define MESSENGER_VALIDATION_LAYERS_SIZE (uint32_t)DeepEngine::Renderer::Vulkan::VulkanDebugger::GetEnabledValidationLayers().size()
+#   define MESSENGER_VALIDATION_LAYERS_DATA DeepEngine::Renderer::Vulkan::VulkanDebugger::GetEnabledValidationLayers().data()
 #   define MESSENGER_CREATE_INFO DeepEngine::Renderer::Vulkan::VulkanDebugger::GetMessengerCreateInfo()
         
 
@@ -38,7 +39,8 @@ namespace DeepEngine::Renderer::Vulkan
     private:
         VulkanDebugger()
         {
-            _logger = Debug::Logger::CreateLoggerInstance("Vulkan Debug");
+            _logger = Debug::Logger::CreateLoggerInstance("VULKAN");
+            _messengerCallbackLogger = Debug::Logger::CreateLoggerInstance("Vulkan Callback");
         }
         
     public:
@@ -75,7 +77,7 @@ namespace DeepEngine::Renderer::Vulkan
         static void DestroyDebugUtilsMessengerEXT(VkInstance p_instance, VkDebugUtilsMessengerEXT p_debugMessenger,
             const VkAllocationCallbacks* p_allocator);
         
-        VkBool32 VulkanDebugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT p_messageLevel,
+        static VkBool32 VulkanDebugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT p_messageLevel,
             VkDebugUtilsMessageSeverityFlagsEXT p_messageType, const VkDebugUtilsMessengerCallbackDataEXT* p_callbackData,
             void* p_usePtr);
 

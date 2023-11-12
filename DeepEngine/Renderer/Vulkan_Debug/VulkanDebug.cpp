@@ -2,6 +2,49 @@
 
 namespace DeepEngine::Renderer::Vulkan
 {
+    void VulkanDebugger::PreInitialize(const VkDebugUtilsMessageTypeFlagBitsEXT p_logLevels,
+        const VkDebugUtilsMessageTypeFlagsEXT p_logTypes)
+    {
+        VulkanDebugger instance = GetInstance();
+
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+        instance._availableValidationLayers = std::vector<VkLayerProperties>(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, instance._availableValidationLayers.data());
+        
+        VkDebugUtilsMessengerCreateInfoEXT createInfo { };
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = p_logLevels;
+        createInfo.messageType = p_logTypes;
+        createInfo.pfnUserCallback = VulkanDebugMessengerCallback;
+        createInfo.pUserData = nullptr;
+        
+        instance._messengerCreateInfo = createInfo;
+    }
+
+    void VulkanDebugger::Initialize(VkInstance p_vkInstance)
+    {
+        VulkanDebugger instance = GetInstance();
+        instance._vulkanInstance = p_vkInstance;
+        
+        LOG_DEBUG(instance._logger, "Creating Vulkan messenger!");
+        LOG_TRACE(instance._logger, "Available validation layers:");
+        for (int i = 0; i < instance._availableValidationLayers.size(); i++)
+        {
+            VkLayerProperties layer = instance._availableValidationLayers[i];
+            LOG_TRACE(instance._logger, "{:<45} (v.{}): [{}]",
+                layer.layerName,
+                layer.specVersion,
+                instance.IsLayerEnabled(layer.layerName));
+        }
+
+        const auto result = CreateDebugUtilsMessengerEXT(instance._vulkanInstance, &instance._messengerCreateInfo, nullptr, &instance._callbackMessenger);
+        if (result != VK_SUCCESS)
+        {
+            LOG_ERR(instance._logger, "Failed to create Vulkan debug messenger.\nDriver returned result: {0}", string_VkResult(result));
+        }
+    }
 
     void VulkanDebugger::Terminate()
     {
@@ -9,6 +52,7 @@ namespace DeepEngine::Renderer::Vulkan
         LOG_INFO(instance._logger, "Terminating Vulkan debug messenger");
         DestroyDebugUtilsMessengerEXT(instance._vulkanInstance, instance._callbackMessenger, nullptr);
     }
+    
     bool VulkanDebugger::TryAddValidationLayer(const char* p_layerName)
     {
         VulkanDebugger instance = GetInstance();
