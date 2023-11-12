@@ -35,6 +35,8 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE "${SOURCE_DIR}/Renderer/Vulkan_Instance/VulkanPCH.h")
+target_compile_options(${PROJECT_NAME} PRIVATE /Yu "${SOURCE_DIR}/Renderer/Vulkan_Instance/VulkanPCH.h")
 
 target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} spdlog::spdlog_header_only)
