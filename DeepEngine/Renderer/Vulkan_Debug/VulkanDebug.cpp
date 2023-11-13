@@ -2,10 +2,10 @@
 
 namespace DeepEngine::Renderer::Vulkan
 {
-    void VulkanDebugger::PreInitialize(const VkDebugUtilsMessageTypeFlagBitsEXT p_logLevels,
-        const VkDebugUtilsMessageTypeFlagsEXT p_logTypes)
+    void VulkanDebugger::PreInitialize(int p_logLevels,
+        int p_logTypes)
     {
-        VulkanDebugger instance = GetInstance();
+        VulkanDebugger& instance = GetInstance();
 
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -25,7 +25,7 @@ namespace DeepEngine::Renderer::Vulkan
 
     void VulkanDebugger::Initialize(VkInstance p_vkInstance)
     {
-        VulkanDebugger instance = GetInstance();
+        VulkanDebugger& instance = GetInstance();
         instance._vulkanInstance = p_vkInstance;
         
         LOG_DEBUG(instance._logger, "Creating Vulkan messenger!");
@@ -48,15 +48,18 @@ namespace DeepEngine::Renderer::Vulkan
 
     void VulkanDebugger::Terminate()
     {
-        VulkanDebugger instance = GetInstance();
+        VulkanDebugger& instance = GetInstance();
         LOG_INFO(instance._logger, "Terminating Vulkan debug messenger");
         DestroyDebugUtilsMessengerEXT(instance._vulkanInstance, instance._callbackMessenger, nullptr);
     }
+
+    inline bool VulkanDebugger::TryAddValidationLayer(const VkLayerProperties& p_layer)
+    { return TryAddValidationLayer(p_layer.layerName); }
     
     bool VulkanDebugger::TryAddValidationLayer(const char* p_layerName)
     {
-        VulkanDebugger instance = GetInstance();
-        if (IsLayerEnabled(p_layerName))
+        VulkanDebugger& instance = GetInstance();
+        if (instance.IsLayerEnabled(p_layerName))
         {
             LOG_TRACE(instance._logger, "Trying to enable already enabled \"{0}\" layer!", p_layerName);
             return true;
@@ -88,17 +91,11 @@ namespace DeepEngine::Renderer::Vulkan
         return false;
     }
 
-    inline bool VulkanDebugger::TryAddValidationLayer(const VkLayerProperties& p_layer)
-    { return TryAddValidationLayer(p_layer.layerName); }
-
-    inline bool VulkanDebugger::TryAddValidationLayer(const std::string& p_layerName)
-    { return TryAddValidationLayer(p_layerName); }
-
     VkBool32 VulkanDebugger::VulkanDebugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT p_messageLevel,
         VkDebugUtilsMessageSeverityFlagsEXT p_messageType, const VkDebugUtilsMessengerCallbackDataEXT* p_callbackData,
         void* p_usePtr)
     {
-        const VulkanDebugger instance = GetInstance();
+        const VulkanDebugger& instance = GetInstance();
         std::string messageType;
         switch (p_messageType)
         {

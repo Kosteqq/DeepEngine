@@ -19,6 +19,9 @@ namespace DeepEngine::Architecture
 
     class EngineSubsystem
     {
+    public:
+        virtual ~EngineSubsystem() = default;
+
     protected:
         friend class EngineSubsystemsManager;
 

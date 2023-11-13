@@ -29,7 +29,11 @@ namespace DeepEngine::Renderer::Vulkan
         };
         
     public:
-        VulkanInstance() = default;
+        VulkanInstance()
+        {
+            PreinitilizeInstance();
+        }
+        
         ~VulkanInstance()
         { Terminate(); }
 
@@ -44,10 +48,12 @@ namespace DeepEngine::Renderer::Vulkan
     public:
         bool InitializeInstance();
         bool InitializePhysicalDevice();
-        bool InitializeLogicalDevice();
-        bool InitializeSwapChain();
+        bool InitializeLogicalDevice() { return true; }
+        bool InitializeSwapChain() { return true; }
         
     private:
+        void PreinitilizeInstance(); 
+        
         void TerminateInstance();
         void TerminatePhysicalDevice();
         void TerminateLogicalDevice();
@@ -99,9 +105,9 @@ namespace DeepEngine::Renderer::Vulkan
         }
 
     protected:
-        bool EventHandler(const Events::OnCreateGlfwContext* p_event) override;
-        bool EventHandler(const Events::OnWindowFramebufferResized* p_event) override;
-        bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override;
+        bool EventHandler(const Events::OnCreateGlfwContext* p_event) override { return false; }
+        bool EventHandler(const Events::OnWindowFramebufferResized* p_event) override { return false; }
+        bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override { return false; }
 
     private:
         GLFWwindow* _glfwWindow;

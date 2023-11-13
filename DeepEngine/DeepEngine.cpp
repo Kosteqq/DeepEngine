@@ -3,6 +3,7 @@
 #include "Architecture/EngineSystem.h"
 #include "Debugs/InitializationMilestone.h"
 #include "Debugs/Timing.h"
+#include "Renderer/RendererSubsystem.h"
 #include "Window/WindowSubsystem.hpp"
 #include "VulkanPrototype/VulkanPrototype.h"
 
@@ -44,16 +45,11 @@ int main(int argc, char* argv[])
         FAIL_MILESTONE(FailedMilestone);
         
         ENGINE_INFO("Hello World");
-        ENGINE_TRACE("TRACE");
-        ENGINE_DEBUG("DEBUG");
-        ENGINE_INFO("INFO");
-        ENGINE_WARN("WARNING");
-        ENGINE_ERR("ERROR");
 
         auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
         subsystemsManager.CreateSubsystem<TestSubsystem>(2);
         auto windowSubsystem = subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "1800 lines for fucking triangle (:");
-    	subsystemsManager.CreateSubsystem<DeepEngine::Renderer::VulkanPrototype>();
+    	subsystemsManager.CreateSubsystem<DeepEngine::Renderer::RendererSubsystem>();
 
         if (!subsystemsManager.Init())
         {

@@ -1,5 +1,5 @@
 #pragma once
-#include "VulkanPCH.h"
+#include "../Vulkan_Instance/VulkanPCH.h"
 
 #include <memory>
 #include <fmt/format.h>
@@ -24,8 +24,8 @@
 
 #ifdef MESSENGER_UTILS
 #endif
-#   define VULKAN_PREINITIALIZE_MESSENGER(LogLevels, LogTypes) DeepEngine::Renderer::Vulkan::VulkanDebugger::PreInitialize(LogLevels, LogTypes) 
-#   define VULKAN_INITIALIZE_MESSENGER(VkInstance) DeepEngine::Renderer::Vulkan::VulkanDebugger::Initialize(VkInstance)
+#   define MESSENGER_PREINITIALIZE(LogLevels, LogTypes) DeepEngine::Renderer::Vulkan::VulkanDebugger::PreInitialize(LogLevels, LogTypes) 
+#   define MESSENGER_INITIALIZE(VkInstance) DeepEngine::Renderer::Vulkan::VulkanDebugger::Initialize(VkInstance)
 #   define MESSENGER_VALIDATION_LAYERS_SIZE (uint32_t)DeepEngine::Renderer::Vulkan::VulkanDebugger::GetEnabledValidationLayers().size()
 #   define MESSENGER_VALIDATION_LAYERS_DATA DeepEngine::Renderer::Vulkan::VulkanDebugger::GetEnabledValidationLayers().data()
 #   define MESSENGER_CREATE_INFO DeepEngine::Renderer::Vulkan::VulkanDebugger::GetMessengerCreateInfo()
@@ -44,15 +44,13 @@ namespace DeepEngine::Renderer::Vulkan
         }
         
     public:
-        static void PreInitialize(const VkDebugUtilsMessageTypeFlagBitsEXT p_logLevels,
-            const VkDebugUtilsMessageTypeFlagsEXT p_logTypes);
+        static void PreInitialize(int p_logLevels, int p_logTypes);
 
         static void Initialize(VkInstance p_vkInstance);
         static void Terminate();
 
-        inline bool TryAddValidationLayer(const VkLayerProperties& p_layer);
-        inline bool TryAddValidationLayer(const std::string& p_layerName);
-        bool TryAddValidationLayer(const char* p_layerName);
+        static inline bool TryAddValidationLayer(const VkLayerProperties& p_layer);
+        static bool TryAddValidationLayer(const char* p_layerName);
         
         static Debug::Logger* GetLogger()
         { return GetInstance()._logger.get(); }

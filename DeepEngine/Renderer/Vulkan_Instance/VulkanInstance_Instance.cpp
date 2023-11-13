@@ -2,19 +2,30 @@
 
 namespace DeepEngine::Renderer::Vulkan
 {
+    void VulkanInstance::PreinitilizeInstance()
+    {
+        uint32_t extensionsCount = 0;
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr);
+
+        _availableInstanceExtensions = std::vector<VkExtensionProperties>(extensionsCount);
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, _availableInstanceExtensions.data());
+
+        
+        VULKAN_TRACE("Found {0} instance extensions:", extensionsCount);
+        for (int i = 0; i < extensionsCount; i++)
+        {
+            VULKAN_TRACE("\t{:<45} (v.{})", _availableInstanceExtensions[i].extensionName, _availableInstanceExtensions[i].specVersion);
+        }
+    }
+
     bool VulkanInstance::InitializeInstance()
     {
         VULKAN_INFO("Initializing Vulkan instance");
         
-        for (int i = 0; i < (uint32_t)_availableInstanceExtensions.size(); i++)
+        VULKAN_TRACE("Enabled extensions:");
+        for (int i = 0; i < (uint32_t)_enabledInstanceExtensionNames.size(); i++)
         {
-            VULKAN_TRACE("{:<45} (v.{}): [{}]",
-                _availableInstanceExtensions[i].extensionName,
-                _availableInstanceExtensions[i].specVersion,
-                IsNameInCollection(
-                    _availableInstanceExtensions[i].extensionName,
-                    _availableInstanceExtensions,
-                    [](VkExtensionProperties& prop) { return prop.extensionName; }));
+            VULKAN_TRACE("\t{:<45}", _enabledInstanceExtensionNames[i]);
         }
         
         VkApplicationInfo appInfo;
@@ -55,7 +66,14 @@ namespace DeepEngine::Renderer::Vulkan
     
     bool VulkanInstance::IsInstanceExtensionAvailable(const char* p_extensionName) const
     {
-        return IsNameInCollection(p_extensionName, _availableInstanceExtensions, [](const char* name) { return name; });
+        for (uint32_t i = 0; i < _availableInstanceExtensions.size(); i++)
+        {
+            if (strcmp(p_extensionName, _availableInstanceExtensions[i].extensionName) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     inline void VulkanInstance::EnableInstanceExtension(const VkExtensionProperties& p_extension)
