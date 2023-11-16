@@ -2,14 +2,13 @@
 
 namespace DeepEngine::Renderer::Vulkan
 {
-    void VulkanInstance::PreinitilizeInstance()
+    void VulkanInstance::PreinitializeInstance()
     {
         uint32_t extensionsCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, nullptr);
 
         _availableInstanceExtensions = std::vector<VkExtensionProperties>(extensionsCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionsCount, _availableInstanceExtensions.data());
-
         
         VULKAN_TRACE("Found {0} instance extensions:", extensionsCount);
         for (int i = 0; i < extensionsCount; i++)
@@ -22,7 +21,7 @@ namespace DeepEngine::Renderer::Vulkan
     {
         VULKAN_INFO("Initializing Vulkan instance");
         
-        VULKAN_TRACE("Enabled extensions:");
+        VULKAN_TRACE("Enabled instance extensions:");
         for (int i = 0; i < (uint32_t)_enabledInstanceExtensionNames.size(); i++)
         {
             VULKAN_TRACE("\t{:<45}", _enabledInstanceExtensionNames[i]);

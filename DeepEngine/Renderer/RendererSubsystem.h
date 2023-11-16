@@ -41,6 +41,8 @@ namespace DeepEngine::Renderer
                 return false;
             }
 
+            _vulkanInstance.EnablePhysicalExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
             if (!_vulkanInstance.InitializePhysicalDevice())
             {
                 return false;
