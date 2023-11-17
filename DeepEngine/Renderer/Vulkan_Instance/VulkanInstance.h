@@ -21,9 +21,9 @@ namespace DeepEngine::Renderer::Vulkan
     public:
         struct QueueInstance
         {
-            const VkQueue Queue;
+            VkQueue Queue;
             const VkQueueFlagBits Bits;
-            const VkQueueFamilyProperties Family;
+            const std::vector<VkQueueFamilyProperties> Family;
             const bool SupportsSurface;
             const uint32_t ID;
         };
@@ -31,38 +31,78 @@ namespace DeepEngine::Renderer::Vulkan
     public:
         VulkanInstance()
         {
-            PreinitializeInstance();
-            PreinitializePhysicalDevice();
-
             _enabledInstanceExtensionNames.reserve(32);
             _enabledPhysicalExtensionNames.reserve(32);
             _queuesCreateInfo.reserve(16);
+            _queueInstances.reserve(16);
+
+            PreinitializeInstance();
         }
         
-        ~VulkanInstance()
+        ~VulkanInstance() override
         { Terminate(); }
 
         void Terminate()
         {
-            TerminateInstance();
-            TerminatePhysicalDevice();
-            TerminateLogicalDevice();
             TerminateSwapChain();
+            TerminateLogicalDevice();
+            TerminateInstance();
         }
 
     public:
-        bool InitializeInstance();
-        bool InitializePhysicalDevice();
-        bool InitializeLogicalDevice();
-        bool InitializeSwapChain() { return true; }
+        bool InitializeInstance()
+        {
+            if (OnInitializeInstance())
+            {
+                glfwCreateWindowSurface(_instance, _glfwWindow, nullptr, &_surface);
+                return true;
+            }
+            return false;
+        }
+        
+        bool InitializePhysicalDevice()
+        {
+            if (OnInitializePhysicalDevice())
+            {
+                PreinitializeLogicalDevice();
+                return true;
+            }
+            return false;
+        }
+        
+        bool InitializeLogicalDevice()
+        {
+            if (OnInitializeLogicalDevice())
+            {
+                // PreInitializeSwapChain();
+                return true;
+            }
+            return false;
+        }
+        
+        bool InitializeSwapChain()
+        {
+            if (OnInitializeSwapChain())
+            {
+                // ...
+                return true;
+            }
+            return false;
+        }
+
+        bool TryAddQueueToCreate(VkQueueFlagBits p_requiredFeatures, bool p_needSurfaceSupport,
+            const QueueInstance ** p_outputInstance);
         
     private:
+        bool OnInitializeInstance();
+        bool OnInitializePhysicalDevice();
+        bool OnInitializeLogicalDevice();
+        bool OnInitializeSwapChain();
+        
         void PreinitializeInstance(); 
-        void PreinitializePhysicalDevice();
         void PreinitializeLogicalDevice();
         
         void TerminateInstance();
-        void TerminatePhysicalDevice();
         void TerminateLogicalDevice();
         void TerminateSwapChain() { }
 
@@ -98,7 +138,12 @@ namespace DeepEngine::Renderer::Vulkan
         bool FindMatchingPhysicalDevice(const std::vector<VkPhysicalDevice>& p_devices);
 
     protected:
-        bool EventHandler(const Events::OnCreateGlfwContext* p_event) override { return false; }
+        bool EventHandler(const Events::OnCreateGlfwContext* p_event) override
+        {
+            _glfwWindow = p_event->GLFWWindow;
+            return false;
+        }
+        
         bool EventHandler(const Events::OnWindowFramebufferResized* p_event) override { return false; }
         bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override { return false; }
 
@@ -125,6 +170,7 @@ namespace DeepEngine::Renderer::Vulkan
         float _queuePriority = 1;
         std::vector<VkQueueFamilyProperties> _availableQueueFamilies;
         std::vector<VkDeviceQueueCreateInfo> _queuesCreateInfo;
+        std::vector<QueueInstance> _queueInstances;
         
         std::vector<VkImage> _swapChainImages;
         std::vector<VkImageView> _swapChainImageViews;

@@ -17,7 +17,7 @@ namespace DeepEngine::Renderer::Vulkan
         }
     }
 
-    bool VulkanInstance::InitializeInstance()
+    bool VulkanInstance::OnInitializeInstance()
     {
         VULKAN_INFO("Initializing Vulkan instance");
         

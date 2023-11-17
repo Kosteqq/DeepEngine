@@ -4,10 +4,7 @@
 
 namespace DeepEngine::Renderer::Vulkan
 {
-    void VulkanInstance::PreinitializePhysicalDevice()
-    { }
-
-    bool VulkanInstance::InitializePhysicalDevice()
+    bool VulkanInstance::OnInitializePhysicalDevice()
     {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
@@ -48,10 +45,6 @@ namespace DeepEngine::Renderer::Vulkan
         }
         
         return true;
-    }
-
-    void VulkanInstance::TerminatePhysicalDevice()
-    {
     }
     
     inline void VulkanInstance::EnablePhysicalExtension(const VkExtensionProperties& p_extension)

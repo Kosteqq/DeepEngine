@@ -47,6 +47,18 @@ namespace DeepEngine::Renderer
             {
                 return false;
             }
+
+            if (!_vulkanInstance.TryAddQueueToCreate(VK_QUEUE_GRAPHICS_BIT, true,
+                &_graphicsQueue))
+            {
+                return false;
+            }
+
+            if (!_vulkanInstance.InitializeLogicalDevice())
+            {
+                return false;
+            }
+            
             return true;
         }
         
@@ -79,5 +91,6 @@ namespace DeepEngine::Renderer
 
     private:
         Vulkan::VulkanInstance _vulkanInstance;
+        const Vulkan::VulkanInstance::QueueInstance* _graphicsQueue;
     };
 }
