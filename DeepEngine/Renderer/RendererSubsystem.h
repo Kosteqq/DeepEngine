@@ -58,6 +58,25 @@ namespace DeepEngine::Renderer
             {
                 return false;
             }
+
+            const auto& availableFormats = _vulkanInstance.GetAvailableSurfaceFormats();
+            VkSurfaceFormatKHR bestFormat = availableFormats[0];
+            for (int i = 0; i < (uint32_t)availableFormats.size(); i++)
+            {
+                if (availableFormats[i].format == VK_FORMAT_B8G8R8A8_SRGB
+                    && availableFormats[i].colorSpace == VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT)
+                {
+                    bestFormat = availableFormats[i];
+                    break;
+                }
+            }
+
+            _vulkanInstance.SetSwapChainFormat(bestFormat, VK_PRESENT_MODE_MAILBOX_KHR, true);
+
+            if (!_vulkanInstance.InitializeSwapChain())
+            {
+                return false;
+            }
             
             return true;
         }

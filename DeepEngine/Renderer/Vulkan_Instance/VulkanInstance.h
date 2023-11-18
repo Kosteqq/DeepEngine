@@ -52,17 +52,13 @@ namespace DeepEngine::Renderer::Vulkan
     public:
         bool InitializeInstance()
         {
-            if (OnInitializeInstance())
-            {
-                glfwCreateWindowSurface(_instance, _glfwWindow, nullptr, &_surface);
-                return true;
-            }
-            return false;
+            return OnInitializeInstance(); 
         }
         
         bool InitializePhysicalDevice()
         {
-            if (OnInitializePhysicalDevice())
+            if (OnInitializePhysicalDevice()
+                && OnInitializeSurface())
             {
                 PreinitializeLogicalDevice();
                 return true;
@@ -72,22 +68,12 @@ namespace DeepEngine::Renderer::Vulkan
         
         bool InitializeLogicalDevice()
         {
-            if (OnInitializeLogicalDevice())
-            {
-                // PreInitializeSwapChain();
-                return true;
-            }
-            return false;
+            return OnInitializeLogicalDevice();
         }
         
         bool InitializeSwapChain()
         {
-            if (OnInitializeSwapChain())
-            {
-                // ...
-                return true;
-            }
-            return false;
+            return OnInitializeSwapChain();
         }
 
         bool TryAddQueueToCreate(VkQueueFlagBits p_requiredFeatures, bool p_needSurfaceSupport,
@@ -96,6 +82,7 @@ namespace DeepEngine::Renderer::Vulkan
     private:
         bool OnInitializeInstance();
         bool OnInitializePhysicalDevice();
+        bool OnInitializeSurface();
         bool OnInitializeLogicalDevice();
         bool OnInitializeSwapChain();
         
@@ -104,7 +91,7 @@ namespace DeepEngine::Renderer::Vulkan
         
         void TerminateInstance();
         void TerminateLogicalDevice();
-        void TerminateSwapChain() { }
+        void TerminateSwapChain();
 
     public:
         VkPhysicalDevice GetPhysicalDevice() const
@@ -112,9 +99,15 @@ namespace DeepEngine::Renderer::Vulkan
         
         VkDevice GetLogicalDevice() const
         { return _logicalDevice; }
+        
+        const std::vector<VkSurfaceFormatKHR>& GetAvailableSurfaceFormats() const 
+        { return _availableSurfaceFormats; }
+        
+        const std::vector<VkPresentModeKHR>& GetAvailableSurfacePresentModes() const 
+        { return _availableSurfacePresentModes; } 
 
         glm::vec2  GetFrameBufferSize() const
-        { return _frameBufferSize; }
+        { return _swapChainCurrentFrameBufferSize; }
 
         VkSwapchainKHR GetSwapchain() const
         { return _swapchain; }
@@ -132,7 +125,11 @@ namespace DeepEngine::Renderer::Vulkan
         inline void EnablePhysicalExtension(const VkExtensionProperties& p_extension);
         void EnablePhysicalExtension(const char* p_extensionName);
 
-        void SetSwapchainFormat(VkFormat p_imageFormat);
+        bool IsSurfaceFormatAvailable() const;
+        bool IsSurfacePresentModeAvailable() const;
+
+        void SetSwapChainFormat(VkSurfaceFormatKHR p_format, VkPresentModeKHR p_presentMode, bool p_ignoreRecreate = false);
+        void RecreateSwapChain();
 
     private:
         bool FindMatchingPhysicalDevice(const std::vector<VkPhysicalDevice>& p_devices);
@@ -144,7 +141,12 @@ namespace DeepEngine::Renderer::Vulkan
             return false;
         }
         
-        bool EventHandler(const Events::OnWindowFramebufferResized* p_event) override { return false; }
+        bool EventHandler(const Events::OnWindowFramebufferResized* p_event) override
+        {
+            _swapChainCurrentFrameBufferSize = { p_event->Width, p_event->Height };
+            _isSwapChainValid = false;
+            return false;
+        }
         bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override { return false; }
 
     private:
@@ -156,11 +158,20 @@ namespace DeepEngine::Renderer::Vulkan
         VkPhysicalDeviceFeatures _physicalDeviceFeatures;
         VkDevice _logicalDevice = VK_NULL_HANDLE;
         std::vector<QueueInstance> _queues;
-        VkSwapchainKHR _swapchain = VK_NULL_HANDLE;
-    
-        glm::vec2 _frameBufferSize;
+
+        VkSurfaceCapabilitiesKHR _availableSurfaceCapabilities;
+        std::vector<VkSurfaceFormatKHR> _availableSurfaceFormats;
+        std::vector<VkPresentModeKHR> _availableSurfacePresentModes;
         VkSurfaceKHR _surface = VK_NULL_HANDLE;
 
+        VkSurfaceFormatKHR _swapchainCurrentFormat;
+        VkPresentModeKHR _swapChainCurrentPresentMode;
+        glm::vec2 _swapChainCurrentFrameBufferSize;
+
+        VkSwapchainKHR _swapchain = VK_NULL_HANDLE;
+        bool _isSwapChainValid = false;
+        std::vector<VkImage> _swapChainImages;
+        std::vector<VkImageView> _swapChainImageViews;
 
         std::vector<VkExtensionProperties> _availableInstanceExtensions;
         std::vector<const char*> _enabledInstanceExtensionNames;
@@ -171,14 +182,6 @@ namespace DeepEngine::Renderer::Vulkan
         std::vector<VkQueueFamilyProperties> _availableQueueFamilies;
         std::vector<VkDeviceQueueCreateInfo> _queuesCreateInfo;
         std::vector<QueueInstance> _queueInstances;
-        
-        std::vector<VkImage> _swapChainImages;
-        std::vector<VkImageView> _swapChainImageViews;
-
-        VkFormat _swapchainImageFormat;
-        VkSurfaceFormatKHR _swapchainFormat;
-        VkPresentModeKHR _swapchainPresent;
-        VkExtent2D _swapchainExtent;
     };
     
 }
