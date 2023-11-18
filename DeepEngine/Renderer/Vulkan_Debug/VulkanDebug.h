@@ -16,9 +16,9 @@
     if (Result != VK_SUCCESS)                                       \
     {                                                               \
         VULKAN_ERR("Vulkan create assertion failed!\n"              \
-                "Message: {}"                                       \
-                "Returned result: {}\n",                            \
-                string_VkResult(Result), FailMessage, __VA_ARGS__); \
+            "Returned result: {}\n"                                 \
+            "Message: {}",                                          \
+            string_VkResult(Result), fmt::format(FailMessage, __VA_ARGS__)); \
         return false;                                               \
     }                                                               \
 
