@@ -1,9 +1,10 @@
 #pragma once
 #include "Architecture/EngineSystem.h"
-#include "Vulkan_Instance/VulkanInstance.h"
+#include "Vulkan/Instance/VulkanInstance.h"
 
 #define MESSENGER_UTILS
-#include "Vulkan_Debug/VulkanDebug.h"
+#include "Vulkan/VulkanRenderPass.h"
+#include "Vulkan/Debug/VulkanDebug.h"
 
 namespace DeepEngine::Renderer
 {
@@ -77,6 +78,13 @@ namespace DeepEngine::Renderer
             {
                 return false;
             }
+
+            if (!_vulkanInstance.TryCreateSubController<Vulkan::VulkanRenderPass>(&_baseRenderPass))
+            {
+                
+            }
+
+            delete _baseRenderPass;
             
             return true;
         }
@@ -109,6 +117,8 @@ namespace DeepEngine::Renderer
         }
 
     private:
+        Vulkan::VulkanRenderPass* _baseRenderPass;
+        
         Vulkan::VulkanInstance _vulkanInstance;
         const Vulkan::VulkanInstance::QueueInstance* _graphicsQueue;
     };

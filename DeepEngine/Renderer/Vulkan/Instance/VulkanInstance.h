@@ -1,5 +1,6 @@
 #pragma once
-#include "VulkanPCH.h"
+#include "../VulkanPCH.h"
+#include <concepts>
 
 #include <glm/glm.hpp>
 #define GLFW_INCLUDE_NONE
@@ -7,13 +8,14 @@
 
 #include "Architecture/EngineEvents.h"
 #include "Architecture/Events.h"
-#include "Renderer/Vulkan_Debug/VulkanDebug.h"
-
+#include "Renderer/Vulkan/Debug/VulkanDebug.h"
+#include "../Controller/BaseVulkanController.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
 
     class VulkanInstance :
+        public BaseVulkanController,
         public Architecture::EventListener<Events::OnCreateGlfwContext>,
         public Architecture::EventListener<Events::OnWindowFramebufferResized>,
         public Architecture::EventListener<Events::OnWindowChangeMinimized>
@@ -30,7 +32,8 @@ namespace DeepEngine::Renderer::Vulkan
         
     public:
         VulkanInstance()
-        {
+            : BaseVulkanController(this)
+        { 
             _enabledInstanceExtensionNames.reserve(32);
             _enabledPhysicalExtensionNames.reserve(32);
             _queuesCreateInfo.reserve(16);
@@ -38,11 +41,12 @@ namespace DeepEngine::Renderer::Vulkan
 
             PreinitializeInstance();
         }
-        
-        ~VulkanInstance() override
-        { Terminate(); }
 
-        void Terminate()
+    private:
+        bool OnInitialized() override
+        { return true; }
+
+        void OnTerminate() override
         {
             TerminateSwapChain();
             TerminateLogicalDevice();
@@ -77,7 +81,7 @@ namespace DeepEngine::Renderer::Vulkan
         }
 
         bool TryAddQueueToCreate(VkQueueFlagBits p_requiredFeatures, bool p_needSurfaceSupport,
-            const QueueInstance ** p_outputInstance);
+            const QueueInstance** p_outputInstance);
         
     private:
         bool OnInitializeInstance();
