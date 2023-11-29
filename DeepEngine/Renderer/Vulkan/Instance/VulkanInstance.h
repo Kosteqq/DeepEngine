@@ -32,12 +32,13 @@ namespace DeepEngine::Renderer::Vulkan
         
     public:
         VulkanInstance()
-            : BaseVulkanController(this)
         { 
             _enabledInstanceExtensionNames.reserve(32);
             _enabledPhysicalExtensionNames.reserve(32);
             _queuesCreateInfo.reserve(16);
             _queueInstances.reserve(16);
+
+            _vulkanInstance = this;
 
             PreinitializeInstance();
         }

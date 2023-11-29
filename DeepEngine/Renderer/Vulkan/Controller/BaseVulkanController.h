@@ -1,6 +1,6 @@
 #pragma once
-#include <list>
 #include <memory>
+#include <stack>
 
 namespace DeepEngine::Renderer::Vulkan
 {
@@ -8,25 +8,25 @@ namespace DeepEngine::Renderer::Vulkan
     
     class BaseVulkanController
     {
-    public:
-        BaseVulkanController() = delete;
+        friend class VulkanInstance;
         
+    public:
         // TODO (Kostek): Replace double pointer with some kind of reference
-        template <typename T>
+        template <typename T, typename ...Args>
         requires std::is_base_of_v<BaseVulkanController, T>
-        bool TryCreateSubController(T** p_outputPtr)
+        bool TryCreateSubController(T** p_outputPtr, Args... p_args)
         {
-            auto* ptr = new T(_vulkanInstance);
-            _subInstances.push_back(ptr);
+            auto* ptr = new T(p_args...);
+            _subInstances.push(ptr);
             
-            ptr->_pointerInContainer = &_subInstances.back();
+            ptr->_pointerInContainer = &_subInstances.top();
 
             *p_outputPtr = ptr;
             return ptr->OnInitialized();
         }
         
     protected:
-        BaseVulkanController(VulkanInstance* p_vulkanInstance);
+        BaseVulkanController() = default;
         virtual ~BaseVulkanController();
 
     protected:
@@ -37,10 +37,10 @@ namespace DeepEngine::Renderer::Vulkan
         { return _vulkanInstance; }
 
     private:
-        VulkanInstance* _vulkanInstance;
+        static VulkanInstance* _vulkanInstance;
         
         BaseVulkanController** _pointerInContainer = nullptr;
-        std::list<BaseVulkanController*> _subInstances;
+        std::stack<BaseVulkanController*> _subInstances;
     };
     
 }
