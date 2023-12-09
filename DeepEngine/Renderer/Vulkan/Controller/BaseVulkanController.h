@@ -1,6 +1,5 @@
 #pragma once
-#include <memory>
-#include <stack>
+#include <list>
 
 namespace DeepEngine::Renderer::Vulkan
 {
@@ -9,28 +8,31 @@ namespace DeepEngine::Renderer::Vulkan
     class BaseVulkanController
     {
         friend class VulkanInstance;
-        
-    public:
-        // TODO (Kostek): Replace double pointer with some kind of reference
-        template <typename T, typename ...Args>
-        requires std::is_base_of_v<BaseVulkanController, T>
-        bool TryCreateSubController(T** p_outputPtr, Args... p_args)
-        {
-            auto* ptr = new T(p_args...);
-            _subInstances.push(ptr);
-            
-            ptr->_pointerInContainer = &_subInstances.top();
 
-            *p_outputPtr = ptr;
-            return ptr->OnInitialized();
-        }
-        
     protected:
         BaseVulkanController() = default;
-        virtual ~BaseVulkanController();
+        virtual ~BaseVulkanController() = default;
+
+    public:
+        BaseVulkanController(BaseVulkanController& p_origin) = delete;
+        BaseVulkanController(const BaseVulkanController&& p_origin) = delete;
+
+        BaseVulkanController& operator=(const BaseVulkanController& p_other) = delete;
+            
+        void Terminate();
+
+        template <typename T>
+        requires std::is_base_of_v<BaseVulkanController, T>
+        bool InitializeSubController(T* p_controller)
+        {
+            ((BaseVulkanController*)p_controller)->_parentController = this;
+            _dependentControllers.push_back((BaseVulkanController*)p_controller);
+
+            return ((BaseVulkanController*)p_controller)->OnInitialize();
+        }
 
     protected:
-        virtual bool OnInitialized() = 0;
+        virtual bool OnInitialize() = 0;
         virtual void OnTerminate() = 0;
 
         VulkanInstance* GetVulkanInstanceController() const
@@ -39,8 +41,7 @@ namespace DeepEngine::Renderer::Vulkan
     private:
         static VulkanInstance* _vulkanInstance;
         
-        BaseVulkanController** _pointerInContainer = nullptr;
-        std::stack<BaseVulkanController*> _subInstances;
+        std::list<BaseVulkanController*> _dependentControllers;
+        BaseVulkanController* _parentController = nullptr;
     };
-    
 }

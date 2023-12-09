@@ -26,6 +26,12 @@ namespace DeepEngine::Renderer::Vulkan
         {
             VULKAN_TRACE("\t{:<45}", _enabledInstanceExtensionNames[i]);
         }
+
+        std::vector<const char*> extensions(_enabledInstanceExtensionNames.size());
+        for (uint32_t i = 0; i < _enabledInstanceExtensionNames.size(); i++)
+        {
+            extensions[i] = _enabledInstanceExtensionNames[i].c_str();
+        }
         
         VkApplicationInfo appInfo;
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -39,8 +45,8 @@ namespace DeepEngine::Renderer::Vulkan
         VkInstanceCreateInfo instanceCreateInfo { };
         instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instanceCreateInfo.pApplicationInfo = &appInfo;
-        instanceCreateInfo.enabledExtensionCount = (uint32_t)_enabledInstanceExtensionNames.size();
-        instanceCreateInfo.ppEnabledExtensionNames = _enabledInstanceExtensionNames.data();
+        instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+        instanceCreateInfo.ppEnabledExtensionNames = extensions.data();
         instanceCreateInfo.enabledLayerCount = MESSENGER_VALIDATION_LAYERS_SIZE;
         instanceCreateInfo.ppEnabledLayerNames = MESSENGER_VALIDATION_LAYERS_DATA;
         instanceCreateInfo.pNext = MESSENGER_CREATE_INFO;
@@ -63,11 +69,11 @@ namespace DeepEngine::Renderer::Vulkan
         return IsInstanceExtensionAvailable(p_extension.extensionName);
     }
     
-    bool VulkanInstance::IsInstanceExtensionAvailable(const char* p_extensionName) const
+    bool VulkanInstance::IsInstanceExtensionAvailable(const std::string& p_extensionName) const
     {
         for (uint32_t i = 0; i < _availableInstanceExtensions.size(); i++)
         {
-            if (strcmp(p_extensionName, _availableInstanceExtensions[i].extensionName) == 0)
+            if (std::string(_availableInstanceExtensions[i].extensionName) == p_extensionName)
             {
                 return true;
             }
@@ -80,7 +86,7 @@ namespace DeepEngine::Renderer::Vulkan
         EnableInstanceExtension(p_extension.extensionName);
     }
     
-    void VulkanInstance::EnableInstanceExtension(const char* p_extensionName)
+    void VulkanInstance::EnableInstanceExtension(const std::string& p_extensionName)
     {
         VULKAN_TRACE("Add \"{}\" extension to enabled", p_extensionName);
         _enabledInstanceExtensionNames.push_back(p_extensionName);

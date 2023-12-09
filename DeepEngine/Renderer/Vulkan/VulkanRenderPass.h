@@ -1,12 +1,6 @@
 #pragma once
-#include <unordered_map>
-#include <string.h>
-
 #include "Controller/BaseVulkanController.h"
 #include "Instance/VulkanInstance.h"
-
-#define RENDER_ATTACHMENT_DEBUG_NAME_SIZE 128
-    
 
 namespace DeepEngine::Renderer::Vulkan
 {
@@ -18,7 +12,6 @@ namespace DeepEngine::Renderer::Vulkan
         {
             uint32_t ID;
             VkAttachmentDescription* Desc;
-            char DebugName[RENDER_ATTACHMENT_DEBUG_NAME_SIZE];
         };
         
         struct RenderSubPass
@@ -40,15 +33,13 @@ namespace DeepEngine::Renderer::Vulkan
 
         public:
             ~RenderSubPassDescCreator();
-            RenderSubPassDescCreator(const RenderSubPassDescCreator&) = delete;
-            RenderSubPassDescCreator(const RenderSubPassDescCreator&&) = delete;
-            RenderSubPassDescCreator& operator=(const RenderSubPassDescCreator&) = delete;
 
         public:
             const RenderSubPassDescCreator& AddColorAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const;
             const RenderSubPassDescCreator& AddInputAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const;
             const RenderSubPassDescCreator& AddResolveAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const;
             const RenderSubPassDescCreator& SetDepthStencilAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const;
+            const RenderSubPass* GetSubPassPtr() const;
 
         private:
             RenderSubPass& _subPass;
@@ -57,18 +48,20 @@ namespace DeepEngine::Renderer::Vulkan
         
     protected:
         VulkanRenderPass();
-
         ~VulkanRenderPass() override = default;
         
+    protected:
+        bool OnInitialize() final;
+        void OnTerminate() final;
+
     public:
-        bool OnInitialized() override;
-        void OnTerminate() override;
+        VkRenderPass GetVkRenderPass() const
+        { return _renderPass; }
 
     protected:
         void virtual Initialize() = 0;
         
-        void CreateRenderAttachment(const VkAttachmentDescription& p_desc, const char* p_debugName,
-            const RenderAttachment** p_attachment);
+        void CreateRenderAttachment(const VkAttachmentDescription& p_desc, const RenderAttachment** p_attachment);
         RenderSubPassDescCreator CreateRenderSubPass(VkPipelineBindPoint p_bindPoint);
 
     private:
@@ -79,5 +72,6 @@ namespace DeepEngine::Renderer::Vulkan
         std::vector<RenderSubPass> _renderSubPasses;
         std::vector<VkSubpassDescription> _renderSubPassesDesc;
     };
+    
 }
 

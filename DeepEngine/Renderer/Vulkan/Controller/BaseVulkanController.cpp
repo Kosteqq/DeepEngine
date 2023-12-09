@@ -3,28 +3,25 @@
 namespace DeepEngine::Renderer::Vulkan
 {
     VulkanInstance* BaseVulkanController::_vulkanInstance = nullptr;
-    
-    BaseVulkanController::~BaseVulkanController()
+
+    void BaseVulkanController::Terminate()
     {
-        // Delete all sub-instances
-        while (static_cast<uint32_t>(_subInstances.size()) > 0)
+        if (_parentController != nullptr)
         {
-            auto* subInstancePtr = _subInstances.top();
-            _subInstances.pop();
-            
-            if (subInstancePtr != nullptr)
-            {
-                subInstancePtr->OnTerminate();
-                delete subInstancePtr;
-            }
+            _parentController->_dependentControllers.remove(this);
         }
         
-        auto** ptr = _pointerInContainer;
-
-        if (ptr != nullptr)
+        while (!_dependentControllers.empty())
         {
-            // null pointer inside base-instance
-            *ptr = nullptr;
+            BaseVulkanController* dependent = _dependentControllers.back();
+            dependent->_parentController = nullptr;
+            dependent->Terminate();
+            
+            _dependentControllers.remove(dependent);
         }
+
+        OnTerminate();
+        
+        delete this;
     }
 }

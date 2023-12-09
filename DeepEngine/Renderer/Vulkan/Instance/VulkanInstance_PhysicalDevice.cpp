@@ -1,6 +1,5 @@
 #include "VulkanInstance.h"
 
-
 namespace DeepEngine::Renderer::Vulkan
 {
     bool VulkanInstance::OnInitializePhysicalDevice()
@@ -49,10 +48,24 @@ namespace DeepEngine::Renderer::Vulkan
     inline void VulkanInstance::EnablePhysicalExtension(const VkExtensionProperties& p_extension)
     { EnablePhysicalExtension(p_extension.extensionName); }
     
-    void VulkanInstance::EnablePhysicalExtension(const char* p_extensionName)
+    void VulkanInstance::EnablePhysicalExtension(const std::string& p_extensionName)
     {
         _enabledPhysicalExtensionNames.push_back(p_extensionName);
     }
+
+    bool VulkanInstance::IsPhysicalExtensionEnabled(const std::string& p_extensionName) const
+    {
+        for (int i = 0; i < _enabledPhysicalExtensionNames.size(); i++)
+        {
+            if (_enabledPhysicalExtensionNames[i] == p_extensionName)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
 
     bool VulkanInstance::FindMatchingPhysicalDevice(const std::vector<VkPhysicalDevice>& p_devices)
     {
@@ -70,7 +83,7 @@ namespace DeepEngine::Renderer::Vulkan
             {
                 for (uint32_t k = 0; k < deviceExtensions.size(); k++)
                 {
-                    if (strcmp(_enabledPhysicalExtensionNames[j], deviceExtensions[k].extensionName) == 0)
+                    if (_enabledPhysicalExtensionNames[j] == std::string(deviceExtensions[k].extensionName))
                     {
                         foundExtensionsCount++;
                         break;

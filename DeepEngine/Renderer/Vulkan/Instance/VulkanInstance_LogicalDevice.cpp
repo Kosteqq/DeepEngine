@@ -1,3 +1,5 @@
+#include <stack>
+
 #include "VulkanInstance.h"
 
 namespace DeepEngine::Renderer::Vulkan
@@ -13,13 +15,32 @@ namespace DeepEngine::Renderer::Vulkan
     
     bool VulkanInstance::OnInitializeLogicalDevice()
     {
+        std::stack<void*> nextPtrStack;
+        nextPtrStack.push(nullptr);
+
+        VkPhysicalDeviceDepthClipEnableFeaturesEXT enableDepthClipFeature { };
+        if (IsPhysicalExtensionEnabled(VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME))
+        {
+            enableDepthClipFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
+            enableDepthClipFeature.pNext = nextPtrStack.top();
+            enableDepthClipFeature.depthClipEnable = VK_TRUE;
+            nextPtrStack.push(&enableDepthClipFeature);
+        }
+
+        std::vector<const char*> extensions(_enabledPhysicalExtensionNames.size());
+        for (uint32_t i = 0; i < _enabledPhysicalExtensionNames.size(); i++)
+        {
+            extensions[i] = _enabledPhysicalExtensionNames[i].c_str();
+        }
+        
         VkDeviceCreateInfo createInfo { };
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pNext = nextPtrStack.top();
         createInfo.pQueueCreateInfos = _queuesCreateInfo.data();
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(_queuesCreateInfo.size());
         createInfo.pEnabledFeatures = &_physicalDeviceFeatures;
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(_enabledPhysicalExtensionNames.size());
-        createInfo.ppEnabledExtensionNames = _enabledPhysicalExtensionNames.data();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+        createInfo.ppEnabledExtensionNames = extensions.data();
         createInfo.enabledLayerCount = MESSENGER_VALIDATION_LAYERS_SIZE;
         createInfo.ppEnabledLayerNames = MESSENGER_VALIDATION_LAYERS_DATA;
 
@@ -40,9 +61,21 @@ namespace DeepEngine::Renderer::Vulkan
     {
         vkDestroyDevice(_logicalDevice, nullptr);
     }
-    
+
+    VulkanInstance::VulkanInstance()
+    { 
+        _enabledInstanceExtensionNames.reserve(32);
+        _enabledPhysicalExtensionNames.reserve(32);
+        _queuesCreateInfo.reserve(16);
+        _queueInstances.reserve(16);
+
+        BaseVulkanController::_vulkanInstance = this;
+
+        PreinitializeInstance();
+    }
+
     bool VulkanInstance::TryAddQueueToCreate(const VkQueueFlagBits p_requiredFeatures, const bool p_needSurfaceSupport,
-        const QueueInstance ** p_outputInstance)
+                                             const QueueInstance ** p_outputInstance)
     {
         for (uint32_t i = 0; i < _availableQueueFamilies.size(); i++)
         {
@@ -75,7 +108,8 @@ namespace DeepEngine::Renderer::Vulkan
                     p_requiredFeatures,
                     properties,
                     static_cast<bool>(supportSurfaces),
-                    id
+                    id,
+                    i
                 });
                 
                 *p_outputInstance = &_queueInstances.back();

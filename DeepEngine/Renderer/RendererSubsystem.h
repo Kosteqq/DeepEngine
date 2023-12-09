@@ -3,123 +3,131 @@
 #include "Vulkan/Instance/VulkanInstance.h"
 
 #define MESSENGER_UTILS
+#include "MainRenderPass.h"
 #include "Vulkan/VulkanRenderPass.h"
+#include "Vulkan/VulkanShaderModule.h"
 #include "Vulkan/Debug/VulkanDebug.h"
+#include "Vulkan/VulkanFence.h"
 
 namespace DeepEngine::Renderer
 {
-    class RendererSubsystem : Architecture::EngineSubsystem
+    
+    class RendererSubsystem final : Architecture::EngineSubsystem,
+                                    Architecture::EventListener<Events::OnWindowChangeMinimized>
     {
     public:
         RendererSubsystem() : EngineSubsystem("Renderer")
-        {
+        { 
+            _vulkanInstance = new Vulkan::VulkanInstance();
         }
 
     protected:
         bool Init() override
         {
-            MESSENGER_PREINITIALIZE(VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-                VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-                | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT);
-            
-            Vulkan::VulkanDebugger::TryAddValidationLayer("VK_LAYER_KHRONOS_validation");
-
-            if (_vulkanInstance.IsInstanceExtensionAvailable(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
-            {
-                _vulkanInstance.EnableInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-            }
-
-            if (!EnableGlfwExtensions())
-            {
-                return false;
-            }
-            
-            if (!_vulkanInstance.InitializeInstance())
+            if (!InitializeVulkanInstance())
             {
                 return false;
             }
 
-            _vulkanInstance.EnablePhysicalExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
-            if (!_vulkanInstance.InitializePhysicalDevice())
+            _acquireImageFence = new Vulkan::VulkanFence();
+            if (!_vulkanInstance->InitializeSubController(_acquireImageFence))
             {
                 return false;
             }
 
-            if (!_vulkanInstance.TryAddQueueToCreate(VK_QUEUE_GRAPHICS_BIT, true,
-                &_graphicsQueue))
+            _mainRenderPass = new MainRenderPass();
+            if (!_vulkanInstance->InitializeSubController(_mainRenderPass))
             {
                 return false;
             }
 
-            if (!_vulkanInstance.InitializeLogicalDevice())
-            {
-                return false;
-            }
-
-            const auto& availableFormats = _vulkanInstance.GetAvailableSurfaceFormats();
-            VkSurfaceFormatKHR bestFormat = availableFormats[0];
-            for (int i = 0; i < (uint32_t)availableFormats.size(); i++)
-            {
-                if (availableFormats[i].format == VK_FORMAT_B8G8R8A8_SRGB
-                    && availableFormats[i].colorSpace == VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT)
-                {
-                    bestFormat = availableFormats[i];
-                    break;
-                }
-            }
-
-            _vulkanInstance.SetSwapChainFormat(bestFormat, VK_PRESENT_MODE_MAILBOX_KHR, true);
-
-            if (!_vulkanInstance.InitializeSwapChain())
-            {
-                return false;
-            }
-
-            if (!_vulkanInstance.TryCreateSubController<Vulkan::VulkanRenderPass>(&_baseRenderPass))
-            {
-                
-            }
-
-            delete _baseRenderPass;
-            
             return true;
         }
         
         void Destroy() override
         {
+            _vulkanInstance->Terminate();
             Vulkan::VulkanDebugger::Terminate();
         }
         
         void Tick() override
-        { }
-
-    private:
-        bool EnableGlfwExtensions()
         {
-            uint32_t glfwExtensionCount = 0;
-            const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-            for (int i = 0; i < glfwExtensionCount; i++)
+            if (_isWindowMinimized)
             {
-                if (!_vulkanInstance.IsInstanceExtensionAvailable(glfwExtensions[i]))
-                {
-                    return false;
-                }
+                return;
+            }
+            
+            vkWaitForFences(
+                _vulkanInstance->GetLogicalDevice(),
+                1,
+                &_acquireImageFence->GetFence(),
+                VK_TRUE,
+                UINT64_MAX);
+            
+            vkResetFences(_vulkanInstance->GetLogicalDevice(), 1, &_acquireImageFence->GetFence());
 
-                _vulkanInstance.EnableInstanceExtension(glfwExtensions[i]);
+            uint32_t imageIndex;
+            const auto acquireResult = vkAcquireNextImageKHR(
+                _vulkanInstance->GetLogicalDevice(),
+                _vulkanInstance->GetSwapchain(),
+                UINT64_MAX,
+                VK_NULL_HANDLE,
+                _acquireImageFence->GetFence(),
+                &imageIndex);
+
+            bool invalidSwapChain = false;
+            if (acquireResult == VK_SUBOPTIMAL_KHR)
+            {
+                invalidSwapChain = true;
+            }
+            if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR)
+            {
+                _vulkanInstance->RecreateSwapChain();
+                return;
             }
 
-            return true;
+            VkSwapchainKHR swapChains[] = { _vulkanInstance->GetSwapchain() };
+            
+            VkPresentInfoKHR presentInfo { };
+            presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+            presentInfo.waitSemaphoreCount = 0;
+            presentInfo.pWaitSemaphores = nullptr;
+            presentInfo.swapchainCount = 1;
+            presentInfo.pSwapchains = swapChains;
+            presentInfo.pImageIndices = &imageIndex;
+            presentInfo.pResults = nullptr;
+
+            VkResult presentResult = vkQueuePresentKHR(_mainGraphicsQueue->Queue, &presentInfo);
+            if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR || invalidSwapChain)
+            {
+                _vulkanInstance->RecreateSwapChain();
+            }
+            else if (presentResult != VK_SUCCESS)
+            {
+                VULKAN_ERR("Failed to present swapchain with returned result {}", string_VkResult(presentResult));
+            }
+        }
+
+    protected:
+        bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override
+        {
+            _isWindowMinimized = p_event->MinimizedMode;
+            return false;
         }
 
     private:
-        Vulkan::VulkanRenderPass* _baseRenderPass;
+        bool InitializeVulkanInstance();
+
+        bool EnableGlfwExtensions();
+
+    private:
+        Vulkan::VulkanInstance* _vulkanInstance = nullptr;
+        Vulkan::VulkanFence* _acquireImageFence = nullptr;
+        MainRenderPass* _mainRenderPass = nullptr;
         
-        Vulkan::VulkanInstance _vulkanInstance;
-        const Vulkan::VulkanInstance::QueueInstance* _graphicsQueue;
+        const Vulkan::VulkanInstance::QueueInstance* _mainGraphicsQueue = nullptr;
+
+        bool _isWindowMinimized = false;
     };
+    
 }

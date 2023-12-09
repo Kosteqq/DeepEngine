@@ -35,7 +35,7 @@ namespace DeepEngine::Renderer::Vulkan
     const VulkanRenderPass::RenderSubPassDescCreator&
         VulkanRenderPass::RenderSubPassDescCreator::AddColorAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
     {
-        _subPass.ColorAttachments.push_back(VkAttachmentReference
+        _subPass.ColorAttachments.push_back(
             {
                 .attachment = p_attachment->ID,
                 .layout = p_layout
@@ -76,6 +76,10 @@ namespace DeepEngine::Renderer::Vulkan
         return *this;
     }
 
+    const VulkanRenderPass::RenderSubPass* VulkanRenderPass::RenderSubPassDescCreator::GetSubPassPtr() const
+    {
+        return &_subPass;
+    }
 
 
     //////////////////////////////////////////////
@@ -90,7 +94,7 @@ namespace DeepEngine::Renderer::Vulkan
         _renderSubPassesDesc.reserve(_renderSubPasses.capacity());
     }
 
-    bool VulkanRenderPass::OnInitialized()
+    bool VulkanRenderPass::OnInitialize()
     {
         Initialize();
             
@@ -114,38 +118,34 @@ namespace DeepEngine::Renderer::Vulkan
     }
 
     void VulkanRenderPass::OnTerminate()
-    { }
+    {
+        vkDestroyRenderPass(GetVulkanInstanceController()->GetLogicalDevice(), _renderPass, nullptr);
+    }
 
-    void VulkanRenderPass::CreateRenderAttachment(const VkAttachmentDescription& p_desc, const char* p_debugName,
-        const RenderAttachment** p_attachment)
+    void VulkanRenderPass::CreateRenderAttachment(const VkAttachmentDescription& p_desc, const RenderAttachment** p_attachment)
     {
         _attachmentsDesc.push_back(p_desc);
-            
-        RenderAttachment attachment {
+
+        _attachments.push_back(RenderAttachment {
             .ID = static_cast<uint32_t>(_attachments.size()),
             .Desc = &_attachmentsDesc.back(),
-        };
-
-        strcpy_s(attachment.DebugName, RENDER_ATTACHMENT_DEBUG_NAME_SIZE, p_debugName);
-
-        _attachments.push_back(attachment);
+        });
 
         *p_attachment = &_attachments.back();
     }
 
     VulkanRenderPass::RenderSubPassDescCreator VulkanRenderPass::CreateRenderSubPass(VkPipelineBindPoint p_bindPoint)
     {
-        RenderSubPass subPass {
-            .ID = static_cast<uint32_t>(_renderSubPasses.size()),
-            .BindPoint = p_bindPoint,
-        };
-                
+        _renderSubPasses.emplace_back();
+        
+        RenderSubPass& subPass = _renderSubPasses.back();
+
+        subPass.ID =static_cast<uint32_t>(_renderSubPasses.size()); 
+        subPass.BindPoint = p_bindPoint; 
         subPass.InputAttachments.reserve(8);
         subPass.ColorAttachments.reserve(8);
         subPass.ResolveAttachments.reserve(8);
         subPass.PreserveAttachments.reserve(8);
-
-        _renderSubPasses.push_back(subPass);
 
         return RenderSubPassDescCreator { subPass, _renderSubPassesDesc };
     }

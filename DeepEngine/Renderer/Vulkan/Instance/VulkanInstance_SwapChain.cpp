@@ -32,6 +32,8 @@ namespace DeepEngine::Renderer::Vulkan
         // createInfo.queueFamilyIndexCount = 2;
         // createInfo.pQueueFamilyIndices = ;
 
+        // TODO (Kostek) Create sth like CreatePresentQueue
+
         // For single queue -> better performance
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0; // optional
@@ -98,6 +100,8 @@ namespace DeepEngine::Renderer::Vulkan
         //         vkCreateFramebuffer(_logicalDevice, &createInfo, nullptr, &_swapChainFramebuffers[i]),
         //         "Failed to create SwapChain image view!")
         // }
+
+        return true;
     }
 
     void VulkanInstance::TerminateSwapChain()

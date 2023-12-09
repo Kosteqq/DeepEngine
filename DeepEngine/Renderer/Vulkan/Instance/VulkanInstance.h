@@ -28,23 +28,15 @@ namespace DeepEngine::Renderer::Vulkan
             const std::vector<VkQueueFamilyProperties> Family;
             const bool SupportsSurface;
             const uint32_t ID;
+            const uint32_t FamilyIndex;
         };
-        
+
     public:
-        VulkanInstance()
-        { 
-            _enabledInstanceExtensionNames.reserve(32);
-            _enabledPhysicalExtensionNames.reserve(32);
-            _queuesCreateInfo.reserve(16);
-            _queueInstances.reserve(16);
-
-            _vulkanInstance = this;
-
-            PreinitializeInstance();
-        }
+        VulkanInstance();
+        ~VulkanInstance() override = default;
 
     private:
-        bool OnInitialized() override
+        bool OnInitialize() override
         { return true; }
 
         void OnTerminate() override
@@ -101,6 +93,10 @@ namespace DeepEngine::Renderer::Vulkan
     public:
         VkPhysicalDevice GetPhysicalDevice() const
         { return _physicalDevice; }
+        const VkPhysicalDeviceFeatures& GetPhysicalDeviceFeatures() const
+        { return _physicalDeviceFeatures; }
+        const VkPhysicalDeviceProperties& GetPhysicalDeviceProperties() const
+        { return _physicalDeviceProperties; }
         
         VkDevice GetLogicalDevice() const
         { return _logicalDevice; }
@@ -114,6 +110,9 @@ namespace DeepEngine::Renderer::Vulkan
         glm::vec2  GetFrameBufferSize() const
         { return _swapChainCurrentFrameBufferSize; }
 
+        VkSurfaceFormatKHR GetSwapchainCurrentFormat() const
+        { return _swapchainCurrentFormat; }
+
         VkSwapchainKHR GetSwapchain() const
         { return _swapchain; }
         
@@ -122,13 +121,14 @@ namespace DeepEngine::Renderer::Vulkan
 
     public:
         inline bool IsInstanceExtensionAvailable(const VkExtensionProperties& p_extension) const;
-        bool IsInstanceExtensionAvailable(const char* p_extensionName) const;
+        bool IsInstanceExtensionAvailable(const std::string& p_extensionName) const;
 
         inline void EnableInstanceExtension(const VkExtensionProperties& p_extension);
-        void EnableInstanceExtension(const char* p_extensionName);
+        void EnableInstanceExtension(const std::string& p_extensionName);
 
         inline void EnablePhysicalExtension(const VkExtensionProperties& p_extension);
-        void EnablePhysicalExtension(const char* p_extensionName);
+        void EnablePhysicalExtension(const std::string& p_extensionName);
+        bool IsPhysicalExtensionEnabled(const std::string& p_extensionName) const;
 
         bool IsSurfaceFormatAvailable() const;
         bool IsSurfacePresentModeAvailable() const;
@@ -152,7 +152,10 @@ namespace DeepEngine::Renderer::Vulkan
             _isSwapChainValid = false;
             return false;
         }
-        bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override { return false; }
+        bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override
+        {
+            return false;
+        }
 
     private:
         GLFWwindow* _glfwWindow;
@@ -179,14 +182,13 @@ namespace DeepEngine::Renderer::Vulkan
         std::vector<VkImageView> _swapChainImageViews;
 
         std::vector<VkExtensionProperties> _availableInstanceExtensions;
-        std::vector<const char*> _enabledInstanceExtensionNames;
+        std::vector<std::string> _enabledInstanceExtensionNames;
         
-        std::vector<const char*> _enabledPhysicalExtensionNames;
+        std::vector<std::string> _enabledPhysicalExtensionNames;
         
         float _queuePriority = 1;
         std::vector<VkQueueFamilyProperties> _availableQueueFamilies;
         std::vector<VkDeviceQueueCreateInfo> _queuesCreateInfo;
         std::vector<QueueInstance> _queueInstances;
     };
-    
 }
