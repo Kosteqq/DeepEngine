@@ -1,12 +1,12 @@
-#include "VulkanCommandBuffer.h"
+#include "CommandBuffer.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
-    VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandPool* p_commandPool, bool p_createAsSecondary)
+    CommandBuffer::CommandBuffer(CommandPool* p_commandPool, bool p_createAsSecondary)
         : _commandPool(p_commandPool), _isSecondary(p_createAsSecondary)
     { }
 
-    bool VulkanCommandBuffer::OnInitialize()
+    bool CommandBuffer::OnInitialize()
     {
         VkCommandBufferAllocateInfo allocInfo { };
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

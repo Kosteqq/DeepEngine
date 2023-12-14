@@ -1,10 +1,10 @@
-#include "VulkanPipeline.h"
+#include "GraphicsPipeline.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
 
-    VulkanPipeline::VulkanPipeline(VulkanPipelineLayout* p_pipelineLayout,
-        const VulkanShaderModule* p_vertShaderModule, const VulkanShaderModule* p_fragShaderModule,
+    GraphicsPipeline::GraphicsPipeline(PipelineLayout* p_pipelineLayout,
+        const ShaderModule* p_vertShaderModule, const ShaderModule* p_fragShaderModule,
         const PipelineDynamicState& p_dynamicStateFlags, const PipelineColorBlend& p_colorBlend,
         const std::vector<PipelineColorBlendAttachment>& p_attachmentsBlend, const PipelineRasterization& p_rasterization)
         : _pipelineLayout(p_pipelineLayout), 
@@ -13,7 +13,7 @@ namespace DeepEngine::Renderer::Vulkan
         _rasterization(p_rasterization)
     { }
     
-    bool VulkanPipeline::OnInitialize()
+    bool GraphicsPipeline::OnInitialize()
     {
         std::vector<VkPipelineShaderStageCreateInfo> stages;
 
@@ -236,7 +236,7 @@ namespace DeepEngine::Renderer::Vulkan
         return true;
     }
 
-    void VulkanPipeline::OnTerminate()
+    void GraphicsPipeline::OnTerminate()
     {
         vkDestroyPipeline(GetVulkanInstanceController()->GetLogicalDevice(), _pipeline, nullptr);
     }

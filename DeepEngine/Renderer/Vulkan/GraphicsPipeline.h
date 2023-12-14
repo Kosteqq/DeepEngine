@@ -1,8 +1,8 @@
 #pragma once
 #include "Controller/BaseVulkanController.h"
 #include "Instance/VulkanInstance.h"
-#include "VulkanPipelineLayout.h"
-#include "VulkanShaderModule.h"
+#include "PipelineLayout.h"
+#include "ShaderModule.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
@@ -56,15 +56,15 @@ namespace DeepEngine::Renderer::Vulkan
         float DepthBiasSlopeFactor      = 0.0f;
     };
     
-    class VulkanPipeline : public BaseVulkanController
+    class GraphicsPipeline : public BaseVulkanController
     {
     public:
-        VulkanPipeline(VulkanPipelineLayout* p_pipelineLayout,
-            const VulkanShaderModule* p_vertShaderModule, const VulkanShaderModule* p_fragShaderModule,
+        GraphicsPipeline(PipelineLayout* p_pipelineLayout,
+            const ShaderModule* p_vertShaderModule, const ShaderModule* p_fragShaderModule,
             const PipelineDynamicState& p_dynamicStateFlags, const PipelineColorBlend& p_colorBlend,
             const std::vector<PipelineColorBlendAttachment>& p_attachmentsBlend, const PipelineRasterization& p_rasterization);
 
-        ~VulkanPipeline() override = default;
+        ~GraphicsPipeline() override = default;
 
         const VkRenderPass& GetVkRenderPass() const
         { return _pipelineLayout->GetRenderPass()->GetVkRenderPass(); }
@@ -80,10 +80,10 @@ namespace DeepEngine::Renderer::Vulkan
         void OnTerminate() final;
 
     private:
-        VulkanPipelineLayout* _pipelineLayout;
+        PipelineLayout* _pipelineLayout;
         
-        const VulkanShaderModule* _vertShaderModule; 
-        const VulkanShaderModule* _fragShaderModule;
+        const ShaderModule* _vertShaderModule; 
+        const ShaderModule* _fragShaderModule;
         
         const PipelineDynamicState _dynamicStateFlags;
         const PipelineColorBlend _colorBlend;

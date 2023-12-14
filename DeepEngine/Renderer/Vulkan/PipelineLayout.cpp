@@ -1,12 +1,12 @@
-#include "VulkanPipelineLayout.h"
+#include "PipelineLayout.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
-    VulkanPipelineLayout::VulkanPipelineLayout(VulkanRenderPass* p_renderPass, uint32_t p_subPassIndex)
+    PipelineLayout::PipelineLayout(RenderPass* p_renderPass, uint32_t p_subPassIndex)
         : _renderPass(p_renderPass), _subPassIndex(p_subPassIndex)
     { }
 
-    bool VulkanPipelineLayout::OnInitialize()
+    bool PipelineLayout::OnInitialize()
     {
         VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo { };
         pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -26,7 +26,7 @@ namespace DeepEngine::Renderer::Vulkan
         return true;
     }
 
-    void VulkanPipelineLayout::OnTerminate()
+    void PipelineLayout::OnTerminate()
     {
         vkDestroyPipelineLayout(GetVulkanInstanceController()->GetLogicalDevice(), _pipelineLayout, nullptr);
     }

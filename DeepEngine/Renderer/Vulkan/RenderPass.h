@@ -5,7 +5,7 @@
 namespace DeepEngine::Renderer::Vulkan
 {
     
-    class VulkanRenderPass : public BaseVulkanController
+    class RenderPass : public BaseVulkanController
     {
     protected:
         struct RenderAttachment
@@ -29,7 +29,7 @@ namespace DeepEngine::Renderer::Vulkan
         
         class RenderSubPassDescCreator
         {
-            friend class VulkanRenderPass;
+            friend class RenderPass;
             RenderSubPassDescCreator(RenderSubPass& p_subPass, std::vector<VkSubpassDescription>& p_renderSubPassesDesc);
 
         public:
@@ -48,8 +48,8 @@ namespace DeepEngine::Renderer::Vulkan
       };
         
     protected:
-        VulkanRenderPass();
-        ~VulkanRenderPass() override = default;
+        RenderPass();
+        ~RenderPass() override = default;
         
     protected:
         bool OnInitialize() final;

@@ -4,13 +4,13 @@
 
 namespace DeepEngine::Renderer::Vulkan
 {
-    class VulkanPipeline;
+    class GraphicsPipeline;
 
-    class VulkanShaderModule final : public BaseVulkanController
+    class ShaderModule final : public BaseVulkanController
     {
     public:
-        VulkanShaderModule(const std::string& p_filepath, VkShaderStageFlagBits p_shaderStage);
-        ~VulkanShaderModule() override = default;
+        ShaderModule(const std::string& p_filepath, VkShaderStageFlagBits p_shaderStage);
+        ~ShaderModule() override = default;
 
         VkPipelineShaderStageCreateInfo GetShaderStageCreateInfo() const
         {

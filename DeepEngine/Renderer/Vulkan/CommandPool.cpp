@@ -1,12 +1,12 @@
-#include "VulkanCommandPool.h"
+#include "CommandPool.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
-    VulkanCommandPool::VulkanCommandPool(const VulkanInstance::QueueInstance* p_queue, const CommandPoolFlag p_flags)
+    CommandPool::CommandPool(const VulkanInstance::QueueInstance* p_queue, const CommandPoolFlag p_flags)
         : _queue(p_queue), _flag(p_flags)
     { }
 
-    bool VulkanCommandPool::OnInitialize()
+    bool CommandPool::OnInitialize()
     {
         VkCommandPoolCreateInfo createInfo { };
         createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -37,7 +37,7 @@ namespace DeepEngine::Renderer::Vulkan
         return true;
     }
 
-    void VulkanCommandPool::OnTerminate()
+    void CommandPool::OnTerminate()
     {
         vkDestroyCommandPool(GetVulkanInstanceController()->GetLogicalDevice(), _commandPool, nullptr);
     }

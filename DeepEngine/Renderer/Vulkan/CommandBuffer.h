@@ -1,15 +1,15 @@
 #pragma once
-#include "VulkanCommandPool.h"
+#include "CommandPool.h"
 #include "Controller/BaseVulkanController.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
 
-    class VulkanCommandBuffer final : public BaseVulkanController
+    class CommandBuffer final : public BaseVulkanController
     {
     public:
-        VulkanCommandBuffer(VulkanCommandPool* p_commandPool, bool p_createAsSecondary);
-        ~VulkanCommandBuffer() override = default;
+        CommandBuffer(CommandPool* p_commandPool, bool p_createAsSecondary);
+        ~CommandBuffer() override = default;
 
         const VkCommandBuffer& GetVkCommandBuffer() const
         { return _commandBuffer; }
@@ -21,7 +21,7 @@ namespace DeepEngine::Renderer::Vulkan
     private:
         VkCommandBuffer _commandBuffer = VK_NULL_HANDLE;
 
-        const VulkanCommandPool* _commandPool;
+        const CommandPool* _commandPool;
         const bool _isSecondary;
     };
     

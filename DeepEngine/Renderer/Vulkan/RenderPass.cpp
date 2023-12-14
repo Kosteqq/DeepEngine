@@ -1,4 +1,4 @@
-#include "VulkanRenderPass.h"
+#include "RenderPass.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
@@ -7,11 +7,11 @@ namespace DeepEngine::Renderer::Vulkan
     //      RENDER SUBPASS DESCRIPTION CREATOR
     //////////////////////////////////////////////
 
-    VulkanRenderPass::RenderSubPassDescCreator::RenderSubPassDescCreator(RenderSubPass& p_subPass, std::vector<VkSubpassDescription>& p_renderSubPassesDesc)
+    RenderPass::RenderSubPassDescCreator::RenderSubPassDescCreator(RenderSubPass& p_subPass, std::vector<VkSubpassDescription>& p_renderSubPassesDesc)
         : _subPass(p_subPass), _renderSubPassesDesc(p_renderSubPassesDesc)
     { }
 
-    VulkanRenderPass::RenderSubPassDescCreator::~RenderSubPassDescCreator()
+    RenderPass::RenderSubPassDescCreator::~RenderSubPassDescCreator()
     {
         _renderSubPassesDesc.emplace_back();
         VkSubpassDescription& desc = _renderSubPassesDesc.back();
@@ -42,8 +42,8 @@ namespace DeepEngine::Renderer::Vulkan
         // desc.pPreserveAttachments = _subPass.PreserveAttachments.data();
     }
 
-    const VulkanRenderPass::RenderSubPassDescCreator&
-        VulkanRenderPass::RenderSubPassDescCreator::AddColorAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
+    const RenderPass::RenderSubPassDescCreator&
+        RenderPass::RenderSubPassDescCreator::AddColorAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
     {
         _subPass.ColorAttachments.push_back(
             {
@@ -53,8 +53,8 @@ namespace DeepEngine::Renderer::Vulkan
         return *this;
     }
 
-    const VulkanRenderPass::RenderSubPassDescCreator&
-        VulkanRenderPass::RenderSubPassDescCreator::AddInputAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
+    const RenderPass::RenderSubPassDescCreator&
+        RenderPass::RenderSubPassDescCreator::AddInputAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
     {
         _subPass.InputAttachments.push_back(VkAttachmentReference
             {
@@ -64,8 +64,8 @@ namespace DeepEngine::Renderer::Vulkan
         return *this;
     }
 
-    const VulkanRenderPass::RenderSubPassDescCreator&
-        VulkanRenderPass::RenderSubPassDescCreator::AddResolveAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
+    const RenderPass::RenderSubPassDescCreator&
+        RenderPass::RenderSubPassDescCreator::AddResolveAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
     {
         _subPass.ResolveAttachments.push_back(VkAttachmentReference
             {
@@ -75,8 +75,8 @@ namespace DeepEngine::Renderer::Vulkan
         return *this;
     }
 
-    const VulkanRenderPass::RenderSubPassDescCreator&
-        VulkanRenderPass::RenderSubPassDescCreator::SetDepthStencilAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
+    const RenderPass::RenderSubPassDescCreator&
+        RenderPass::RenderSubPassDescCreator::SetDepthStencilAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
     {
         _subPass.UseDepthStencilAttachment = true;
         _subPass.DepthStencilAttachment = VkAttachmentReference
@@ -87,7 +87,7 @@ namespace DeepEngine::Renderer::Vulkan
         return *this;
     }
 
-    const VulkanRenderPass::RenderSubPass* VulkanRenderPass::RenderSubPassDescCreator::GetSubPassPtr() const
+    const RenderPass::RenderSubPass* RenderPass::RenderSubPassDescCreator::GetSubPassPtr() const
     {
         return &_subPass;
     }
@@ -97,7 +97,7 @@ namespace DeepEngine::Renderer::Vulkan
     //      VULKAN RENDER PASS
     //////////////////////////////////////////////
     
-    VulkanRenderPass::VulkanRenderPass()
+    RenderPass::RenderPass()
     {
         _attachments.reserve(16);
         _attachmentsDesc.reserve(_attachments.capacity());
@@ -105,7 +105,7 @@ namespace DeepEngine::Renderer::Vulkan
         _renderSubPassesDesc.reserve(_renderSubPasses.capacity());
     }
 
-    bool VulkanRenderPass::OnInitialize()
+    bool RenderPass::OnInitialize()
     {
         Initialize();
         
@@ -140,12 +140,12 @@ namespace DeepEngine::Renderer::Vulkan
         return true;
     }
 
-    void VulkanRenderPass::OnTerminate()
+    void RenderPass::OnTerminate()
     {
         vkDestroyRenderPass(GetVulkanInstanceController()->GetLogicalDevice(), _renderPass, nullptr);
     }
 
-    void VulkanRenderPass::CreateRenderAttachment(const VkAttachmentDescription& p_desc, const RenderAttachment** p_attachment)
+    void RenderPass::CreateRenderAttachment(const VkAttachmentDescription& p_desc, const RenderAttachment** p_attachment)
     {
         _attachmentsDesc.push_back(p_desc);
 
@@ -157,7 +157,7 @@ namespace DeepEngine::Renderer::Vulkan
         *p_attachment = &_attachments.back();
     }
 
-    VulkanRenderPass::RenderSubPassDescCreator VulkanRenderPass::CreateRenderSubPass(VkPipelineBindPoint p_bindPoint)
+    RenderPass::RenderSubPassDescCreator RenderPass::CreateRenderSubPass(VkPipelineBindPoint p_bindPoint)
     {
         _renderSubPasses.emplace_back();
         

@@ -2,11 +2,11 @@
 #include "MainRenderPass.h"
 #include "Vulkan/Semaphore.h"
 #include "Vulkan/VulkanPCH.h"
-#include "Vulkan/VulkanCommandBuffer.h"
-#include "Vulkan/VulkanCommandPool.h"
-#include "Vulkan/VulkanFence.h"
-#include "Vulkan/VulkanPipeline.h"
-#include "Vulkan/VulkanRenderPass.h"
+#include "Vulkan/CommandBuffer.h"
+#include "Vulkan/CommandPool.h"
+#include "Vulkan/Fence.h"
+#include "Vulkan/GraphicsPipeline.h"
+#include "Vulkan/RenderPass.h"
 
 namespace DeepEngine::Renderer
 {
@@ -21,10 +21,10 @@ namespace DeepEngine::Renderer
             uint32_t cmdPoolFlags = 0;
             cmdPoolFlags |= Vulkan::CommandPoolFlag::RESET_COMMAND_BUFFER;
             
-            _commandPool = new Vulkan::VulkanCommandPool(_mainGraphicsQueue, (Vulkan::CommandPoolFlag)cmdPoolFlags);
+            _commandPool = new Vulkan::CommandPool(_mainGraphicsQueue, (Vulkan::CommandPoolFlag)cmdPoolFlags);
             _vulkanInstance->InitializeSubController(_commandPool);
             
-            _commandBuffer = new Vulkan::VulkanCommandBuffer(_commandPool, false);
+            _commandBuffer = new Vulkan::CommandBuffer(_commandPool, false);
             _commandPool->InitializeSubController(_commandBuffer);
         }
         
@@ -34,7 +34,7 @@ namespace DeepEngine::Renderer
         }
         
         void RecordBuffer(glm::vec4 p_clearColor, uint32_t p_frameBufferIndex,
-            MainRenderPass* p_renderPass, const Vulkan::VulkanPipeline* p_pipeline)
+            MainRenderPass* p_renderPass, const Vulkan::GraphicsPipeline* p_pipeline)
         {
             VkCommandBufferBeginInfo beginInfo { };
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -96,7 +96,7 @@ namespace DeepEngine::Renderer
             }
         }
         
-        void SubmitBuffer(const Vulkan::VulkanFence* p_finishFence,
+        void SubmitBuffer(const Vulkan::Fence* p_finishFence,
             const std::vector<const Vulkan::Semaphore*>& p_waitSemaphores,
             const std::vector<const Vulkan::Semaphore*>& p_finishSemaphores)
         {
@@ -136,8 +136,8 @@ namespace DeepEngine::Renderer
         const Vulkan::VulkanInstance::QueueInstance* _mainGraphicsQueue;
         Vulkan::VulkanInstance* _vulkanInstance;
 
-        Vulkan::VulkanCommandBuffer* _commandBuffer;
-        Vulkan::VulkanCommandPool* _commandPool;
+        Vulkan::CommandBuffer* _commandBuffer;
+        Vulkan::CommandPool* _commandPool;
     };
     
 }

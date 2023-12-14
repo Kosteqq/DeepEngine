@@ -6,12 +6,12 @@
 namespace DeepEngine::Renderer::Vulkan
 {
 
-    class VulkanFence final : BaseVulkanController
+    class Fence final : BaseVulkanController
     {
     public:
-        VulkanFence(bool p_signalAtStart = false): _signaledAtStart(p_signalAtStart)
+        Fence(bool p_signalAtStart = false): _signaledAtStart(p_signalAtStart)
         { }
-        ~VulkanFence() override = default;
+        ~Fence() override = default;
         
         VkFence GetVkFence() const
         { return _fence; }

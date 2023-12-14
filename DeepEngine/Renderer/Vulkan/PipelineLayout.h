@@ -1,19 +1,19 @@
 #pragma once
 #include "Controller/BaseVulkanController.h"
-#include "VulkanRenderPass.h"
+#include "RenderPass.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
 
-    class VulkanRenderPass;
+    class RenderPass;
 
-    class VulkanPipelineLayout : public BaseVulkanController
+    class PipelineLayout : public BaseVulkanController
     {
     public:
-        VulkanPipelineLayout(VulkanRenderPass* p_renderPass, uint32_t p_subPassIndex);
-        ~VulkanPipelineLayout() override = default;
+        PipelineLayout(RenderPass* p_renderPass, uint32_t p_subPassIndex);
+        ~PipelineLayout() override = default;
 
-        VulkanRenderPass* GetRenderPass() const
+        RenderPass* GetRenderPass() const
         { return _renderPass; }
 
         uint32_t GetSubPassIndex() const
@@ -29,7 +29,7 @@ namespace DeepEngine::Renderer::Vulkan
     protected:
         VkPipelineLayout _pipelineLayout = VK_NULL_HANDLE;
         const uint32_t _subPassIndex;
-        VulkanRenderPass* _renderPass;
+        RenderPass* _renderPass;
     };
     
 }

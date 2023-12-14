@@ -1,14 +1,14 @@
-#include "VulkanShaderModule.h"
+#include "ShaderModule.h"
 
 #include <fstream>
 
 namespace DeepEngine::Renderer::Vulkan
 {
-    VulkanShaderModule::VulkanShaderModule(const std::string& p_filepath, VkShaderStageFlagBits p_shaderStage)
+    ShaderModule::ShaderModule(const std::string& p_filepath, VkShaderStageFlagBits p_shaderStage)
         : _filepath(p_filepath), _shaderStageFlags(p_shaderStage)
     { }
 
-    bool VulkanShaderModule::OnInitialize()
+    bool ShaderModule::OnInitialize()
     {
         const auto shaderCode = ReadFile();
 
@@ -34,12 +34,12 @@ namespace DeepEngine::Renderer::Vulkan
         return true;
     }
 
-    void VulkanShaderModule::OnTerminate()
+    void ShaderModule::OnTerminate()
     {
         vkDestroyShaderModule(GetVulkanInstanceController()->GetLogicalDevice(), _shaderModule, nullptr);
     }
 
-    std::vector<char> DeepEngine::Renderer::Vulkan::VulkanShaderModule::ReadFile() const
+    std::vector<char> DeepEngine::Renderer::Vulkan::ShaderModule::ReadFile() const
     {
         std::ifstream file(_filepath, std::ios::ate | std::ios::binary);
 

@@ -12,11 +12,11 @@ namespace DeepEngine::Renderer::Vulkan
         PROTECTED = 1 << 2,
     };
 
-    class VulkanCommandPool final : public BaseVulkanController
+    class CommandPool final : public BaseVulkanController
     {
     public:
-        VulkanCommandPool(const VulkanInstance::QueueInstance* p_queue, const CommandPoolFlag p_flags);
-        ~VulkanCommandPool() override = default;
+        CommandPool(const VulkanInstance::QueueInstance* p_queue, const CommandPoolFlag p_flags);
+        ~CommandPool() override = default;
 
         VkCommandPool GetVkCommandPool() const
         { return _commandPool; }

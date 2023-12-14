@@ -6,18 +6,18 @@
 #include "MainRenderPass.h"
 #include "RendererCommandRecorder.h"
 #include "Vulkan/Semaphore.h"
-#include "Vulkan/VulkanRenderPass.h"
-#include "Vulkan/VulkanShaderModule.h"
+#include "Vulkan/RenderPass.h"
+#include "Vulkan/ShaderModule.h"
 #include "Vulkan/Debug/VulkanDebug.h"
-#include "Vulkan/VulkanFence.h"
-#include "Vulkan/VulkanCommandBuffer.h"
+#include "Vulkan/Fence.h"
+#include "Vulkan/CommandBuffer.h"
 
 namespace DeepEngine::Renderer
 {
     struct FrameInFlight
     {
-        Vulkan::VulkanCommandBuffer* _commandBuffer;
-        Vulkan::VulkanFence* _fence;
+        Vulkan::CommandBuffer* _commandBuffer;
+        Vulkan::Fence* _fence;
         
     };
     
@@ -38,7 +38,7 @@ namespace DeepEngine::Renderer
                 return false;
             }
 
-            _readyToRenderFence = new Vulkan::VulkanFence(true);
+            _readyToRenderFence = new Vulkan::Fence(true);
             if (!_vulkanInstance->InitializeSubController(_readyToRenderFence))
             {
                 return false;
@@ -62,14 +62,14 @@ namespace DeepEngine::Renderer
                 return false;
             }
 
-            Vulkan::VulkanPipelineLayout* pipelineLayout = _mainRenderPass->CreateBaseSubPassPipelineLayout();
-            auto vertShader = new Vulkan::VulkanShaderModule("../DeepEngine/Renderer/Shader/vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+            Vulkan::PipelineLayout* pipelineLayout = _mainRenderPass->CreateBaseSubPassPipelineLayout();
+            auto vertShader = new Vulkan::ShaderModule("../DeepEngine/Renderer/Shader/vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
             if (!_vulkanInstance->InitializeSubController(vertShader))
             {
                 return false;
             }
             
-            auto fragShader = new Vulkan::VulkanShaderModule("../DeepEngine/Renderer/Shader/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+            auto fragShader = new Vulkan::ShaderModule("../DeepEngine/Renderer/Shader/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
             if (!_vulkanInstance->InitializeSubController(fragShader))
             {
                 return false;
@@ -103,7 +103,7 @@ namespace DeepEngine::Renderer
                 .FrontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
             };
             
-            _trianglePipeline = new Vulkan::VulkanPipeline(pipelineLayout, vertShader, fragShader, dynamicState,
+            _trianglePipeline = new Vulkan::GraphicsPipeline(pipelineLayout, vertShader, fragShader, dynamicState,
                 colorBlend, { attachmentBlend }, rasterization);
 
             if (!pipelineLayout->InitializeSubController(_trianglePipeline))
@@ -203,8 +203,8 @@ namespace DeepEngine::Renderer
     private:
         Vulkan::VulkanInstance* _vulkanInstance = nullptr;
         MainRenderPass* _mainRenderPass = nullptr;
-        Vulkan::VulkanPipeline* _trianglePipeline = nullptr;
-        Vulkan::VulkanFence* _readyToRenderFence = nullptr;
+        Vulkan::GraphicsPipeline* _trianglePipeline = nullptr;
+        Vulkan::Fence* _readyToRenderFence = nullptr;
         Vulkan::Semaphore* _availableImageToRenderSemaphore = nullptr; 
         Vulkan::Semaphore* _finishRenderingSemaphore = nullptr; 
  

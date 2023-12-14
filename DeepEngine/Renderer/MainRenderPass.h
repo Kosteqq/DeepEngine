@@ -1,11 +1,11 @@
 #pragma once
-#include "Vulkan/VulkanRenderPass.h"
-#include "Vulkan/VulkanPipelineLayout.h"
+#include "Vulkan/RenderPass.h"
+#include "Vulkan/PipelineLayout.h"
 
 namespace DeepEngine::Renderer
 {
 
-    class MainRenderPass : public Vulkan::VulkanRenderPass,
+    class MainRenderPass : public Vulkan::RenderPass,
         Architecture::EventListener<Events::OnWindowFramebufferResized>
     {
     protected:
@@ -34,9 +34,9 @@ namespace DeepEngine::Renderer
         }
 
     public:
-        Vulkan::VulkanPipelineLayout* CreateBaseSubPassPipelineLayout()
+        Vulkan::PipelineLayout* CreateBaseSubPassPipelineLayout()
         {
-            auto pipelineLayout = new Vulkan::VulkanPipelineLayout(this, _baseSubPass->ID);
+            auto pipelineLayout = new Vulkan::PipelineLayout(this, _baseSubPass->ID);
             if (!InitializeSubController(pipelineLayout))
             {
                 pipelineLayout->Terminate();
