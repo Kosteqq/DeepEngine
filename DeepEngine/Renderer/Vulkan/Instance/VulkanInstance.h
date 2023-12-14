@@ -115,6 +115,9 @@ namespace DeepEngine::Renderer::Vulkan
 
         VkSwapchainKHR GetSwapchain() const
         { return _swapchain; }
+
+        const std::vector<VkImageView>& GetSwapChainImageViews() const
+        { return  _swapChainImageViews; }
         
         VkSurfaceKHR  GetSurface() const
         { return _surface; }

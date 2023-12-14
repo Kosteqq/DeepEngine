@@ -22,6 +22,7 @@ namespace DeepEngine::Renderer::Vulkan
             std::vector<VkAttachmentReference> InputAttachments;
             std::vector<VkAttachmentReference> ColorAttachments;
             std::vector<VkAttachmentReference> ResolveAttachments;
+            bool UseDepthStencilAttachment;
             VkAttachmentReference DepthStencilAttachment;
             std::vector<VkAttachmentReference> PreserveAttachments;
         };
@@ -60,6 +61,7 @@ namespace DeepEngine::Renderer::Vulkan
 
     protected:
         void virtual Initialize() = 0;
+        void virtual PostInitialize() { };
         
         void CreateRenderAttachment(const VkAttachmentDescription& p_desc, const RenderAttachment** p_attachment);
         RenderSubPassDescCreator CreateRenderSubPass(VkPipelineBindPoint p_bindPoint);

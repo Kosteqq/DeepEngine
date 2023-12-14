@@ -62,15 +62,18 @@ namespace DeepEngine::Renderer::Vulkan
         VulkanPipeline(VulkanPipelineLayout* p_pipelineLayout,
             const VulkanShaderModule* p_vertShaderModule, const VulkanShaderModule* p_fragShaderModule,
             const PipelineDynamicState& p_dynamicStateFlags, const PipelineColorBlend& p_colorBlend,
-            const std::vector<PipelineColorBlendAttachment>& p_attachemntsBlend, const PipelineRasterization& p_rasterization)
-            : _pipelineLayout(p_pipelineLayout), 
-            _vertShaderModule(p_vertShaderModule), _fragShaderModule(p_fragShaderModule),
-            _dynamicStateFlags(p_dynamicStateFlags), _colorBlend(p_colorBlend), _attachemntsBlend(p_attachemntsBlend),
-            _rasterization(p_rasterization)
-        { }
+            const std::vector<PipelineColorBlendAttachment>& p_attachmentsBlend, const PipelineRasterization& p_rasterization);
 
-    private:
         ~VulkanPipeline() override = default;
+
+        const VkRenderPass& GetVkRenderPass() const
+        { return _pipelineLayout->GetRenderPass()->GetVkRenderPass(); }
+
+        const VkPipelineLayout& GetVkPipelineLayout() const
+        { return _pipelineLayout->GetVkPipelineLayout(); }
+        
+        const VkPipeline& GetVkPipeline() const
+        { return _pipeline; }
 
     protected:
         bool OnInitialize() final;
@@ -82,10 +85,10 @@ namespace DeepEngine::Renderer::Vulkan
         const VulkanShaderModule* _vertShaderModule; 
         const VulkanShaderModule* _fragShaderModule;
         
-        const PipelineDynamicState& _dynamicStateFlags;
-        const PipelineColorBlend& _colorBlend;
-        const std::vector<PipelineColorBlendAttachment>& _attachemntsBlend;
-        const PipelineRasterization& _rasterization;
+        const PipelineDynamicState _dynamicStateFlags;
+        const PipelineColorBlend _colorBlend;
+        const std::vector<PipelineColorBlendAttachment> _attachemntsBlend;
+        const PipelineRasterization _rasterization;
         
         VkPipeline _pipeline = VK_NULL_HANDLE;
     };

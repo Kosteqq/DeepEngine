@@ -11,8 +11,11 @@ namespace DeepEngine::Renderer::Vulkan
         Semaphore() = default;
         ~Semaphore() override = default;
 
-        const VkSemaphore& GetVkSemaphore() const
+        VkSemaphore GetVkSemaphore() const
         { return _semaphore; }
+
+        const VkSemaphore* GetVkSemaphorePtr() const
+        { return &_semaphore; }
 
     protected:
         bool OnInitialize() override

@@ -11,7 +11,7 @@ namespace DeepEngine::Renderer::Vulkan
         VulkanCommandBuffer(VulkanCommandPool* p_commandPool, bool p_createAsSecondary);
         ~VulkanCommandBuffer() override = default;
 
-        VkCommandBuffer GetVkCommandBuffer() const
+        const VkCommandBuffer& GetVkCommandBuffer() const
         { return _commandBuffer; }
 
     protected:

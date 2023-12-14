@@ -2,6 +2,17 @@
 
 namespace DeepEngine::Renderer::Vulkan
 {
+
+    VulkanPipeline::VulkanPipeline(VulkanPipelineLayout* p_pipelineLayout,
+        const VulkanShaderModule* p_vertShaderModule, const VulkanShaderModule* p_fragShaderModule,
+        const PipelineDynamicState& p_dynamicStateFlags, const PipelineColorBlend& p_colorBlend,
+        const std::vector<PipelineColorBlendAttachment>& p_attachmentsBlend, const PipelineRasterization& p_rasterization)
+        : _pipelineLayout(p_pipelineLayout), 
+        _vertShaderModule(p_vertShaderModule), _fragShaderModule(p_fragShaderModule),
+        _dynamicStateFlags(p_dynamicStateFlags), _colorBlend(p_colorBlend), _attachemntsBlend(p_attachmentsBlend),
+        _rasterization(p_rasterization)
+    { }
+    
     bool VulkanPipeline::OnInitialize()
     {
         std::vector<VkPipelineShaderStageCreateInfo> stages;
@@ -126,34 +137,35 @@ namespace DeepEngine::Renderer::Vulkan
         std::vector<VkPipelineColorBlendAttachmentState> attachmentsBlend(_attachemntsBlend.size());
         for (uint32_t i = 0; i < _attachemntsBlend.size(); i++)
         {
-            VkPipelineColorBlendAttachmentState attachmentBlend { };
+            VkPipelineColorBlendAttachmentState& attachmentBlend = attachmentsBlend[i];
+            attachmentBlend = { };
             attachmentBlend.colorWriteMask = 0;
             attachmentBlend.colorWriteMask |= VK_COLOR_COMPONENT_R_BIT * _attachemntsBlend[i].WriteChannelR;
             attachmentBlend.colorWriteMask |= VK_COLOR_COMPONENT_G_BIT * _attachemntsBlend[i].WriteChannelG;
             attachmentBlend.colorWriteMask |= VK_COLOR_COMPONENT_B_BIT * _attachemntsBlend[i].WriteChannelB;
             attachmentBlend.colorWriteMask |= VK_COLOR_COMPONENT_A_BIT * _attachemntsBlend[i].WriteChannelA;
 
-            attachmentBlend.blendEnable = _attachemntsBlend[i].EnableBlend;
+            attachmentBlend.blendEnable         = _attachemntsBlend[i].EnableBlend;
                 
-            attachmentBlend.colorBlendOp = _attachemntsBlend[i].ColorBlendOperation;
+            attachmentBlend.colorBlendOp        = _attachemntsBlend[i].ColorBlendOperation;
             attachmentBlend.srcColorBlendFactor = _attachemntsBlend[i].SrsColorBlendFactor;
             attachmentBlend.dstColorBlendFactor = _attachemntsBlend[i].DstColorBlendFactor;
                 
-            attachmentBlend.alphaBlendOp = _attachemntsBlend[i].AlphaBlendOperation;
+            attachmentBlend.alphaBlendOp        = _attachemntsBlend[i].AlphaBlendOperation;
             attachmentBlend.srcAlphaBlendFactor = _attachemntsBlend[i].SrsAlphaBlendFactor;
             attachmentBlend.dstAlphaBlendFactor = _attachemntsBlend[i].DstAlphaBlendFactor;
         }
 
         VkPipelineColorBlendStateCreateInfo colorBlendingCreateInfo { };
         colorBlendingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-        colorBlendingCreateInfo.logicOpEnable   = _colorBlend.EnableLogicalBlendOperation;
-        colorBlendingCreateInfo.logicOp         = _colorBlend.LogicalBlendOperation;
-        colorBlendingCreateInfo.attachmentCount = static_cast<uint32_t>(attachmentsBlend.size());
-        colorBlendingCreateInfo.pAttachments    = attachmentsBlend.data();
-        colorBlendingCreateInfo.blendConstants[0] = _colorBlend.ColorBlendConstants.r;
-        colorBlendingCreateInfo.blendConstants[1] = _colorBlend.ColorBlendConstants.g;
-        colorBlendingCreateInfo.blendConstants[2] = _colorBlend.ColorBlendConstants.b;
-        colorBlendingCreateInfo.blendConstants[3] = _colorBlend.ColorBlendConstants.a;
+        colorBlendingCreateInfo.logicOpEnable       = _colorBlend.EnableLogicalBlendOperation;
+        colorBlendingCreateInfo.logicOp             = _colorBlend.LogicalBlendOperation;
+        colorBlendingCreateInfo.attachmentCount     = static_cast<uint32_t>(attachmentsBlend.size());
+        colorBlendingCreateInfo.pAttachments        = attachmentsBlend.data();
+        colorBlendingCreateInfo.blendConstants[0]   = _colorBlend.ColorBlendConstants.r;
+        colorBlendingCreateInfo.blendConstants[1]   = _colorBlend.ColorBlendConstants.g;
+        colorBlendingCreateInfo.blendConstants[2]   = _colorBlend.ColorBlendConstants.b;
+        colorBlendingCreateInfo.blendConstants[3]   = _colorBlend.ColorBlendConstants.a;
 
         // Hardcoded
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyCreateInfo { };
@@ -164,41 +176,53 @@ namespace DeepEngine::Renderer::Vulkan
         // Hardcoded
         VkPipelineMultisampleStateCreateInfo multisampleCreateInfo { };
         multisampleCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        multisampleCreateInfo.sampleShadingEnable = VK_FALSE;
-        multisampleCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-        multisampleCreateInfo.minSampleShading = 1.0;
-        multisampleCreateInfo.pSampleMask = nullptr;
+        multisampleCreateInfo.sampleShadingEnable   = VK_FALSE;
+        multisampleCreateInfo.rasterizationSamples  = VK_SAMPLE_COUNT_1_BIT;
+        multisampleCreateInfo.minSampleShading      = 1.0;
+        multisampleCreateInfo.pSampleMask           = nullptr;
         multisampleCreateInfo.alphaToCoverageEnable = VK_FALSE;
-        multisampleCreateInfo.alphaToOneEnable = VK_FALSE;
+        multisampleCreateInfo.alphaToOneEnable      = VK_FALSE;
+
+        
+        VkViewport viewport;
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = 800;
+        viewport.height = 600;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
             
-        // Has to be null and be set by cmd
+        VkRect2D scissor;
+        scissor.offset = {0, 0};
+        scissor.extent = VkExtent2D(800, 600);
+        
         VkPipelineViewportStateCreateInfo viewportState { };
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewportState.viewportCount = 0;
-        viewportState.pViewports = nullptr;
-        viewportState.scissorCount = 0;
-        viewportState.pScissors = nullptr;
+        viewportState.viewportCount = 1;
+        viewportState.pViewports = &viewport;
+        viewportState.scissorCount = 1;
+        viewportState.pScissors = &scissor;
             
         VkGraphicsPipelineCreateInfo pipelineInfo { };
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount = 2;
+        pipelineInfo.stageCount = static_cast<uint32_t>(stages.size());
         pipelineInfo.pStages = stages.data();
             
-        pipelineInfo.pVertexInputState = &vertexBufferCreateInfo;
-        pipelineInfo.pInputAssemblyState = &inputAssemblyCreateInfo;
-        pipelineInfo.pViewportState = &viewportState;
-        pipelineInfo.pRasterizationState = &rasterizerCreateInfo;
-        pipelineInfo.pMultisampleState = &multisampleCreateInfo;
-        pipelineInfo.pDepthStencilState = nullptr; // optional
-        pipelineInfo.pColorBlendState = &colorBlendingCreateInfo;
-        pipelineInfo.pDynamicState = &dynamicState;
-        pipelineInfo.layout = _pipelineLayout->GetVkPipelineLayout();
+        pipelineInfo.pVertexInputState      = &vertexBufferCreateInfo;
+        pipelineInfo.pInputAssemblyState    = &inputAssemblyCreateInfo;
+        pipelineInfo.pViewportState         = &viewportState;
+        pipelineInfo.pRasterizationState    = &rasterizerCreateInfo;
+        pipelineInfo.pMultisampleState      = &multisampleCreateInfo;
+        pipelineInfo.pDepthStencilState     = nullptr; // optional
+        pipelineInfo.pColorBlendState       = &colorBlendingCreateInfo;
+        pipelineInfo.pDynamicState          = &dynamicState;
+        pipelineInfo.layout                 = _pipelineLayout->GetVkPipelineLayout();
 
-        pipelineInfo.renderPass = _pipelineLayout->GetRenderPass()->GetVkRenderPass();
-        pipelineInfo.subpass = _pipelineLayout->GetSubPassIndex();
+        pipelineInfo.renderPass             = _pipelineLayout->GetRenderPass()->GetVkRenderPass();
+        pipelineInfo.subpass                = _pipelineLayout->GetSubPassIndex();
             
-        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-        pipelineInfo.basePipelineIndex = -1;
+        pipelineInfo.basePipelineHandle     = VK_NULL_HANDLE;
+        pipelineInfo.basePipelineIndex      = -1;
 
         VULKAN_CHECK_CREATE(vkCreateGraphicsPipelines(
             GetVulkanInstanceController()->GetLogicalDevice(),

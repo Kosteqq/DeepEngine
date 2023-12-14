@@ -81,25 +81,6 @@ namespace DeepEngine::Renderer::Vulkan
         }
 
         _isSwapChainValid = true;
-        
-        // TODO (Kostek): Move this code to place like RenderPassController
-        // for (uint32_t i = 0; i < imagesCount; i++)
-        // {
-        //     VkImageView attachments[] { _swapChainImageViews[i] };
-        //         
-        //     VkFramebufferCreateInfo createInfo { };
-        //     createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        //     createInfo.renderPass = _renderPass->GetVulkanRenderPass();
-        //     createInfo.attachmentCount = 1;
-        //     createInfo.pAttachments = attachments;
-        //     createInfo.width = _currentSwapChainFrameBufferSize.x;
-        //     createInfo.height = _currentSwapChainFrameBufferSize.y;
-        //     createInfo.layers = 1;
-        //
-        //     VULKAN_CHECK_CREATE(
-        //         vkCreateFramebuffer(_logicalDevice, &createInfo, nullptr, &_swapChainFramebuffers[i]),
-        //         "Failed to create SwapChain image view!")
-        // }
 
         return true;
     }

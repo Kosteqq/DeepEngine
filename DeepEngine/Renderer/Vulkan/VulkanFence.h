@@ -8,23 +8,27 @@ namespace DeepEngine::Renderer::Vulkan
 
     class VulkanFence final : BaseVulkanController
     {
-        friend VulkanFence* CreateVulkanSubController(BaseVulkanController* p_parent);
-
-    private:
+    public:
+        VulkanFence(bool p_signalAtStart = false): _signaledAtStart(p_signalAtStart)
+        { }
         ~VulkanFence() override = default;
         
-    public:
-        VulkanFence() = default;
-        
-        VkFence& GetFence()
+        VkFence GetVkFence() const
         { return _fence; }
+        
+        const VkFence* GetVkFencePtr() const
+        { return &_fence; }
 
     protected:
         bool OnInitialize() override
         {
             VkFenceCreateInfo fenceCreateInfo { };
             fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+            if (_signaledAtStart)
+            {
+                fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+            }
 
             VULKAN_CHECK_CREATE(
                 vkCreateFence(GetVulkanInstanceController()->GetLogicalDevice(), &fenceCreateInfo, nullptr, &_fence),
@@ -39,6 +43,7 @@ namespace DeepEngine::Renderer::Vulkan
         }
 
     private:
+        const bool _signaledAtStart = false;
         VkFence _fence = VK_NULL_HANDLE;
     };
 }

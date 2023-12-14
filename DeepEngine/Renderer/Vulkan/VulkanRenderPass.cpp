@@ -13,20 +13,30 @@ namespace DeepEngine::Renderer::Vulkan
 
     VulkanRenderPass::RenderSubPassDescCreator::~RenderSubPassDescCreator()
     {
-        VkSubpassDescription desc { };
-        _renderSubPassesDesc.push_back(desc);
+        _renderSubPassesDesc.emplace_back();
+        VkSubpassDescription& desc = _renderSubPassesDesc.back();
 
         desc.colorAttachmentCount = static_cast<uint32_t>(_subPass.ColorAttachments.size());
-        desc.pColorAttachments = _subPass.ColorAttachments.data();
+        if (_subPass.ColorAttachments.size() > 0)
+        {
+            desc.pColorAttachments = _subPass.ColorAttachments.data();
+        }
 
         desc.inputAttachmentCount = static_cast<uint32_t>(_subPass.InputAttachments.size());
-        desc.pInputAttachments = _subPass.InputAttachments.data();
+        if (_subPass.InputAttachments.size() > 0)
+        {
+            desc.pInputAttachments = _subPass.InputAttachments.data();
+        }
 
         // used for msaa 
         // desc.pResolveAttachments
 
-        desc.pDepthStencilAttachment = &_subPass.DepthStencilAttachment;
-
+        desc.pDepthStencilAttachment = nullptr;
+        if (_subPass.UseDepthStencilAttachment)
+        {
+            desc.pDepthStencilAttachment = &_subPass.DepthStencilAttachment;
+        }
+        
         // TODO (Kostek): assign unused attachments
         // desc.preserveAttachmentCount = static_cast<uint32_t>(_subPass.PreserveAttachments.size());
         // desc.pPreserveAttachments = _subPass.PreserveAttachments.data();
@@ -68,6 +78,7 @@ namespace DeepEngine::Renderer::Vulkan
     const VulkanRenderPass::RenderSubPassDescCreator&
         VulkanRenderPass::RenderSubPassDescCreator::SetDepthStencilAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const
     {
+        _subPass.UseDepthStencilAttachment = true;
         _subPass.DepthStencilAttachment = VkAttachmentReference
         {
             .attachment = p_attachment->ID,
@@ -97,6 +108,16 @@ namespace DeepEngine::Renderer::Vulkan
     bool VulkanRenderPass::OnInitialize()
     {
         Initialize();
+        
+        VkSubpassDependency dependency { };
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // Take last operating 
+        dependency.dstSubpass = 0; // ours
+            
+        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Wait for finish reading from it from another process
+        dependency.srcAccessMask = 0;
+
+        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             
         VkRenderPassCreateInfo renderPassCreateInfo { };
         renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -104,8 +125,8 @@ namespace DeepEngine::Renderer::Vulkan
         renderPassCreateInfo.pAttachments = _attachmentsDesc.data();
         renderPassCreateInfo.subpassCount = static_cast<uint32_t>(_renderSubPassesDesc.size());
         renderPassCreateInfo.pSubpasses = _renderSubPassesDesc.data();
-        renderPassCreateInfo.dependencyCount = 0;
-        renderPassCreateInfo.pDependencies = nullptr;
+        renderPassCreateInfo.dependencyCount = 1;
+        renderPassCreateInfo.pDependencies = &dependency;
 
         VULKAN_CHECK_CREATE(
             vkCreateRenderPass(GetVulkanInstanceController()->GetLogicalDevice(),
@@ -113,6 +134,8 @@ namespace DeepEngine::Renderer::Vulkan
                 nullptr,
                 &_renderPass),
             "Failed to create Vulkan render pass!")
+
+        PostInitialize();
             
         return true;
     }
@@ -140,7 +163,7 @@ namespace DeepEngine::Renderer::Vulkan
         
         RenderSubPass& subPass = _renderSubPasses.back();
 
-        subPass.ID =static_cast<uint32_t>(_renderSubPasses.size()); 
+        subPass.ID =static_cast<uint32_t>(_renderSubPasses.size() - 1); 
         subPass.BindPoint = p_bindPoint; 
         subPass.InputAttachments.reserve(8);
         subPass.ColorAttachments.reserve(8);
