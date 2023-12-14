@@ -10,10 +10,12 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
-# build
+# IDE
 /.idea
 /.vs
 /.vscode
+
+# build
 /[Xx]64
 /[Bb]uild
 
@@ -31,20 +33,20 @@ _deps
 mono_crash.*
 
 # Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-[Ww][Ii][Nn]32/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
+[Bb]uild/[Dd]ebug/
+[Bb]uild/[Dd]ebugPublic/
+[Bb]uild/[Rr]elease/
+[Bb]uild/[Rr]eleases/
+[Bb]uild/x64/
+[Bb]uild/x86/
+[Bb]uild/[Ww][Ii][Nn]32/
+[Bb]uild/[Aa][Rr][Mm]/
+[Bb]uild/[Aa][Rr][Mm]64/
+[Bb]uild/bld/
+[Bb]uild/[Bb]in/
+[Bb]uild/[Oo]bj/
+[Bb]uild/[Ll]og/
+[Bb]uild/[Ll]ogs/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
