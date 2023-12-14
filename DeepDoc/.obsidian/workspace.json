@@ -23,14 +23,11 @@
             "id": "8b7283f65fb53318",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "Graf.canvas",
-                "viewState": {
-                  "x": 297.76008670952996,
-                  "y": 779.2498578464732,
-                  "zoom": -0.788940302359106
-                }
+                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md",
+                "mode": "preview",
+                "source": false
               }
             }
           }
@@ -101,7 +98,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Graf.canvas",
+                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +115,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Graf.canvas",
+                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -141,7 +138,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Graf.canvas"
+                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md"
               }
             }
           }
@@ -164,11 +161,12 @@
   },
   "active": "8b7283f65fb53318",
   "lastOpenFiles": [
+    "Graf.canvas",
+    "Renderer/VULKAN/Vulkan Feature Wrapper.md",
     "Debug (Core)/Initialization Tracker.md",
     "Debug (Core)/Debug Graph.canvas",
     "Code Hierarchy.canvas",
     "_Nomenclature.md",
-    "Graf.canvas",
     "Debug (Core)/Logger.md",
     "Scene.md",
     "Engine Subsystem (Core)/Engine Subsystem.md",

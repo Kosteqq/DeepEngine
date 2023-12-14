@@ -3,7 +3,7 @@
 
 #include "InitializationTracker.h"
 
-namespace DeepEngine::Core::Debug
+namespace DeepEngine::Debug
 {
     class InitializationMilestone
     {
@@ -37,6 +37,6 @@ namespace DeepEngine::Core::Debug
     };
 }
 
-#define DEFINE_MILESTONE(Name) auto (Name) = DeepEngine::Core::Debug::InitializationMilestone::Create(#Name)
+#define DEFINE_MILESTONE(Name) DeepEngine::Debug::InitializationMilestone (Name) = DeepEngine::Debug::InitializationMilestone::Create(#Name)
 #define FULFIL_MILESTONE(Name) Name.MarkFulfilled()
 #define FAIL_MILESTONE(Name) Name.MarkFailed()

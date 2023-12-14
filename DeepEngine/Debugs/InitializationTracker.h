@@ -4,7 +4,7 @@
 
 #include "Logger.h"
 
-namespace DeepEngine::Core::Debug
+namespace DeepEngine::Debug
 {
     class InitializationTracker
     {

@@ -16,6 +16,7 @@ endif()
 include_directories("${SOURCE_DIR}/")
 include_directories("${3rd_PARTY_DIR}/glfw/include")
 include_directories("${3rd_PARTY_DIR}/spdlog/include")
+include_directories("${3rd_PARTY_DIR}/glm")
 include_directories("${3rd_PARTY_DIR}/ImGui")
 
 add_subdirectory("${3rd_PARTY_DIR}/glfw/")
@@ -34,6 +35,8 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE "${SOURCE_DIR}/Renderer/Vulkan/VulkanPCH.h")
+target_compile_options(${PROJECT_NAME} PRIVATE /Yu "${SOURCE_DIR}/Renderer/Vulkan/VulkanPCH.h")
 
 target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} spdlog::spdlog_header_only)
