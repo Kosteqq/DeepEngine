@@ -64,8 +64,8 @@ namespace DeepEngine::Renderer
         };
 
         _renderers.resize(2);
-        if(!_renderers[0].Init("../DeepEngine/Renderer/Shader/vert.spv",
-            "../DeepEngine/Renderer/Shader/frag.spv",
+        if(!_renderers[0].Init("../DeepEngine/Renderer/Shader/RedTriangle_Vert.spv",
+            "../DeepEngine/Renderer/Shader/RedTriangle_Frag.spv",
                             dynamicState, colorBlend, attachmentBlend, rasterization, pipelineLayout))
         {
             return false;
