@@ -2,6 +2,86 @@
 
 namespace DeepEngine::Renderer
 {
+    bool RendererSubsystem::Init()
+    {
+        if (!InitializeVulkanInstance())
+        {
+            return false;
+        }
+
+        _readyToRenderFence = new Vulkan::Fence(true);
+        if (!_vulkanInstance->InitializeSubController(_readyToRenderFence))
+        {
+            return false;
+        }
+
+        _availableImageToRenderSemaphore = new Vulkan::Semaphore();
+        if (!_vulkanInstance->InitializeSubController(_availableImageToRenderSemaphore))
+        {
+            return false;
+        }
+
+        _finishRenderingSemaphore = new Vulkan::Semaphore();
+        if (!_vulkanInstance->InitializeSubController(_finishRenderingSemaphore))
+        {
+            return false;
+        }
+
+        _mainRenderPass = new MainRenderPass();
+        if (!_vulkanInstance->InitializeSubController(_mainRenderPass))
+        {
+            return false;
+        }
+
+        Vulkan::PipelineLayout* pipelineLayout = _mainRenderPass->CreateBaseSubPassPipelineLayout();
+
+        Vulkan::PipelineDynamicState dynamicState {
+            .Viewport = true,
+            .Scissor = true,
+            .LineWidth = false,
+        };
+
+        Vulkan::PipelineColorBlend colorBlend {
+            .ColorBlendConstants = { 1.0f, 1.0f, 1.0f, 1.0f },
+            .EnableLogicalBlendOperation = false,
+        };
+
+        Vulkan::PipelineColorBlendAttachment attachmentBlend {
+            .WriteChannelR = true,
+            .WriteChannelG = true,
+            .WriteChannelB = true,
+            .WriteChannelA = true,
+            .EnableBlend = false,
+        };
+
+        Vulkan::PipelineRasterization rasterization {
+            .EnableDepthClamp = false,
+            .EnableDiscardRasterizer = false,
+            .EnableDepthBias = false,
+            .PolygonMode = VK_POLYGON_MODE_FILL,
+            .CullMode = VK_CULL_MODE_NONE,
+            .FrontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+        };
+
+        _renderers.resize(2);
+        if(!_renderers[0].Init("../DeepEngine/Renderer/Shader/vert.spv",
+            "../DeepEngine/Renderer/Shader/frag.spv",
+                            dynamicState, colorBlend, attachmentBlend, rasterization, pipelineLayout))
+        {
+            return false;
+        }
+        if(!_renderers[1].Init("../DeepEngine/Renderer/Shader/vert1.spv",
+            "../DeepEngine/Renderer/Shader/frag1.spv",
+                            dynamicState, colorBlend, attachmentBlend, rasterization, pipelineLayout))
+        {
+            return false;
+        }
+        
+        _commandRecorder = RendererCommandRecorder(_vulkanInstance, _mainGraphicsQueue);
+
+        return true;
+    }
+
     bool RendererSubsystem::InitializeVulkanInstance()
     {
         MESSENGER_PREINITIALIZE(VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT

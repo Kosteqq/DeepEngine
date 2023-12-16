@@ -1,5 +1,6 @@
 #pragma once
 #include "MainRenderPass.h"
+#include "TriangleRenderer.h"
 #include "Vulkan/Semaphore.h"
 #include "Vulkan/VulkanPCH.h"
 #include "Vulkan/CommandBuffer.h"
@@ -34,7 +35,7 @@ namespace DeepEngine::Renderer
         }
         
         void RecordBuffer(glm::vec4 p_clearColor, uint32_t p_frameBufferIndex,
-            MainRenderPass* p_renderPass, const Vulkan::GraphicsPipeline* p_pipeline)
+            MainRenderPass* p_renderPass, const std::vector<TriangleRenderer>& p_renderers )
         {
             VkCommandBufferBeginInfo beginInfo { };
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -57,7 +58,7 @@ namespace DeepEngine::Renderer
 
             VkRenderPassBeginInfo renderPassInfo { };
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = p_pipeline->GetVkRenderPass();
+            renderPassInfo.renderPass = p_renderers[0].GetGraphicsPipeline()->GetVkRenderPass();
             renderPassInfo.framebuffer = p_renderPass->GetSwapchainImageVkFramebuffer(p_frameBufferIndex);
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &clearColor;
@@ -65,8 +66,6 @@ namespace DeepEngine::Renderer
             renderPassInfo.renderArea.extent = renderAreaExtent;
 
             vkCmdBeginRenderPass(_commandBuffer->GetVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-            vkCmdBindPipeline(_commandBuffer->GetVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, p_pipeline->GetVkPipeline());
 
             VkViewport viewport;
             viewport.x = 0.0f;
@@ -84,8 +83,14 @@ namespace DeepEngine::Renderer
             
             vkCmdSetScissor(_commandBuffer->GetVkCommandBuffer(), 0, 1, &scissor);
 
-            vkCmdDraw(_commandBuffer->GetVkCommandBuffer(), 3, 1, 0, 0);
+            for (auto& renderer : p_renderers)
+            {
+                vkCmdBindPipeline(_commandBuffer->GetVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                renderer.GetGraphicsPipeline()->GetVkPipeline());
 
+                vkCmdDraw(_commandBuffer->GetVkCommandBuffer(), 3, 1, 0, 0);
+            }
+            
             vkCmdEndRenderPass(_commandBuffer->GetVkCommandBuffer());
 
             const auto result = vkEndCommandBuffer(_commandBuffer->GetVkCommandBuffer());
