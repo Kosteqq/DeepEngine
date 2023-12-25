@@ -25,13 +25,21 @@ namespace DeepEngine::Architecture
 
         template <typename TEvent>
         requires std::is_base_of_v<Internal::BusObject, TEvent>
-        std::shared_ptr<EventListener<TEvent>> CreateListener()
+        constexpr std::shared_ptr<EventListener<TEvent>> CreateListener()
         { return AddListener<EventListener<TEvent>>(); }
 
         template <typename T>
         requires std::is_base_of_v<BaseEvent, T>
         void Publish(const T& p_event)
         { OnPublish(p_event); }
+
+        template <typename T>
+        requires std::is_base_of_v<BaseEvent, T>
+        void Publish()
+        { OnPublish(T()); }
+
+        constexpr EventBus& CreateChildEventBus()
+        { return static_cast<EventBus&>(CreateChildBus()); }
 
     private:
         void OnPublish(const BaseEvent& p_event);
