@@ -45,7 +45,7 @@ namespace DeepEngine::Architecture::Internal
 		constexpr Bus& CreateChildBus()
 		{
 			_childBuses.emplace_back(this);
-			return _childBuses.back();
+			return (Bus&)_childBuses.back();
 		}
     
 		constexpr const std::vector<TListener*>& GetListeners() const

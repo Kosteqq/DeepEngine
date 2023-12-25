@@ -1,4 +1,6 @@
 #pragma once
+#include <typeinfo>
+
 #include "Architecture/Internal/BusObject.h"
 
 #define BEGIN_GLOBAL_EVENT_DEFINITION(Name)                                                 \
