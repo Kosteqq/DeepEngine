@@ -13,28 +13,11 @@
 #include "Architecture/EventBus/EventListener.h"
 #include "Architecture/EventBus/EventBus.h"
 
-BEGIN_LOCAL_EVENT_DEFINITION(LocalTestEvent)
-    uint32_t TestInt;
-END_EVENT_DEFINITION
-
-BEGIN_GLOBAL_EVENT_DEFINITION(GlobalTestEvent)
-    uint32_t TestInt;
-END_EVENT_DEFINITION
-
 
 int main(int argc, char* argv[])
 {
     DeepEngine::Debug::Logger::Initialize("Logs/engine.log");
-    // auto mainBus = DeepEngine::Architecture::EventBus();
-    // auto listener = mainBus.CreateListener<GlobalTestEvent>();
-    //
-    // listener->BindCallback(OnTestCallback);
-    // listener->BindCallback(BlockTestCallback);
-    // listener->BindCallback(OnTestCallback);
-    
-    // auto globalEvent = GlobalTestEvent();
-    // globalEvent.TestInt = 20;
-    // mainBus.Publish(globalEvent);
+    auto engineEventBus = DeepEngine::Architecture::EventBus();
     
     {
         TIMER("Main");
@@ -47,7 +30,7 @@ int main(int argc, char* argv[])
         
         ENGINE_INFO("Hello World");
 
-        auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
+        auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager(engineEventBus);
         auto windowSubsystem = subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "1800 lines for fucking triangle (:");
     	subsystemsManager.CreateSubsystem<DeepEngine::Renderer::RendererSubsystem>();
 
@@ -59,6 +42,8 @@ int main(int argc, char* argv[])
 
         while (true)
         {
+            TIMER("Tick");
+            
             subsystemsManager.Tick();
             if (windowSubsystem->WantsToExit())
             {

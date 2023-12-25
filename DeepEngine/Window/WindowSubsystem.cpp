@@ -3,8 +3,8 @@
 
 namespace DeepEngine
 {
-    WindowSubsystem::WindowSubsystem(int p_width, int p_height, const char* p_name)
-        : EngineSubsystem("Window Subsystem"), _width{p_width}, _height{p_height}, _windowName{p_name}
+    WindowSubsystem::WindowSubsystem(Architecture::EventBus& p_engineEventBus, int p_width, int p_height, const char* p_name)
+        : EngineSubsystem(p_engineEventBus, "Window Subsystem"), _width{p_width}, _height{p_height}, _windowName{p_name}
     {
         
     }
@@ -22,19 +22,11 @@ namespace DeepEngine
 
     void WindowSubsystem::WindowResizedHandler(GLFWwindow* p_window, int p_width, int p_height)
     {
-      auto subsystem = (WindowSubsystem*)glfwGetWindowUserPointer(p_window);
+        auto subsystem = (WindowSubsystem*)glfwGetWindowUserPointer(p_window);
         subsystem->_width = p_width;
         subsystem->_height = p_height;
-
-        // CHANGE THAT SHIT {
-        std::string name(subsystem->_windowName);
-        name += " ";
-        name += std::to_string(p_width);
-        name +=" ";
-        name += std::to_string(p_height);
-        glfwSetWindowTitle(p_window, name.c_str());
-        // CHANGE THAT SHIT }
         
+        glfwSetWindowTitle(p_window, fmt::format("{0} {1}x{2}", subsystem->_windowName, p_width, p_height).c_str());
     }
 
     void WindowSubsystem::WindowFramebufferResizedHandler(GLFWwindow* p_window, int p_width, int p_height)
@@ -42,7 +34,9 @@ namespace DeepEngine
         ENGINE_INFO("Window changed framebuffer size to: {}x{}", p_width, p_height);
         Events::OnWindowFramebufferResized event;
         glfwGetFramebufferSize(p_window, &event.Width, &event.Height);
-        Architecture::PublishEvent(event);
+        
+        auto subsystem = (WindowSubsystem*)glfwGetWindowUserPointer(p_window);
+        subsystem->_internalSubsystemEventBus.Publish(event);
     }
 
     void WindowSubsystem::WindowMinimizedHandler(GLFWwindow* p_window, int p_minimized)
@@ -50,7 +44,9 @@ namespace DeepEngine
         ENGINE_INFO("Window changed minimized mode to: {}", p_minimized == 1);
         Events::OnWindowChangeMinimized event;
         event.MinimizedMode = p_minimized == 1;
-        Architecture::PublishEvent(event);
+        
+        auto subsystem = (WindowSubsystem*)glfwGetWindowUserPointer(p_window);
+        subsystem->_internalSubsystemEventBus.Publish(event);
     }
 
     bool WindowSubsystem::Init()
@@ -78,19 +74,17 @@ namespace DeepEngine
 
         Events::OnCreateGlfwContext windowEvent;
         windowEvent.GLFWWindow = _window;
-        Architecture::PublishEvent<Events::OnCreateGlfwContext>(windowEvent);
+        _internalSubsystemEventBus.Publish(windowEvent);
         
         INFO("Initialized with success");
 
         Events::OnWindowResized event;
-        event.Width = 1920;
-        event.Height = 1080;
+        glfwGetWindowSize(_window, &event.Width, &event.Height);
+        _internalSubsystemEventBus.Publish(event);
         
-        Architecture::PublishEvent(event);
-
-        Events::OnWindowFramebufferResized framebufferResized;
-        glfwGetFramebufferSize(_window, &framebufferResized.Width, &framebufferResized.Height);
-        Architecture::PublishEvent(framebufferResized);
+        Events::OnWindowFramebufferResized framebufferResizedEvent;
+        glfwGetFramebufferSize(_window, &framebufferResizedEvent.Width, &framebufferResizedEvent.Height);
+        _internalSubsystemEventBus.Publish(framebufferResizedEvent);
 
         return true;
     }
@@ -103,7 +97,7 @@ namespace DeepEngine
             if (!_wantToExit)
             {
                 _wantToExit = true;
-                Architecture::PublishEvent(Events::OnCloseRequested());
+                _internalSubsystemEventBus.Publish<Events::OnCloseRequest>();
             }
         }
     }

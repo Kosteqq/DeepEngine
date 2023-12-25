@@ -9,13 +9,13 @@ namespace DeepEngine::Events
     END_EVENT_DEFINITION
 
     BEGIN_GLOBAL_EVENT_DEFINITION(OnWindowResized)
-    uint32_t Width;
-    uint32_t Height;
+    int32_t Width;
+    int32_t Height;
     END_EVENT_DEFINITION
 
     BEGIN_GLOBAL_EVENT_DEFINITION(OnWindowFramebufferResized)
-    uint32_t Width;
-    uint32_t Height;
+    int32_t Width;
+    int32_t Height;
     END_EVENT_DEFINITION
 
     BEGIN_GLOBAL_EVENT_DEFINITION(OnWindowChangeMinimized)
