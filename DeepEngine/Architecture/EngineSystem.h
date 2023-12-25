@@ -5,7 +5,6 @@
 #include "Debugs/InitializationMilestone.h"
 #include "Debugs/Logger.h"
 #include "Debugs/Timing.h"
-#include "Events.h"
 
 #include <memory>
 #include <typeindex>

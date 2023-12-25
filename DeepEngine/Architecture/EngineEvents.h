@@ -1,35 +1,30 @@
 #pragma once
-#include "Events.h"
+#include "EventBus/BaseEvent.h"
 
 namespace DeepEngine::Events
 {
 
-    DECLARE_EVENT(OnCloseRequested)
-    {
-        
-    };
+    BEGIN_GLOBAL_EVENT_DEFINITION(OnCloseRequest)
+    // ...
+    END_EVENT_DEFINITION
 
-    DECLARE_EVENT(OnWindowResized)
-    {
-        uint32_t Width;
-        uint32_t Height;
-    };
+    BEGIN_GLOBAL_EVENT_DEFINITION(OnWindowResized)
+    uint32_t Width;
+    uint32_t Height;
+    END_EVENT_DEFINITION
 
-    DECLARE_EVENT(OnWindowFramebufferResized)
-    {
-        int32_t Width;
-        int32_t Height;
-    };
+    BEGIN_GLOBAL_EVENT_DEFINITION(OnWindowFramebufferResized)
+    uint32_t Width;
+    uint32_t Height;
+    END_EVENT_DEFINITION
 
-    DECLARE_EVENT(OnWindowChangeMinimized)
-    {
-        bool MinimizedMode;
-    };
+    BEGIN_GLOBAL_EVENT_DEFINITION(OnWindowChangeMinimized)
+    bool MinimizedMode;
+    END_EVENT_DEFINITION
 
-    DECLARE_EVENT(OnCreateGlfwContext)
-    {
-        GLFWwindow* GLFWWindow;
-    };
+    BEGIN_GLOBAL_EVENT_DEFINITION(OnCreateGlfwContext)
+    GLFWwindow* GLFWWindow;
+    END_EVENT_DEFINITION
 
 }
     
