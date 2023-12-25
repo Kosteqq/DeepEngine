@@ -7,10 +7,7 @@
 #include "Debugs/Timing.h"
 #include "Renderer/RendererSubsystem.h"
 #include "Window/WindowSubsystem.hpp"
-#include "VulkanPrototype/VulkanPrototype.h"
 
-#include "Architecture/EventBus/BaseEvent.h"
-#include "Architecture/EventBus/EventListener.h"
 #include "Architecture/EventBus/EventBus.h"
 
 
