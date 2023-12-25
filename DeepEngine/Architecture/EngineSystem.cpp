@@ -2,7 +2,9 @@
 
 namespace DeepEngine::Architecture
 {
-    EngineSubsystemsManager::EngineSubsystemsManager() : _subsystemsMap(16)
+    EngineSubsystemsManager::EngineSubsystemsManager(EventBus& p_engineEventBus)
+        : _subsystemsMap(16),
+        _engineEventBus(p_engineEventBus)
     {
         _subsystems.reserve(16);
     }
