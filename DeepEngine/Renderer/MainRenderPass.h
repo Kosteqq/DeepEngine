@@ -1,18 +1,20 @@
 #pragma once
 #include "Vulkan/RenderPass.h"
 #include "Vulkan/PipelineLayout.h"
+#include "Vulkan/Events/VulkanEvents.h"
 
 namespace DeepEngine::Renderer
 {
 
-    class MainRenderPass : public Vulkan::RenderPass,
-        Architecture::EventListener<Events::OnWindowFramebufferResized>
+    class MainRenderPass : public Vulkan::RenderPass
     {
     protected:
         void Initialize() override
         {
+            auto vulkanController = GetVulkanInstanceController();
+            
             VkAttachmentDescription baseColorAttachmentDesc { };
-            baseColorAttachmentDesc.format = GetVulkanInstanceController()->GetSwapchainCurrentFormat().format;
+            baseColorAttachmentDesc.format = vulkanController->GetSwapchainCurrentFormat().format;
             baseColorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
             baseColorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             baseColorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -26,6 +28,9 @@ namespace DeepEngine::Renderer
             _baseSubPass = CreateRenderSubPass(VK_PIPELINE_BIND_POINT_GRAPHICS)
                 .AddColorAttachment(_baseColorAttachment, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                 .GetSubPassPtr();
+
+            _swapChainRecreatedListener = vulkanController->GetVulkanEventBus().CreateListener<Vulkan::Events::OnSwapChainRecreated>();
+            _swapChainRecreatedListener->BindCallback(&MainRenderPass::SwapChainRecreatedHandler, this);
         }
 
         void PostInitialize() override
@@ -49,13 +54,6 @@ namespace DeepEngine::Renderer
         VkFramebuffer GetSwapchainImageVkFramebuffer(uint32_t p_index)
         {
             return _swapchainImageFramebuffers[p_index];
-        }
-
-    protected:
-        bool EventHandler(const Events::OnWindowFramebufferResized* p_event) override
-        {
-            RecreateFrameBuffers();
-            return false;
         }
 
     private:
@@ -98,7 +96,15 @@ namespace DeepEngine::Renderer
             
         }
 
+        Architecture::EventResult SwapChainRecreatedHandler(const Vulkan::Events::OnSwapChainRecreated& p_event)
+        {
+            RecreateFrameBuffers();
+            return Architecture::Internal::PASS;
+        }
+
     private:
+        std::shared_ptr<Architecture::EventListener<Vulkan::Events::OnSwapChainRecreated>> _swapChainRecreatedListener;
+        
         const RenderSubPass* _baseSubPass;
         const RenderAttachment* _baseColorAttachment;
 
