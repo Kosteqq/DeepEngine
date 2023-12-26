@@ -22,13 +22,15 @@ namespace DeepEngine::Renderer
         
     };
     
-    class RendererSubsystem final : Architecture::EngineSubsystem,
-                                    Architecture::EventListener<Events::OnWindowChangeMinimized>
+    class RendererSubsystem final : Architecture::EngineSubsystem
     {
     public:
-        RendererSubsystem() : EngineSubsystem("Renderer")
+        RendererSubsystem(Architecture::EventBus& p_engineEventBus)
+            : EngineSubsystem(p_engineEventBus, "Renderer")
         { 
-            _vulkanInstance = new Vulkan::VulkanInstance();
+            _vulkanInstance = new Vulkan::VulkanInstance(p_engineEventBus);
+            _wndChangeMinimizedListener = _internalSubsystemEventBus.CreateListener<Events::OnWindowChangeMinimized>();
+            _wndChangeMinimizedListener->BindCallback(&RendererSubsystem::WindowChangedMinimizedHandler, this);
         }
 
     protected:
@@ -107,16 +109,10 @@ namespace DeepEngine::Renderer
             }
         }
 
-    protected:
-        bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override
-        {
-            _isWindowMinimized = p_event->MinimizedMode;
-            return false;
-        }
-
     private:
         bool InitializeVulkanInstance();
         bool EnableGlfwExtensions();
+        Architecture::EventResult WindowChangedMinimizedHandler(const Events::OnWindowChangeMinimized& p_event);
 
     private:
         Vulkan::VulkanInstance* _vulkanInstance = nullptr;
@@ -132,6 +128,8 @@ namespace DeepEngine::Renderer
         RendererCommandRecorder _commandRecorder;
 
         bool _isWindowMinimized = false;
+
+        std::shared_ptr<Architecture::EventListener<Events::OnWindowChangeMinimized>> _wndChangeMinimizedListener;
     };
     
 }

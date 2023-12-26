@@ -5,12 +5,13 @@
 #include "Debugs/InitializationMilestone.h"
 #include "Debugs/Logger.h"
 #include "Debugs/Timing.h"
-#include "Events.h"
 
 #include <memory>
 #include <typeindex>
 #include <type_traits>
 #include <vector>
+
+#include "EventBus/EventBus.h"
 
 
 namespace DeepEngine::Architecture
@@ -25,9 +26,10 @@ namespace DeepEngine::Architecture
     protected:
         friend class EngineSubsystemsManager;
 
-        EngineSubsystem(const char* p_subsystemName) :
+        EngineSubsystem(EventBus& p_engineEventBus, const char* p_subsystemName) :
             _subsystemLogger(Debug::Logger::CreateLoggerInstance(p_subsystemName)),
-            _initializeMilestone(Debug::InitializationMilestone::Create(p_subsystemName))
+            _initializeMilestone(Debug::InitializationMilestone::Create(p_subsystemName)),
+            _internalSubsystemEventBus(p_engineEventBus.CreateChildEventBus())
         { }
 
         virtual bool Init() = 0;
@@ -38,6 +40,8 @@ namespace DeepEngine::Architecture
         EngineSubsystemsManager* _subsystemsManager;
         std::shared_ptr<Debug::Logger> _subsystemLogger;
         Debug::InitializationMilestone _initializeMilestone;
+
+        EventBus& _internalSubsystemEventBus;
     };
 
     class EngineSubsystemsManager
@@ -64,7 +68,7 @@ namespace DeepEngine::Architecture
         };
         
     public:
-        EngineSubsystemsManager();
+        EngineSubsystemsManager(EventBus& p_engineEventBus);
         ~EngineSubsystemsManager();
 
         bool Init();
@@ -76,7 +80,7 @@ namespace DeepEngine::Architecture
         T* CreateSubsystem(Args... p_args)
         {
             TIMER(fmt::format("Creating submodule: \"{}\"", typeid(T).name()).c_str());
-            auto newSubmodule = new T(std::forward<Args>(p_args)...);
+            auto newSubmodule = new T(_engineEventBus, std::forward<Args>(p_args)...);
             _subsystems.push_back(reinterpret_cast<EngineSubsystem*>(newSubmodule));
             return newSubmodule; 
         }
@@ -84,6 +88,8 @@ namespace DeepEngine::Architecture
     private:
         std::vector<EngineSubsystem*> _subsystems;
         std::unordered_map<std::type_index, EngineSubsystem*> _subsystemsMap;
+
+        EventBus& _engineEventBus;
     };
 }
 

@@ -165,4 +165,11 @@ namespace DeepEngine::Renderer
 
         return true;
     }
+    
+    Architecture::EventResult RendererSubsystem::WindowChangedMinimizedHandler(
+        const Events::OnWindowChangeMinimized& p_event)
+    {
+        _isWindowMinimized = p_event.MinimizedMode;
+        return Architecture::EventResult::PASS;
+    }
 }

@@ -1,4 +1,5 @@
 #include "VulkanInstance.h"
+#include "Renderer/Vulkan/Events/VulkanEvents.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
@@ -101,6 +102,8 @@ namespace DeepEngine::Renderer::Vulkan
 
         TerminateSwapChain();
         OnInitializeSwapChain();
+
+        _vulkanEventBus.Publish<Events::OnSwapChainRecreated>();
     }
     
     void VulkanInstance::SetSwapChainFormat(VkSurfaceFormatKHR p_format, VkPresentModeKHR p_presentMode, bool p_ignoreRecreate)

@@ -1,3 +1,5 @@
+#include <stack>
+
 #include "Debugs/Logger.h"
 #include "Debugs/InitializationTracker.h"
 #include "Architecture/EngineSystem.h"
@@ -5,38 +7,17 @@
 #include "Debugs/Timing.h"
 #include "Renderer/RendererSubsystem.h"
 #include "Window/WindowSubsystem.hpp"
-#include "VulkanPrototype/VulkanPrototype.h"
 
+#include "Architecture/EventBus/EventBus.h"
 
-class TestSubsystem : public DeepEngine::Architecture::EngineSubsystem
-{
-public:
-    TestSubsystem(int x) : EngineSubsystem("Test Subsystem")
-    {
-        INFO("Constructor {0}", x);
-    }
-
-protected:
-    bool Init() override
-    {
-        ENGINE_INFO("INIT");
-        return true;
-    }
-
-    void Destroy() override
-    {
-        ENGINE_INFO("Destroy");
-    }
-
-    void Tick() override
-    { }
-};
 
 int main(int argc, char* argv[])
 {
+    DeepEngine::Debug::Logger::Initialize("Logs/engine.log");
+    auto engineEventBus = DeepEngine::Architecture::EventBus();
+    
     {
         TIMER("Main");
-        DeepEngine::Debug::Logger::Initialize("Logs/engine.log");
 
         DEFINE_MILESTONE(FailedMilestone);
         DEFINE_MILESTONE(FulfiledMilestone);
@@ -46,8 +27,7 @@ int main(int argc, char* argv[])
         
         ENGINE_INFO("Hello World");
 
-        auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager();
-        subsystemsManager.CreateSubsystem<TestSubsystem>(2);
+        auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager(engineEventBus);
         auto windowSubsystem = subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "1800 lines for fucking triangle (:");
     	subsystemsManager.CreateSubsystem<DeepEngine::Renderer::RendererSubsystem>();
 
@@ -59,6 +39,8 @@ int main(int argc, char* argv[])
 
         while (true)
         {
+            TIMER("Tick");
+            
             subsystemsManager.Tick();
             if (windowSubsystem->WantsToExit())
             {

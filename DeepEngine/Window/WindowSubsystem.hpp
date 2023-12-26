@@ -15,7 +15,7 @@ namespace DeepEngine
     class WindowSubsystem : Architecture::EngineSubsystem
     {
     public:
-        WindowSubsystem(int p_width, int p_height, const char*);
+        WindowSubsystem(Architecture::EventBus& p_engineEventBus, int p_width, int p_height, const char*);
         ~WindowSubsystem();
 
         GLFWwindow* GetGlfwWindow() const
