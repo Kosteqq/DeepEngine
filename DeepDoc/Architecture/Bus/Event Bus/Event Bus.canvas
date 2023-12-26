@@ -1,0 +1,21 @@
+{
+	"nodes":[
+		{"id":"84d513ec23b8e30d","x":-220,"y":-460,"width":682,"height":660,"type":"group","label":"Global Engine Events"},
+		{"id":"d72b48a58fe31b29","x":760,"y":660,"width":520,"height":390,"type":"group","label":"Vulkan Wrappers Internal Events"},
+		{"id":"3781c17f3d2adb2d","x":20,"y":220,"width":243,"height":50,"color":"4","type":"text","text":"Main Engine Event Bus"},
+		{"id":"2d7cb6b8d41b35ea","x":-295,"y":420,"width":315,"height":50,"color":"4","type":"text","text":"Window Subsystem Event Bus"},
+		{"id":"d0ed01603349a86b","type":"text","text":"Renderer Subsystem Event Bus","x":180,"y":420,"width":315,"height":50,"color":"4"},
+		{"id":"3926017620a351ea","type":"text","text":"Vulkan Subsystem Event Bus","x":431,"y":660,"width":315,"height":50,"color":"4"},
+		{"id":"1031cf024e6a0329","x":788,"y":696,"width":326,"height":50,"color":"6","type":"text","text":"OnSwapChainRecreated"},
+		{"id":"2f744ab69cf7e54a","x":-180,"y":-420,"width":320,"height":50,"color":"6","type":"text","text":"OnOnCloseRequest"},
+		{"id":"f7f5923eb59a22e3","x":-180,"y":-340,"width":320,"height":50,"color":"6","type":"text","text":"OnWindowFramebufferResized"},
+		{"id":"6acea53c5b2ff5b1","x":-180,"y":-260,"width":320,"height":50,"color":"6","type":"text","text":"OnWindowChangeMinimized"},
+		{"id":"9f629f8be2a4181c","x":-180,"y":-180,"width":320,"height":50,"color":"6","type":"text","text":"OnCreateGlfwContext"},
+		{"id":"ee7e333377b5183d","type":"text","text":"OnWindowResized","x":-180,"y":-100,"width":320,"height":50,"color":"6"}
+	],
+	"edges":[
+		{"id":"0eb08b9520fa3602","fromNode":"3781c17f3d2adb2d","fromSide":"bottom","toNode":"2d7cb6b8d41b35ea","toSide":"top"},
+		{"id":"674c9edd177c9434","fromNode":"3781c17f3d2adb2d","fromSide":"bottom","toNode":"d0ed01603349a86b","toSide":"top"},
+		{"id":"c0c58801e5c3e150","fromNode":"d0ed01603349a86b","fromSide":"bottom","toNode":"3926017620a351ea","toSide":"top"}
+	]
+}

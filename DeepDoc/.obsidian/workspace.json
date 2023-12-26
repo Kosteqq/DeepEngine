@@ -31,8 +31,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -98,7 +97,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md",
+                "file": "_Nomenclature.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +114,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md",
+                "file": "_Nomenclature.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -138,7 +137,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md"
+                "file": "_Nomenclature.md"
               }
             }
           }
@@ -159,17 +158,24 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "8b7283f65fb53318",
+  "active": "b6fb7dd317db1933",
   "lastOpenFiles": [
-    "Graf.canvas",
     "Renderer/VULKAN/Vulkan Feature Wrapper.md",
+    "Architecture/Bus/Event Bus/Event Bus.canvas",
+    "Architecture/Bus/Event Bus/Event Bus Overview.md",
+    "Architecture/Bus/Bus Overview.md",
+    "Architecture/Bus/Event Bus",
+    "Architecture/Bus/Bus Overview Example.canvas",
+    "Architecture/Bus",
+    "Architecture",
+    "Engine Subsystem (Core)/Engine Subsystem.md",
+    "Graf.canvas",
     "Debug (Core)/Initialization Tracker.md",
     "Debug (Core)/Debug Graph.canvas",
     "Code Hierarchy.canvas",
     "_Nomenclature.md",
     "Debug (Core)/Logger.md",
     "Scene.md",
-    "Engine Subsystem (Core)/Engine Subsystem.md",
     "Debug (Core)",
     "Engine Subsystem (Core)",
     "Bez nazwy 2.md",
