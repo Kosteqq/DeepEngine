@@ -1,24 +1,18 @@
 #pragma once
-#include "../VulkanPCH.h"
-#include <concepts>
-
 #include <glm/glm.hpp>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#include "Architecture/EngineEvents.h"
-#include "Architecture/Events.h"
-#include "Renderer/Vulkan/Debug/VulkanDebug.h"
+#include "../VulkanPCH.h"
 #include "../Controller/BaseVulkanController.h"
+#include "Architecture/EngineEvents.h"
+#include "Architecture/EventBus/EventBus.h"
+#include "Renderer/Vulkan/Debug/VulkanDebug.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
 
-    class VulkanInstance :
-        public BaseVulkanController,
-        public Architecture::EventListener<Events::OnCreateGlfwContext>,
-        public Architecture::EventListener<Events::OnWindowFramebufferResized>,
-        public Architecture::EventListener<Events::OnWindowChangeMinimized>
+    class VulkanInstance : public BaseVulkanController
     {
     public:
         struct QueueInstance
@@ -32,7 +26,7 @@ namespace DeepEngine::Renderer::Vulkan
         };
 
     public:
-        VulkanInstance();
+        VulkanInstance(Architecture::EventBus& p_engineEventBus);
         ~VulkanInstance() override = default;
 
     private:
@@ -122,6 +116,12 @@ namespace DeepEngine::Renderer::Vulkan
         VkSurfaceKHR  GetSurface() const
         { return _surface; }
 
+        constexpr Architecture::EventBus& GetEngineEventBus() const
+        { return _engineEventBus; }
+
+        constexpr Architecture::EventBus& GetVulkanEventBus() const
+        { return _vulkanEventBus; }
+
     public:
         inline bool IsInstanceExtensionAvailable(const VkExtensionProperties& p_extension) const;
         bool IsInstanceExtensionAvailable(const std::string& p_extensionName) const;
@@ -138,29 +138,30 @@ namespace DeepEngine::Renderer::Vulkan
 
         void SetSwapChainFormat(VkSurfaceFormatKHR p_format, VkPresentModeKHR p_presentMode, bool p_ignoreRecreate = false);
         void RecreateSwapChain();
+        
 
     private:
         bool FindMatchingPhysicalDevice(const std::vector<VkPhysicalDevice>& p_devices);
 
-    protected:
-        bool EventHandler(const Events::OnCreateGlfwContext* p_event) override
+        Architecture::EventResult CreateGlfwWindowHandler(const Events::OnCreateGlfwContext& p_event)
         {
-            _glfwWindow = p_event->GLFWWindow;
-            return false;
+            _glfwWindow = p_event.GLFWWindow;
+            return Architecture::EventResult::PASS;
         }
         
-        bool EventHandler(const Events::OnWindowFramebufferResized* p_event) override
+        Architecture::EventResult FramebufferResizedHandler(const Events::OnWindowFramebufferResized& p_event)
         {
-            _swapChainCurrentFrameBufferSize = { p_event->Width, p_event->Height };
+            _swapChainCurrentFrameBufferSize = { p_event.Width, p_event.Height };
             _isSwapChainValid = false;
-            return false;
-        }
-        bool EventHandler(const Events::OnWindowChangeMinimized* p_event) override
-        {
-            return false;
+            return Architecture::EventResult::PASS;
         }
 
     private:
+        Architecture::EventBus& _engineEventBus;
+        Architecture::EventBus& _vulkanEventBus;
+        std::shared_ptr<Architecture::EventListener<Events::OnCreateGlfwContext>> _glfwWindowCreateListener;
+        std::shared_ptr<Architecture::EventListener<Events::OnWindowFramebufferResized>> _windowFramebufferResizedListener;
+        
         GLFWwindow* _glfwWindow;
         VkInstance _instance;
         

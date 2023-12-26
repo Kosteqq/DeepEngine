@@ -62,18 +62,6 @@ namespace DeepEngine::Renderer::Vulkan
         vkDestroyDevice(_logicalDevice, nullptr);
     }
 
-    VulkanInstance::VulkanInstance()
-    { 
-        _enabledInstanceExtensionNames.reserve(32);
-        _enabledPhysicalExtensionNames.reserve(32);
-        _queuesCreateInfo.reserve(16);
-        _queueInstances.reserve(16);
-
-        BaseVulkanController::_vulkanInstance = this;
-
-        PreinitializeInstance();
-    }
-
     bool VulkanInstance::TryAddQueueToCreate(const VkQueueFlagBits p_requiredFeatures, const bool p_needSurfaceSupport,
                                              const QueueInstance ** p_outputInstance)
     {
