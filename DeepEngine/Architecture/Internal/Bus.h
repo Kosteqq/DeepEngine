@@ -13,13 +13,21 @@ namespace DeepEngine::Architecture::Internal
 		&& std::is_base_of_v<BusListener<TObject>, TListener>
 	class Bus
 	{
-	protected:
-		Bus() = default;
-		Bus(Bus<TObject, TListener>* p_parent);
-
 	public:
+		Bus()
+		{
+			_parentBus = nullptr;
+			_listeners.reserve(32);
+			_childBuses.reserve(32);
+		}
+		
+		Bus(Bus<TObject, TListener>* p_parent)
+		{
+			_parentBus = p_parent;
+		}
+
 		Bus(const Bus&) = delete;
-		Bus(Bus&&) = delete;
+		Bus(Bus&&) = default;
     
 		virtual ~Bus() = default;
 
@@ -52,15 +60,25 @@ namespace DeepEngine::Architecture::Internal
 		{ return _listeners; }
 		constexpr Bus<TObject, TListener>* GetParentBus() const
 		{ return _parentBus; }
-		constexpr const std::vector<Bus<TObject, TListener>*>& GetChildBuses() const
+		constexpr const std::vector<Bus<TObject, TListener>>& GetChildBuses() const
 		{ return _childBuses; }
 
 	private:
-		void DestroyListenerHandler(BusListener<TObject>* p_destroyedListener);
+		void DestroyListenerHandler(BusListener<TObject>* p_destroyedListener)
+		{
+			for (uint32_t i = 0; i < _listeners.size(); i++)
+			{
+				if (_listeners[i] == p_destroyedListener)
+				{
+					_listeners.erase(_listeners.begin() + i);
+					break;
+				}
+			}
+		}
 
 	private:
 		std::vector<TListener*> _listeners;
 		Bus<TObject, TListener>* _parentBus = nullptr;
-		std::vector<Bus<TObject, TListener>*> _childBuses;
+		std::vector<Bus<TObject, TListener>> _childBuses;
 	};
 }

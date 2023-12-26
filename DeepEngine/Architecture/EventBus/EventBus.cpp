@@ -12,7 +12,7 @@ namespace DeepEngine::Architecture
     		uint32_t BusChildIndex;
     	};
             
-    	TIMER("Publishing \"{}\" event", p_event.GetName());
+    	TIMER(fmt::format("Publishing \"{}\" event", p_event.GetName()).c_str());
     	EventBus* rootBus;
 
     	switch (p_event.GetPublishingScope())
@@ -52,7 +52,7 @@ namespace DeepEngine::Architecture
     			continue;
     		}
 
-    		EventBus* nextChild = static_cast<EventBus*>(childs[stackElement.BusChildIndex]);
+    		EventBus* nextChild = (EventBus*)(&childs[stackElement.BusChildIndex]);
     		stackElement.BusChildIndex++;
                 
     		stack.emplace(nextChild, 0);
@@ -79,9 +79,10 @@ namespace DeepEngine::Architecture
 
 	EventBus* EventBus::GetTopParent(EventBus* p_bus)
 	{
-		if (p_bus->GetParentBus() != nullptr)
+		auto parentBus = (EventBus*)p_bus->GetParentBus();
+		if (parentBus != nullptr)
 		{
-			return GetTopParent(dynamic_cast<EventBus*>(p_bus->GetParentBus()));
+			return GetTopParent(parentBus);
 		}
 
 		return p_bus;
