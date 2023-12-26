@@ -2,8 +2,8 @@
 #include <chrono>
 #include <fmt/format.h>
 
-#define TIMER(name)                                                                                 \
-    static DeepEngine::Debug::TimerTracker __timerTracker;                                    \
+#define TIMER(name)                                                                       \
+    static DeepEngine::Debug::TimerTracker __timerTracker;                                \
     DeepEngine::Debug::Timer __timerInstance = __timerTracker.CreateTimer(__func__, name) \
 
 #define PRINT_TIMER_SUMMARY() DeepEngine::Debug::TimerTracker::PrintSummary()
