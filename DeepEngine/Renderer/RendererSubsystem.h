@@ -5,6 +5,7 @@
 #define MESSENGER_UTILS
 #include "MainRenderPass.h"
 #include "RendererCommandRecorder.h"
+#include "TriangleRenderer.h"
 #include "Vulkan/Semaphore.h"
 #include "Vulkan/RenderPass.h"
 #include "Vulkan/ShaderModule.h"
@@ -33,91 +34,8 @@ namespace DeepEngine::Renderer
         }
 
     protected:
-        bool Init() override
-        {
-            if (!InitializeVulkanInstance())
-            {
-                return false;
-            }
+        bool Init() override;
 
-            _readyToRenderFence = new Vulkan::Fence(true);
-            if (!_vulkanInstance->InitializeSubController(_readyToRenderFence))
-            {
-                return false;
-            }
-
-            _availableImageToRenderSemaphore = new Vulkan::Semaphore();
-            if (!_vulkanInstance->InitializeSubController(_availableImageToRenderSemaphore))
-            {
-                return false;
-            }
-
-            _finishRenderingSemaphore = new Vulkan::Semaphore();
-            if (!_vulkanInstance->InitializeSubController(_finishRenderingSemaphore))
-            {
-                return false;
-            }
-
-            _mainRenderPass = new MainRenderPass();
-            if (!_vulkanInstance->InitializeSubController(_mainRenderPass))
-            {
-                return false;
-            }
-
-            Vulkan::PipelineLayout* pipelineLayout = _mainRenderPass->CreateBaseSubPassPipelineLayout();
-            auto vertShader = new Vulkan::ShaderModule("../DeepEngine/Renderer/Shader/vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-            if (!_vulkanInstance->InitializeSubController(vertShader))
-            {
-                return false;
-            }
-            
-            auto fragShader = new Vulkan::ShaderModule("../DeepEngine/Renderer/Shader/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-            if (!_vulkanInstance->InitializeSubController(fragShader))
-            {
-                return false;
-            }
-
-            Vulkan::PipelineDynamicState dynamicState {
-                .Viewport = true,
-                .Scissor = true,
-                .LineWidth = false,
-            };
-
-            Vulkan::PipelineColorBlend colorBlend {
-                .ColorBlendConstants = { 1.0f, 1.0f, 1.0f, 1.0f },
-                .EnableLogicalBlendOperation = false,
-            };
-
-            Vulkan::PipelineColorBlendAttachment attachmentBlend {
-                .WriteChannelR = true,
-                .WriteChannelG = true,
-                .WriteChannelB = true,
-                .WriteChannelA = true,
-                .EnableBlend = false,
-            };
-
-            Vulkan::PipelineRasterization rasterization {
-                .EnableDepthClamp = false,
-                .EnableDiscardRasterizer = false,
-                .EnableDepthBias = false,
-                .PolygonMode = VK_POLYGON_MODE_FILL,
-                .CullMode = VK_CULL_MODE_NONE,
-                .FrontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-            };
-            
-            _trianglePipeline = new Vulkan::GraphicsPipeline(pipelineLayout, vertShader, fragShader, dynamicState,
-                colorBlend, { attachmentBlend }, rasterization);
-
-            if (!pipelineLayout->InitializeSubController(_trianglePipeline))
-            {
-                return false;
-            }
-
-            _commandRecorder = RendererCommandRecorder(_vulkanInstance, _mainGraphicsQueue);
-
-            return true;
-        }
-        
         void Destroy() override
         {
             _commandRecorder.Terminate();
@@ -162,7 +80,7 @@ namespace DeepEngine::Renderer
             vkResetFences(_vulkanInstance->GetLogicalDevice(), 1, _readyToRenderFence->GetVkFencePtr());
 
             _commandRecorder.RecordBuffer({0.05f, 0.05f, 0.15f, 1.0f},
-                imageIndex, _mainRenderPass, _trianglePipeline);
+                imageIndex, _mainRenderPass, _renderers);
 
             _commandRecorder.SubmitBuffer(_readyToRenderFence,
                 { _availableImageToRenderSemaphore },
@@ -199,10 +117,11 @@ namespace DeepEngine::Renderer
     private:
         Vulkan::VulkanInstance* _vulkanInstance = nullptr;
         MainRenderPass* _mainRenderPass = nullptr;
-        Vulkan::GraphicsPipeline* _trianglePipeline = nullptr;
         Vulkan::Fence* _readyToRenderFence = nullptr;
         Vulkan::Semaphore* _availableImageToRenderSemaphore = nullptr; 
-        Vulkan::Semaphore* _finishRenderingSemaphore = nullptr; 
+        Vulkan::Semaphore* _finishRenderingSemaphore = nullptr;
+
+        std::vector<TriangleRenderer> _renderers;
  
         const Vulkan::VulkanInstance::QueueInstance* _mainGraphicsQueue = nullptr;
 
