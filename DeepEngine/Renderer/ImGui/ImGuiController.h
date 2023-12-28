@@ -107,6 +107,7 @@ namespace DeepEngine::Renderer
 
 			// ...
 			ImGui::ShowDemoWindow();
+			DrawVulkanStructureWindow();
 			
 			ImGui::Render();
 
@@ -239,7 +240,40 @@ namespace DeepEngine::Renderer
 		        ImGui_ImplVulkan_DestroyFontUploadObjects();
 		    }
 
-			delete buffer;
+			buffer->Terminate();
+		}
+
+		void DrawVulkanStructureWindow()
+		{
+			static bool isOpen;
+			ImGui::Begin("Vulkan Structure", &isOpen);
+
+			if (ImGui::TreeNode("Vulkan Instance"))
+			{
+				DrawVulkanControllerChilds(_vulkanInstance);
+				ImGui::TreePop();
+			}
+
+			ImGui::End();
+		}
+
+		void DrawVulkanControllerChilds(Vulkan::BaseVulkanController* p_controller)
+		{
+			auto& childs = p_controller->GetChildControllers();
+			auto it = childs.begin();
+			
+			for (uint32_t i = 0; i < childs.size(); i++)
+			{
+				ImGui::PushID(i);
+				if (ImGui::TreeNode((*it)->GetDebugTypeName()))
+				{
+					DrawVulkanControllerChilds(*it);
+					ImGui::TreePop();
+				}
+				ImGui::PopID();
+				
+				++it;
+			}
 		}
 		
 	private:
