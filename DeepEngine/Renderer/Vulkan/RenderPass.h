@@ -30,21 +30,23 @@ namespace DeepEngine::Renderer::Vulkan
         class RenderSubPassDescCreator
         {
             friend class RenderPass;
-            RenderSubPassDescCreator(RenderSubPass& p_subPass, std::vector<VkSubpassDescription>& p_renderSubPassesDesc);
+            RenderSubPassDescCreator(RenderSubPass& p_subPass, std::vector<VkSubpassDescription>& p_renderSubPassesDesc,
+                std::vector<VkSubpassDependency>& p_dependencies);
 
         public:
             ~RenderSubPassDescCreator();
 
-        public:
             const RenderSubPassDescCreator& AddColorAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const;
             const RenderSubPassDescCreator& AddInputAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const;
             const RenderSubPassDescCreator& AddResolveAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const;
             const RenderSubPassDescCreator& SetDepthStencilAttachment(const RenderAttachment* p_attachment, VkImageLayout p_layout) const;
-            const RenderSubPass* GetSubPassPtr() const;
+            const RenderSubPassDescCreator& AddDependency(const VkSubpassDependency& p_dependency) const;
+            const RenderSubPassDescCreator& GetSubPassPtr(RenderSubPass** p_subPassPtr) const;
 
         private:
             RenderSubPass& _subPass;
             std::vector<VkSubpassDescription>& _renderSubPassesDesc;
+            std::vector<VkSubpassDependency>& _renderSubPassesDependecies;
       };
         
     protected:
@@ -61,7 +63,7 @@ namespace DeepEngine::Renderer::Vulkan
 
     protected:
         void virtual Initialize() = 0;
-        void virtual PostInitialize() { };
+        void virtual PostInitialize() { }
         
         void CreateRenderAttachment(const VkAttachmentDescription& p_desc, const RenderAttachment** p_attachment);
         RenderSubPassDescCreator CreateRenderSubPass(VkPipelineBindPoint p_bindPoint);
@@ -73,6 +75,7 @@ namespace DeepEngine::Renderer::Vulkan
         std::vector<VkAttachmentDescription> _attachmentsDesc;
         std::vector<RenderSubPass> _renderSubPasses;
         std::vector<VkSubpassDescription> _renderSubPassesDesc;
+        std::vector<VkSubpassDependency> _renderSubPassesDependencies;
     };
     
 }

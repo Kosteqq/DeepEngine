@@ -7,8 +7,9 @@ namespace DeepEngine::Renderer::Vulkan
     //      RENDER SUBPASS DESCRIPTION CREATOR
     //////////////////////////////////////////////
 
-    RenderPass::RenderSubPassDescCreator::RenderSubPassDescCreator(RenderSubPass& p_subPass, std::vector<VkSubpassDescription>& p_renderSubPassesDesc)
-        : _subPass(p_subPass), _renderSubPassesDesc(p_renderSubPassesDesc)
+    RenderPass::RenderSubPassDescCreator::RenderSubPassDescCreator(RenderSubPass& p_subPass,
+        std::vector<VkSubpassDescription>& p_renderSubPassesDesc, std::vector<VkSubpassDependency>& p_dependencies)
+        : _subPass(p_subPass), _renderSubPassesDesc(p_renderSubPassesDesc), _renderSubPassesDependecies(p_dependencies)
     { }
 
     RenderPass::RenderSubPassDescCreator::~RenderSubPassDescCreator()
@@ -86,10 +87,17 @@ namespace DeepEngine::Renderer::Vulkan
         };
         return *this;
     }
-
-    const RenderPass::RenderSubPass* RenderPass::RenderSubPassDescCreator::GetSubPassPtr() const
+    
+    const RenderPass::RenderSubPassDescCreator& RenderPass::RenderSubPassDescCreator::AddDependency(const VkSubpassDependency& p_dependency) const
     {
-        return &_subPass;
+        _renderSubPassesDependecies.push_back(p_dependency);
+        return *this;
+    }
+
+    const RenderPass::RenderSubPassDescCreator& RenderPass::RenderSubPassDescCreator::GetSubPassPtr(RenderSubPass** p_subPassPtr) const
+    {
+        *p_subPassPtr = &_subPass;
+        return *this;
     }
 
 
@@ -103,21 +111,12 @@ namespace DeepEngine::Renderer::Vulkan
         _attachmentsDesc.reserve(_attachments.capacity());
         _renderSubPasses.reserve(16);
         _renderSubPassesDesc.reserve(_renderSubPasses.capacity());
+        _renderSubPassesDependencies.reserve(_renderSubPasses.capacity());
     }
 
     bool RenderPass::OnInitialize()
     {
         Initialize();
-        
-        VkSubpassDependency dependency { };
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // Take last operating 
-        dependency.dstSubpass = 0; // ours
-            
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Wait for finish reading from it from another process
-        dependency.srcAccessMask = 0;
-
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             
         VkRenderPassCreateInfo renderPassCreateInfo { };
         renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -125,8 +124,8 @@ namespace DeepEngine::Renderer::Vulkan
         renderPassCreateInfo.pAttachments = _attachmentsDesc.data();
         renderPassCreateInfo.subpassCount = static_cast<uint32_t>(_renderSubPassesDesc.size());
         renderPassCreateInfo.pSubpasses = _renderSubPassesDesc.data();
-        renderPassCreateInfo.dependencyCount = 1;
-        renderPassCreateInfo.pDependencies = &dependency;
+        renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(_renderSubPassesDependencies.size());
+        renderPassCreateInfo.pDependencies = _renderSubPassesDependencies.data();
 
         VULKAN_CHECK_CREATE(
             vkCreateRenderPass(GetVulkanInstanceController()->GetLogicalDevice(),
@@ -170,6 +169,6 @@ namespace DeepEngine::Renderer::Vulkan
         subPass.ResolveAttachments.reserve(8);
         subPass.PreserveAttachments.reserve(8);
 
-        return RenderSubPassDescCreator { subPass, _renderSubPassesDesc };
+        return RenderSubPassDescCreator { subPass, _renderSubPassesDesc, _renderSubPassesDependencies };
     }
 }
