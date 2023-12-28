@@ -1,7 +1,7 @@
 #pragma once
-#include "Vulkan/RenderPass.h"
-#include "Vulkan/PipelineLayout.h"
-#include "Vulkan/Events/VulkanEvents.h"
+#include "Renderer/Vulkan/RenderPass.h"
+#include "Renderer/Vulkan/PipelineLayout.h"
+#include "Renderer/Vulkan/Events/VulkanEvents.h"
 
 namespace DeepEngine::Renderer
 {

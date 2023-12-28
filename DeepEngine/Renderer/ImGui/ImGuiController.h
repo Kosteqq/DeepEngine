@@ -4,7 +4,7 @@
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
 
-#include "Renderer/ImGuiRenderPass.h"
+#include "ImGuiRenderPass.h"
 #include "Renderer/Vulkan/CommandBuffer.h"
 #include "Renderer/Vulkan/CommandPool.h"
 #include "Renderer/Vulkan/Instance/VulkanInstance.h"
@@ -18,10 +18,15 @@ namespace DeepEngine::Renderer
 		using OnSwapChainRecreated = Vulkan::Events::OnSwapChainRecreated;
 		
 	public:
-		ImGuiController(Vulkan::VulkanInstance* p_vulkanInstance, const Vulkan::VulkanInstance::QueueInstance* p_mainQueue,
-			const ImGuiRenderPass* p_imGuiRenderPass)
-			: _vulkanInstance(p_vulkanInstance), _mainQueue(p_mainQueue), _imGuiRenderPass(p_imGuiRenderPass)
+		ImGuiController(Vulkan::VulkanInstance* p_vulkanInstance, const Vulkan::VulkanInstance::QueueInstance* p_mainQueue)
+			: _vulkanInstance(p_vulkanInstance), _mainQueue(p_mainQueue)
 		{
+			_imGuiRenderPass = new ImGuiRenderPass();
+			if (!_vulkanInstance->InitializeSubController(_imGuiRenderPass))
+			{
+				return;
+			}
+			
 			_commandPool = new Vulkan::CommandPool(_mainQueue, Vulkan::CommandPoolFlag::RESET_COMMAND_BUFFER);
 			_vulkanInstance->InitializeSubController(_commandPool);
 
@@ -32,9 +37,6 @@ namespace DeepEngine::Renderer
 			// 	_commandPool->InitializeSubController(_commandBuffers[i]);
 			// }
 			_commandBuffers = _commandPool->CreateCommandBuffers(_vulkanInstance->GetSwapChainImageViews().size());
-			
-			_swapChainRecreatedListener = p_vulkanInstance->GetVulkanEventBus().CreateListener<OnSwapChainRecreated>();
-			_swapChainRecreatedListener->BindCallback(&ImGuiController::SwapChainRecreatedHandler, this);
 			
 			IMGUI_CHECKVERSION();
 			ImGui::CreateContext();
@@ -166,27 +168,6 @@ namespace DeepEngine::Renderer
 		}
 		
 	private:
-		
-
-		Architecture::EventResult SwapChainRecreatedHandler(const OnSwapChainRecreated&)
-		{
-			// ImGui_ImplVulkan_SetMinImageCount(_minImageCount);
-			// ImGui_ImplVulkanH_CreateOrResizeWindow(
-			// 	_vulkanInstance->GetVulkanInstance(),
-			// 	_vulkanInstance->GetPhysicalDevice(),
-			// 	_vulkanInstance->GetLogicalDevice(),
-			// 	&_window,
-			// 	_mainQueue->FamilyIndex,
-			// 	nullptr,
-			// 	_vulkanInstance->GetFrameBufferSize().x,
-			// 	_vulkanInstance->GetFrameBufferSize().y,
-			// 	_minImageCount);
-			//
-			// _window.FrameIndex = 0;
-
-			return Architecture::EventResult::PASS;
-		}
-
 		void LoadFontLol()
 		{
 		    // Load Fonts
@@ -262,7 +243,6 @@ namespace DeepEngine::Renderer
 		}
 		
 	private:
-
 		// From where it should be take from????
 		const uint32_t _minImageCount = 2;
 		VkDescriptorPool _descPool;
@@ -271,9 +251,7 @@ namespace DeepEngine::Renderer
 		const Vulkan::VulkanInstance::QueueInstance* _mainQueue;
 		Vulkan::CommandPool* _commandPool;
 		std::vector<Vulkan::CommandBuffer*> _commandBuffers;
-		const ImGuiRenderPass* _imGuiRenderPass;
-
-		std::shared_ptr<Architecture::EventListener<OnSwapChainRecreated>> _swapChainRecreatedListener;
+        ImGuiRenderPass* _imGuiRenderPass = nullptr;
 	};
 	
 }

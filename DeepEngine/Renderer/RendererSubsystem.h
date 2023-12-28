@@ -9,10 +9,8 @@
 #include "ImGui/ImGuiController.h"
 #include "Vulkan/Semaphore.h"
 #include "Vulkan/RenderPass.h"
-#include "Vulkan/ShaderModule.h"
 #include "Vulkan/Debug/VulkanDebug.h"
 #include "Vulkan/Fence.h"
-#include "Vulkan/CommandBuffer.h"
 
 namespace DeepEngine::Renderer
 {
@@ -126,7 +124,6 @@ namespace DeepEngine::Renderer
     private:
         Vulkan::VulkanInstance* _vulkanInstance = nullptr;
         MainRenderPass* _mainRenderPass = nullptr;
-        ImGuiRenderPass* _imGuiRenderPass = nullptr;
         Vulkan::Fence* _readyToRenderFence = nullptr;
         Vulkan::Semaphore* _availableImageToRenderSemaphore = nullptr; 
         Vulkan::Semaphore* _finishRenderingSemaphore = nullptr;
