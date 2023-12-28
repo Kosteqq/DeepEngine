@@ -103,7 +103,8 @@ namespace DeepEngine::Renderer
         
         void SubmitBuffer(const Vulkan::Fence* p_finishFence,
             const std::vector<const Vulkan::Semaphore*>& p_waitSemaphores,
-            const std::vector<const Vulkan::Semaphore*>& p_finishSemaphores)
+            const std::vector<const Vulkan::Semaphore*>& p_finishSemaphores,
+            const std::vector<const Vulkan::CommandBuffer*>& p_additionalCommandBuffers)
         {
             std::vector<VkSemaphore> waitSemaphores(p_waitSemaphores.size());
             for (uint32_t i = 0; i < waitSemaphores.size(); i++)
@@ -117,6 +118,14 @@ namespace DeepEngine::Renderer
                 finishSubmitSemaphores[i] = p_finishSemaphores[i]->GetVkSemaphore();
             }
 
+            std::vector<VkCommandBuffer> commandBuffers(p_additionalCommandBuffers.size() + 1);
+            commandBuffers[0] = _commandBuffer->GetVkCommandBuffer();
+            
+            for (uint32_t i = 0; i < p_additionalCommandBuffers.size(); i++)
+            {
+                commandBuffers[i + 1] = p_additionalCommandBuffers[i]->GetVkCommandBuffer();
+            }
+
             VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
             VkSubmitInfo submitInfo { };
@@ -124,12 +133,12 @@ namespace DeepEngine::Renderer
             submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
             submitInfo.pWaitSemaphores = waitSemaphores.data();
             submitInfo.pWaitDstStageMask = waitStages;
-            submitInfo.commandBufferCount = 1;
-            submitInfo.pCommandBuffers = &_commandBuffer->GetVkCommandBuffer();
+            submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+            submitInfo.pCommandBuffers = commandBuffers.data();
             submitInfo.signalSemaphoreCount = static_cast<uint32_t>(finishSubmitSemaphores.size());
             submitInfo.pSignalSemaphores = finishSubmitSemaphores.data();
 
-            VkResult result =  vkQueueSubmit(_mainGraphicsQueue->Queue, 1, &submitInfo, p_finishFence->GetVkFence());
+            VkResult result = vkQueueSubmit(_mainGraphicsQueue->Queue, 1, &submitInfo, p_finishFence->GetVkFence());
 
             if (result != VK_SUCCESS)
             {

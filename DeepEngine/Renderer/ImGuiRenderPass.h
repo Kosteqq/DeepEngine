@@ -6,7 +6,7 @@
 namespace DeepEngine::Renderer
 {
 
-    class MainRenderPass : public Vulkan::RenderPass
+    class ImGuiRenderPass : public Vulkan::RenderPass
     {
     protected:
         void Initialize() override
@@ -16,20 +16,19 @@ namespace DeepEngine::Renderer
             VkAttachmentDescription baseColorAttachmentDesc { };
             baseColorAttachmentDesc.format = vulkanController->GetSwapchainCurrentFormat().format;
             baseColorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-            baseColorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            baseColorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
             baseColorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             baseColorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             baseColorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            baseColorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            baseColorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            baseColorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            baseColorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-            
             VkSubpassDependency dependency { };
-            dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // Take last operating 
-            dependency.dstSubpass = 0; // ours
-            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Wait for finish reading from it from another process
-            dependency.srcAccessMask = 0;
+            dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+            dependency.dstSubpass = 0;
+            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
             dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            dependency.srcAccessMask = 0;
             dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
             
             CreateRenderAttachment(baseColorAttachmentDesc, &_colorAttachment);
@@ -37,10 +36,10 @@ namespace DeepEngine::Renderer
             CreateRenderSubPass(VK_PIPELINE_BIND_POINT_GRAPHICS)
                 .AddColorAttachment(_colorAttachment, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                 .AddDependency(dependency)
-                .GetSubPassPtr(&_baseSubPass);
+            .GetSubPassPtr(&_baseSubPass);
 
             _swapChainRecreatedListener = vulkanController->GetVulkanEventBus().CreateListener<Vulkan::Events::OnSwapChainRecreated>();
-            _swapChainRecreatedListener->BindCallback(&MainRenderPass::SwapChainRecreatedHandler, this);
+            _swapChainRecreatedListener->BindCallback(&ImGuiRenderPass::SwapChainRecreatedHandler, this);
         }
 
         void PostInitialize() override
@@ -61,7 +60,7 @@ namespace DeepEngine::Renderer
             return pipelineLayout;
         }
 
-        VkFramebuffer GetSwapchainImageVkFramebuffer(uint32_t p_index)
+        VkFramebuffer GetSwapchainImageVkFramebuffer(uint32_t p_index) const
         {
             return _swapchainImageFramebuffers[p_index];
         }

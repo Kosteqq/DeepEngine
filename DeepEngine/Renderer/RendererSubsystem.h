@@ -6,6 +6,7 @@
 #include "MainRenderPass.h"
 #include "RendererCommandRecorder.h"
 #include "TriangleRenderer.h"
+#include "ImGui/ImGuiController.h"
 #include "Vulkan/Semaphore.h"
 #include "Vulkan/RenderPass.h"
 #include "Vulkan/ShaderModule.h"
@@ -38,6 +39,11 @@ namespace DeepEngine::Renderer
 
         void Destroy() override
         {
+            vkDeviceWaitIdle(_vulkanInstance->GetLogicalDevice());
+            
+            _imGuiController->Terminate();
+            delete _imGuiController;
+            
             _commandRecorder.Terminate();
             _vulkanInstance->Terminate();
             Vulkan::VulkanDebugger::Terminate();
@@ -82,9 +88,12 @@ namespace DeepEngine::Renderer
             _commandRecorder.RecordBuffer({0.05f, 0.05f, 0.15f, 1.0f},
                 imageIndex, _mainRenderPass, _renderers);
 
+            _imGuiController->Renderrr(imageIndex);
+
             _commandRecorder.SubmitBuffer(_readyToRenderFence,
                 { _availableImageToRenderSemaphore },
-                { _finishRenderingSemaphore });
+                { _finishRenderingSemaphore },
+        { _imGuiController->GetCommandBuffer(imageIndex) });
 
             VkSwapchainKHR swapChains[] = { _vulkanInstance->GetSwapchain() };
             VkSemaphore waitSemaphores[] = { _finishRenderingSemaphore->GetVkSemaphore() };
@@ -117,9 +126,12 @@ namespace DeepEngine::Renderer
     private:
         Vulkan::VulkanInstance* _vulkanInstance = nullptr;
         MainRenderPass* _mainRenderPass = nullptr;
+        ImGuiRenderPass* _imGuiRenderPass = nullptr;
         Vulkan::Fence* _readyToRenderFence = nullptr;
         Vulkan::Semaphore* _availableImageToRenderSemaphore = nullptr; 
         Vulkan::Semaphore* _finishRenderingSemaphore = nullptr;
+
+        ImGuiController* _imGuiController;
 
         std::vector<TriangleRenderer> _renderers;
  

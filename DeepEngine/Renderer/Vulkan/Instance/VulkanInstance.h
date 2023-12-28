@@ -85,6 +85,8 @@ namespace DeepEngine::Renderer::Vulkan
         void TerminateSwapChain();
 
     public:
+        VkInstance GetVulkanInstance() const
+        { return _instance; }
         VkPhysicalDevice GetPhysicalDevice() const
         { return _physicalDevice; }
         const VkPhysicalDeviceFeatures& GetPhysicalDeviceFeatures() const
@@ -109,6 +111,9 @@ namespace DeepEngine::Renderer::Vulkan
 
         VkSwapchainKHR GetSwapchain() const
         { return _swapchain; }
+
+        GLFWwindow* GetGlfwWindow() const
+        { return _glfwWindow; }
 
         const std::vector<VkImageView>& GetSwapChainImageViews() const
         { return  _swapChainImageViews; }

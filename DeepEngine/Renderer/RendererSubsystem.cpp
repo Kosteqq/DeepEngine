@@ -79,6 +79,14 @@ namespace DeepEngine::Renderer
         
         _commandRecorder = RendererCommandRecorder(_vulkanInstance, _mainGraphicsQueue);
 
+        _imGuiRenderPass = new ImGuiRenderPass();
+        if (!_vulkanInstance->InitializeSubController(_imGuiRenderPass))
+        {
+            return false;
+        }
+        
+        _imGuiController = new ImGuiController(_vulkanInstance, _mainGraphicsQueue, _imGuiRenderPass);
+
         return true;
     }
 
