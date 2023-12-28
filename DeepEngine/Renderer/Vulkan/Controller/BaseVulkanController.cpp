@@ -8,17 +8,16 @@ namespace DeepEngine::Renderer::Vulkan
     {
         if (_parentController != nullptr)
         {
-            _parentController->_dependentControllers.remove(this);
+            _parentController->_childControllers.erase(this);
         }
-        
-        while (!_dependentControllers.empty())
+
+        for (auto child : _childControllers)
         {
-            BaseVulkanController* dependent = _dependentControllers.back();
-            dependent->_parentController = nullptr;
-            dependent->Terminate();
-            
-            _dependentControllers.remove(dependent);
+            child->_parentController = nullptr;
+            child->Terminate();
         }
+
+        _childControllers.clear();
 
         OnTerminate();
         

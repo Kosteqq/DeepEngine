@@ -9,10 +9,6 @@ namespace DeepEngine::Renderer
     {
     public:
         TriangleRenderer() = default;
-        ~TriangleRenderer()
-        {
-            delete _graphicsPipeline;
-        }
         
         bool Init(const char* p_vertexShaderPath, const char* p_fragmentShaderPath,
                 const Vulkan::PipelineDynamicState& p_dynamicState, const Vulkan::PipelineColorBlend& p_colorBlend,
@@ -39,8 +35,8 @@ namespace DeepEngine::Renderer
             {
                 return false;
             }
-            delete vertShader;
-            delete fragShader;
+            vertShader->Terminate();
+            fragShader->Terminate();
             
             return true;    
         }
