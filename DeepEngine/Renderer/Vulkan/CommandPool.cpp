@@ -1,10 +1,24 @@
 #include "CommandPool.h"
+#include "CommandBuffer.h"
 
 namespace DeepEngine::Renderer::Vulkan
 {
     CommandPool::CommandPool(const VulkanInstance::QueueInstance* p_queue, const CommandPoolFlag p_flags)
         : _queue(p_queue), _flag(p_flags)
     { }
+
+    std::vector<CommandBuffer*> CommandPool::CreateCommandBuffers(uint32_t p_buffersCount)
+    {
+        std::vector<CommandBuffer*> output(p_buffersCount);
+
+        for (uint32_t i = 0; i < p_buffersCount; i++)
+        {
+            output[i] = new CommandBuffer(this, false);
+            InitializeSubController(output[i]);
+        }
+        
+        return output;
+    }
 
     bool CommandPool::OnInitialize()
     {
