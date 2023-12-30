@@ -9,6 +9,8 @@
 #include "Renderer/Vulkan/CommandPool.h"
 #include "Renderer/Vulkan/Instance/VulkanInstance.h"
 #include "Renderer/Vulkan/Events/VulkanEvents.h"
+#include "Renderer/Events.h"
+#include "Renderer/MainRenderPass.h"
 
 namespace DeepEngine::Renderer
 {
@@ -18,8 +20,9 @@ namespace DeepEngine::Renderer
 		using OnSwapChainRecreated = Vulkan::Events::OnSwapChainRecreated;
 		
 	public:
-		ImGuiController(Vulkan::VulkanInstance* p_vulkanInstance, const Vulkan::VulkanInstance::QueueInstance* p_mainQueue)
-			: _vulkanInstance(p_vulkanInstance), _mainQueue(p_mainQueue)
+		ImGuiController(Vulkan::VulkanInstance* p_vulkanInstance, const Vulkan::VulkanInstance::QueueInstance* p_mainQueue,
+			MainRenderPass* p_mainRenderPass)
+			: _vulkanInstance(p_vulkanInstance), _mainQueue(p_mainQueue), _mainRenderPass(p_mainRenderPass)
 		{
 			_imGuiRenderPass = new ImGuiRenderPass();
 			if (!_vulkanInstance->InitializeSubController(_imGuiRenderPass))
@@ -30,12 +33,6 @@ namespace DeepEngine::Renderer
 			_commandPool = new Vulkan::CommandPool(_mainQueue, Vulkan::CommandPoolFlag::RESET_COMMAND_BUFFER);
 			_vulkanInstance->InitializeSubController(_commandPool);
 
-			// _commandBuffers.resize(_vulkanInstance->GetSwapChainImageViews().size());
-			// for (uint32_t i = 0; i < _vulkanInstance->GetSwapChainImageViews().size(); i++)
-			// {
-			// 	_commandBuffers[i] = new Vulkan::CommandBuffer(_commandPool, false);
-			// 	_commandPool->InitializeSubController(_commandBuffers[i]);
-			// }
 			_commandBuffers = _commandPool->CreateCommandBuffers(_vulkanInstance->GetSwapChainImageViews().size());
 			
 			IMGUI_CHECKVERSION();
@@ -50,15 +47,15 @@ namespace DeepEngine::Renderer
 			ImGui::StyleColorsDark();
 			//ImGui::StyleColorsClassic();
 			
-			std::array<VkDescriptorPoolSize, 1> pool_sizes
+			std::array pool_sizes
 			{
-				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 },
+				VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 },
 			};
 			
 			VkDescriptorPoolCreateInfo pool_info = {};
 			pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 			pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-			pool_info.maxSets = 1;
+			pool_info.maxSets = 4;
 			pool_info.poolSizeCount = pool_sizes.size();
 			pool_info.pPoolSizes = pool_sizes.data();
 			auto result = vkCreateDescriptorPool(
@@ -88,10 +85,23 @@ namespace DeepEngine::Renderer
 			ImGui_ImplVulkan_Init(&init_info, _imGuiRenderPass->GetVkRenderPass());
 
 			LoadFontLol();
+
+			_attachmentsRecreatedListener = _vulkanInstance->GetRendererEventBus().CreateListener<MainRenderPassRecreatedAttachment>();
+			_attachmentsRecreatedListener->BindCallback(&ImGuiController::RecreatedRenderPassAttachmentsHandler, this);
+					CreateRenderPassTextures();
 		}
 
 		void Terminate()
 		{
+			for (VkDescriptorSet texture : _renderPassTextures)
+			{
+				ImGui_ImplVulkan_RemoveTexture(texture);
+			}
+			for (VkSampler sampler : _renderPassTexturesSamplers)
+			{
+				vkDestroySampler(_vulkanInstance->GetLogicalDevice(), sampler, nullptr);
+			}
+			
 			ImGui_ImplVulkan_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
 			ImGui::DestroyContext();
@@ -108,6 +118,7 @@ namespace DeepEngine::Renderer
 			// ...
 			ImGui::ShowDemoWindow();
 			DrawVulkanStructureWindow();
+			DrawViewport(p_frameID);
 			
 			ImGui::Render();
 
@@ -243,15 +254,43 @@ namespace DeepEngine::Renderer
 			buffer->Terminate();
 		}
 
+		void DrawViewport(uint32_t p_frameID)
+		{
+			static bool isOpen = true;
+			static ImVec2 wndSize;
+			
+			if (ImGui::Begin("Viewport", &isOpen))
+			{
+				auto size = ImGui::GetWindowSize();
+
+				if (size.x != wndSize.x || size.y != wndSize.y)
+				{
+					wndSize = size;
+					Events::OnViewportResized event;
+					event.NewViewportSize = { size.x, size.y };
+					
+					_vulkanInstance->GetRendererEventBus().Publish(event);
+					ImGui::End();
+					return;
+				}
+
+				ImGui::Image(_renderPassTextures[p_frameID], size);
+			}
+			
+			ImGui::End();
+		}
+
 		void DrawVulkanStructureWindow()
 		{
-			static bool isOpen;
-			ImGui::Begin("Vulkan Structure", &isOpen);
-
-			if (ImGui::TreeNode("Vulkan Instance"))
+			static bool isOpen = true;
+			
+			if (ImGui::Begin("Vulkan Structure", &isOpen))
 			{
-				DrawVulkanControllerChilds(_vulkanInstance);
-				ImGui::TreePop();
+				if (ImGui::TreeNode("Vulkan Instance"))
+				{
+					DrawVulkanControllerChilds(_vulkanInstance);
+					ImGui::TreePop();
+				}
 			}
 
 			ImGui::End();
@@ -275,6 +314,54 @@ namespace DeepEngine::Renderer
 				++it;
 			}
 		}
+
+		Architecture::EventResult RecreatedRenderPassAttachmentsHandler(const MainRenderPassRecreatedAttachment& p_event)
+		{
+			CreateRenderPassTextures();
+			return Architecture::EventResult::PASS;
+		}
+
+		void CreateRenderPassTextures()
+		{
+			for (VkDescriptorSet texture : _renderPassTextures)
+			{
+				ImGui_ImplVulkan_RemoveTexture(texture);
+			}
+			for (VkSampler sampler : _renderPassTexturesSamplers)
+			{
+				vkDestroySampler(_vulkanInstance->GetLogicalDevice(), sampler, nullptr);
+			}
+
+			_renderPassTexturesSamplers.clear();
+			_renderPassTexturesSamplers.resize(_mainRenderPass->GetAllVkFramebuffer().size());
+			_renderPassTextures.clear();
+			_renderPassTextures.resize(_mainRenderPass->GetAllVkFramebuffer().size());
+
+			for (uint32_t i = 0; i < static_cast<uint32_t>(_renderPassTextures.size()); i++)
+			{
+				VkSamplerCreateInfo samplerInfo{};
+				samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+				samplerInfo.magFilter = VK_FILTER_LINEAR;
+				samplerInfo.minFilter = VK_FILTER_LINEAR;
+				samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+				samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+				samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+				samplerInfo.anisotropyEnable = VK_FALSE;
+				samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+				samplerInfo.unnormalizedCoordinates = VK_FALSE;
+				samplerInfo.compareEnable = VK_FALSE;
+				samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+				samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+				samplerInfo.mipLodBias = 0.0f;
+				samplerInfo.minLod = 0.0f;
+				samplerInfo.maxLod = 0.0f;
+
+				vkCreateSampler(_vulkanInstance->GetLogicalDevice(), &samplerInfo, nullptr, &_renderPassTexturesSamplers[i]);
+				
+				_renderPassTextures[i] = ImGui_ImplVulkan_AddTexture(_renderPassTexturesSamplers[i], _mainRenderPass->GetVkImageView(i), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+			}
+		}
+
 		
 	private:
 		// From where it should be take from????
@@ -286,6 +373,12 @@ namespace DeepEngine::Renderer
 		Vulkan::CommandPool* _commandPool;
 		std::vector<Vulkan::CommandBuffer*> _commandBuffers;
         ImGuiRenderPass* _imGuiRenderPass = nullptr;
+        MainRenderPass* _mainRenderPass = nullptr;
+
+        std::vector<VkSampler> _renderPassTexturesSamplers;
+        std::vector<VkDescriptorSet> _renderPassTextures;
+
+		std::shared_ptr<Architecture::EventListener<MainRenderPassRecreatedAttachment>> _attachmentsRecreatedListener;
 	};
 	
 }

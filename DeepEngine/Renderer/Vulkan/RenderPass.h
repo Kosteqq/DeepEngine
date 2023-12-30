@@ -55,7 +55,7 @@ namespace DeepEngine::Renderer::Vulkan
         
     protected:
         bool OnInitialize() final;
-        void OnTerminate() final;
+        void OnTerminate() override;
 
     public:
         VkRenderPass GetVkRenderPass() const

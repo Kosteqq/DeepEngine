@@ -59,7 +59,7 @@ namespace DeepEngine::Renderer
             VkRenderPassBeginInfo renderPassInfo { };
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = p_renderers[0].GetGraphicsPipeline()->GetVkRenderPass();
-            renderPassInfo.framebuffer = p_renderPass->GetSwapchainImageVkFramebuffer(p_frameBufferIndex);
+            renderPassInfo.framebuffer = p_renderPass->GetVkFramebuffer(p_frameBufferIndex);
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &clearColor;
             renderPassInfo.renderArea.offset = { 0, 0 };

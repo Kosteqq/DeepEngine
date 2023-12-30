@@ -16,11 +16,11 @@ namespace DeepEngine::Renderer
             VkAttachmentDescription baseColorAttachmentDesc { };
             baseColorAttachmentDesc.format = vulkanController->GetSwapchainCurrentFormat().format;
             baseColorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-            baseColorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            baseColorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             baseColorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             baseColorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             baseColorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            baseColorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            baseColorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             baseColorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
             VkSubpassDependency dependency { };
@@ -45,6 +45,16 @@ namespace DeepEngine::Renderer
         void PostInitialize() override
         {
             RecreateFrameBuffers();
+        }
+
+        void OnTerminate() override
+        {
+            RenderPass::OnTerminate();
+            
+            for (const VkFramebuffer framebuffer : _swapchainImageFramebuffers)
+            {
+                vkDestroyFramebuffer(GetVulkanInstanceController()->GetLogicalDevice(), framebuffer, nullptr);
+            }
         }
 
     public:
