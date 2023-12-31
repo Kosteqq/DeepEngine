@@ -18,13 +18,18 @@ include_directories("${3rd_PARTY_DIR}/glfw/include")
 include_directories("${3rd_PARTY_DIR}/spdlog/include")
 include_directories("${3rd_PARTY_DIR}/glm")
 include_directories("${3rd_PARTY_DIR}/ImGui")
+include_directories("${3rd_PARTY_DIR}/yaml-cpp/include")
 
 add_subdirectory("${3rd_PARTY_DIR}/glfw/")
+set(SPDLOG_ENABLE_PCH ON)
 add_subdirectory("${3rd_PARTY_DIR}/spdlog/")
-set(${SPDLOG_ENABLE_PCH} ON)
 
+set(YAML_CPP_BUILD_TESTS OFF)
+set(YAML_CPP_BUILD_TOOLS OFF)
+add_subdirectory("${3rd_PARTY_DIR}/yaml-cpp")
+
+set(INSTALL OFF)
 add_subdirectory("${3rd_PARTY_DIR}/fmt/")
-set(${INSTALL} OFF)
 
 
 include(CMake/AttachVulkan.cmake)
@@ -42,6 +47,7 @@ target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} spdlog::spdlog_header_only)
 target_link_libraries(${PROJECT_NAME} fmt)
 target_link_libraries(${PROJECT_NAME} ImGui_LIB)
+target_link_libraries(${PROJECT_NAME} yaml-cpp)
 target_link_libraries(${PROJECT_NAME} ${VULKAN_LIB_LIST} )
 
 
