@@ -83,15 +83,20 @@ namespace DeepEngine::Renderer
             
             vkResetFences(_vulkanInstance->GetLogicalDevice(), 1, _readyToRenderFence->GetVkFencePtr());
 
-            _commandRecorder.RecordBuffer({0.05f, 0.05f, 0.15f, 1.0f},
-                imageIndex, _mainRenderPass, _renderers);
+            _commandRecorder.RecordBuffer(
+                {0.05f, 0.05f, 0.15f, 1.0f},
+                imageIndex,
+                _mainRenderPass,
+                _renderers,
+                _mainRenderPass->GetVkImage(imageIndex)
+                );
 
             _imGuiController->Renderrr(imageIndex);
 
             _commandRecorder.SubmitBuffer(_readyToRenderFence,
                 { _availableImageToRenderSemaphore },
                 { _finishRenderingSemaphore },
-        { _imGuiController->GetCommandBuffer(imageIndex) });
+                _imGuiController->GetCommandBuffer(imageIndex));
 
             VkSwapchainKHR swapChains[] = { _vulkanInstance->GetSwapchain() };
             VkSemaphore waitSemaphores[] = { _finishRenderingSemaphore->GetVkSemaphore() };
@@ -114,6 +119,8 @@ namespace DeepEngine::Renderer
             {
                 VULKAN_ERR("Failed to present swapchain with returned result {}", string_VkResult(presentResult));
             }
+
+            _imGuiController->PostRenderUpdate();
         }
 
     private:

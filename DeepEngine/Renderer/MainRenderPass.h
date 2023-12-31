@@ -95,6 +95,11 @@ namespace DeepEngine::Renderer
             return _framebuffers[p_index];
         }
 
+        VkImage GetVkImage(uint32_t p_index) const
+        {
+            return _renderImages[p_index];
+        }
+
         VkImageView GetVkImageView(uint32_t p_index) const
         {
             return _renderImagesViews[p_index];
@@ -145,8 +150,8 @@ namespace DeepEngine::Renderer
                 CreateImage(p_width, p_height,
                     VK_FORMAT_R8G8B8A8_SRGB,
                     VK_IMAGE_TILING_OPTIMAL,
-                    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL | VK_IMAGE_LAYOUT_GENERAL,
                     _renderImages[i],
                     _renderImageMem[i]);
 

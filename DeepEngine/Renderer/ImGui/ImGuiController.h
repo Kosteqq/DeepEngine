@@ -165,7 +165,10 @@ namespace DeepEngine::Renderer
 			{
 				return;
 			}
+		}
 
+		void PostRenderUpdate()
+		{
 			// Update and Render additional Platform Windows
 			if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 			{
@@ -339,7 +342,7 @@ namespace DeepEngine::Renderer
 
 			for (uint32_t i = 0; i < static_cast<uint32_t>(_renderPassTextures.size()); i++)
 			{
-				VkSamplerCreateInfo samplerInfo{};
+				VkSamplerCreateInfo samplerInfo { };
 				samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 				samplerInfo.magFilter = VK_FILTER_LINEAR;
 				samplerInfo.minFilter = VK_FILTER_LINEAR;
@@ -358,7 +361,7 @@ namespace DeepEngine::Renderer
 
 				vkCreateSampler(_vulkanInstance->GetLogicalDevice(), &samplerInfo, nullptr, &_renderPassTexturesSamplers[i]);
 				
-				_renderPassTextures[i] = ImGui_ImplVulkan_AddTexture(_renderPassTexturesSamplers[i], _mainRenderPass->GetVkImageView(i), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+				_renderPassTextures[i] = ImGui_ImplVulkan_AddTexture(_renderPassTexturesSamplers[i], _mainRenderPass->GetVkImageView(i), VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
 			}
 		}
 
