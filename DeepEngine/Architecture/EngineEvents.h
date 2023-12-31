@@ -1,7 +1,7 @@
 #pragma once
 #include "EventBus/BaseEvent.h"
 
-namespace DeepEngine::Events
+namespace DeepEngine::EngineEvents
 {
 
     BEGIN_GLOBAL_EVENT_DEFINITION(OnCloseRequest)

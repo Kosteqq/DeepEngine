@@ -2,6 +2,8 @@
 #include "CommandPool.h"
 #include "Controller/BaseVulkanController.h"
 
+#define _VULKAN_COMMAND_BUFFER_CLASS_DEFINED
+
 namespace DeepEngine::Renderer::Vulkan
 {
 
@@ -16,7 +18,10 @@ namespace DeepEngine::Renderer::Vulkan
 
     protected:
         bool OnInitialize() override;
-        void OnTerminate() override { }
+        void OnTerminate() override
+        {
+            return;
+        }
 
     private:
         VkCommandBuffer _commandBuffer = VK_NULL_HANDLE;

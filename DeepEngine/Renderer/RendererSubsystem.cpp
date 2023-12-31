@@ -26,7 +26,7 @@ namespace DeepEngine::Renderer
         {
             return false;
         }
-
+        
         _mainRenderPass = new MainRenderPass();
         if (!_vulkanInstance->InitializeSubController(_mainRenderPass))
         {
@@ -78,6 +78,8 @@ namespace DeepEngine::Renderer
         }
         
         _commandRecorder = RendererCommandRecorder(_vulkanInstance, _mainGraphicsQueue);
+        
+        _imGuiController = new ImGuiController(_vulkanInstance, _mainGraphicsQueue, _mainRenderPass);
 
         return true;
     }
@@ -167,7 +169,7 @@ namespace DeepEngine::Renderer
     }
     
     Architecture::EventResult RendererSubsystem::WindowChangedMinimizedHandler(
-        const Events::OnWindowChangeMinimized& p_event)
+        const EngineEvents::OnWindowChangeMinimized& p_event)
     {
         _isWindowMinimized = p_event.MinimizedMode;
         return Architecture::EventResult::PASS;

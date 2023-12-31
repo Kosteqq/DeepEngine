@@ -18,9 +18,17 @@ namespace DeepEngine::Renderer::Vulkan
         std::stack<void*> nextPtrStack;
         nextPtrStack.push(nullptr);
 
-        VkPhysicalDeviceDepthClipEnableFeaturesEXT enableDepthClipFeature { };
+        {
+            VkPhysicalDeviceSynchronization2Features feature;
+            feature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
+            feature.pNext = nextPtrStack.top();
+            feature.synchronization2 = true;
+            nextPtrStack.push(&feature);
+        }
+
         if (IsPhysicalExtensionEnabled(VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME))
         {
+            VkPhysicalDeviceDepthClipEnableFeaturesEXT enableDepthClipFeature { };
             enableDepthClipFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
             enableDepthClipFeature.pNext = nextPtrStack.top();
             enableDepthClipFeature.depthClipEnable = VK_TRUE;

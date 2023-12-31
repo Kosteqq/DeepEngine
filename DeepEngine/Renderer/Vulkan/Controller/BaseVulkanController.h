@@ -1,5 +1,8 @@
 #pragma once
 #include <list>
+#include <type_traits>
+#include <iostream>
+#include <unordered_set>
 
 namespace DeepEngine::Renderer::Vulkan
 {
@@ -25,11 +28,19 @@ namespace DeepEngine::Renderer::Vulkan
         requires std::is_base_of_v<BaseVulkanController, T>
         bool InitializeSubController(T* p_controller)
         {
-            ((BaseVulkanController*)p_controller)->_parentController = this;
-            _dependentControllers.push_back((BaseVulkanController*)p_controller);
+            auto baseController = (BaseVulkanController*)p_controller;
+            baseController->_parentController = this;
+            _childControllers.insert((BaseVulkanController*)p_controller);
 
-            return ((BaseVulkanController*)p_controller)->OnInitialize();
+            baseController->_debugTypeName = typeid(T).name();
+            return baseController->OnInitialize();
         }
+
+        const char* GetDebugTypeName() const
+        { return _debugTypeName; }
+        
+        const std::unordered_set<BaseVulkanController*>& GetChildControllers() const
+        { return _childControllers; }
 
     protected:
         virtual bool OnInitialize() = 0;
@@ -41,7 +52,9 @@ namespace DeepEngine::Renderer::Vulkan
     private:
         static VulkanInstance* _vulkanInstance;
         
-        std::list<BaseVulkanController*> _dependentControllers;
+        std::unordered_set<BaseVulkanController*> _childControllers;
         BaseVulkanController* _parentController = nullptr;
+        
+        const char* _debugTypeName;
     };
 }

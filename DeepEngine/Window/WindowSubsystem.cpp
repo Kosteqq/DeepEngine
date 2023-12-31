@@ -32,7 +32,7 @@ namespace DeepEngine
     void WindowSubsystem::WindowFramebufferResizedHandler(GLFWwindow* p_window, int p_width, int p_height)
     {
         ENGINE_INFO("Window changed framebuffer size to: {}x{}", p_width, p_height);
-        Events::OnWindowFramebufferResized event;
+        EngineEvents::OnWindowFramebufferResized event;
         glfwGetFramebufferSize(p_window, &event.Width, &event.Height);
         
         auto subsystem = (WindowSubsystem*)glfwGetWindowUserPointer(p_window);
@@ -42,7 +42,7 @@ namespace DeepEngine
     void WindowSubsystem::WindowMinimizedHandler(GLFWwindow* p_window, int p_minimized)
     {
         ENGINE_INFO("Window changed minimized mode to: {}", p_minimized == 1);
-        Events::OnWindowChangeMinimized event;
+        EngineEvents::OnWindowChangeMinimized event;
         event.MinimizedMode = p_minimized == 1;
         
         auto subsystem = (WindowSubsystem*)glfwGetWindowUserPointer(p_window);
@@ -59,6 +59,7 @@ namespace DeepEngine
         }
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwSwapInterval(1);
         // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         
         _window = glfwCreateWindow(_width, _height, _windowName, nullptr, nullptr);
@@ -72,17 +73,17 @@ namespace DeepEngine
         glfwSetWindowIconifyCallback(_window, WindowMinimizedHandler);
         glfwSetWindowUserPointer(_window, this);
 
-        Events::OnCreateGlfwContext windowEvent;
+        EngineEvents::OnCreateGlfwContext windowEvent;
         windowEvent.GLFWWindow = _window;
         _internalSubsystemEventBus.Publish(windowEvent);
         
         INFO("Initialized with success");
 
-        Events::OnWindowResized event;
+        EngineEvents::OnWindowResized event;
         glfwGetWindowSize(_window, &event.Width, &event.Height);
         _internalSubsystemEventBus.Publish(event);
         
-        Events::OnWindowFramebufferResized framebufferResizedEvent;
+        EngineEvents::OnWindowFramebufferResized framebufferResizedEvent;
         glfwGetFramebufferSize(_window, &framebufferResizedEvent.Width, &framebufferResizedEvent.Height);
         _internalSubsystemEventBus.Publish(framebufferResizedEvent);
 
@@ -97,7 +98,7 @@ namespace DeepEngine
             if (!_wantToExit)
             {
                 _wantToExit = true;
-                _internalSubsystemEventBus.Publish<Events::OnCloseRequest>();
+                _internalSubsystemEventBus.Publish<EngineEvents::OnCloseRequest>();
             }
         }
     }

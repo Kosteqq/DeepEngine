@@ -26,7 +26,7 @@ namespace DeepEngine::Renderer::Vulkan
         };
 
     public:
-        VulkanInstance(Architecture::EventBus& p_engineEventBus);
+        VulkanInstance(Architecture::EventBus& p_engineEventBus, Architecture::EventBus& p_rendererEventBus);
         ~VulkanInstance() override = default;
 
     private:
@@ -85,6 +85,8 @@ namespace DeepEngine::Renderer::Vulkan
         void TerminateSwapChain();
 
     public:
+        VkInstance GetVulkanInstance() const
+        { return _instance; }
         VkPhysicalDevice GetPhysicalDevice() const
         { return _physicalDevice; }
         const VkPhysicalDeviceFeatures& GetPhysicalDeviceFeatures() const
@@ -110,6 +112,9 @@ namespace DeepEngine::Renderer::Vulkan
         VkSwapchainKHR GetSwapchain() const
         { return _swapchain; }
 
+        GLFWwindow* GetGlfwWindow() const
+        { return _glfwWindow; }
+
         const std::vector<VkImageView>& GetSwapChainImageViews() const
         { return  _swapChainImageViews; }
         
@@ -118,6 +123,9 @@ namespace DeepEngine::Renderer::Vulkan
 
         constexpr Architecture::EventBus& GetEngineEventBus() const
         { return _engineEventBus; }
+
+        constexpr Architecture::EventBus& GetRendererEventBus() const
+        { return _rendererEventBus; }
 
         constexpr Architecture::EventBus& GetVulkanEventBus() const
         { return _vulkanEventBus; }
@@ -143,13 +151,13 @@ namespace DeepEngine::Renderer::Vulkan
     private:
         bool FindMatchingPhysicalDevice(const std::vector<VkPhysicalDevice>& p_devices);
 
-        Architecture::EventResult CreateGlfwWindowHandler(const Events::OnCreateGlfwContext& p_event)
+        Architecture::EventResult CreateGlfwWindowHandler(const EngineEvents::OnCreateGlfwContext& p_event)
         {
             _glfwWindow = p_event.GLFWWindow;
             return Architecture::EventResult::PASS;
         }
         
-        Architecture::EventResult FramebufferResizedHandler(const Events::OnWindowFramebufferResized& p_event)
+        Architecture::EventResult FramebufferResizedHandler(const EngineEvents::OnWindowFramebufferResized& p_event)
         {
             _swapChainCurrentFrameBufferSize = { p_event.Width, p_event.Height };
             _isSwapChainValid = false;
@@ -158,9 +166,10 @@ namespace DeepEngine::Renderer::Vulkan
 
     private:
         Architecture::EventBus& _engineEventBus;
+        Architecture::EventBus& _rendererEventBus;
         Architecture::EventBus& _vulkanEventBus;
-        std::shared_ptr<Architecture::EventListener<Events::OnCreateGlfwContext>> _glfwWindowCreateListener;
-        std::shared_ptr<Architecture::EventListener<Events::OnWindowFramebufferResized>> _windowFramebufferResizedListener;
+        std::shared_ptr<Architecture::EventListener<EngineEvents::OnCreateGlfwContext>> _glfwWindowCreateListener;
+        std::shared_ptr<Architecture::EventListener<EngineEvents::OnWindowFramebufferResized>> _windowFramebufferResizedListener;
         
         GLFWwindow* _glfwWindow;
         VkInstance _instance;

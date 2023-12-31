@@ -35,7 +35,9 @@ namespace DeepEngine::Renderer
         }
         
         void RecordBuffer(glm::vec4 p_clearColor, uint32_t p_frameBufferIndex,
-            MainRenderPass* p_renderPass, const std::vector<TriangleRenderer>& p_renderers )
+            MainRenderPass* p_renderPass,
+            const std::vector<TriangleRenderer>& p_renderers, 
+            VkImage p_renderPassOutputImage)
         {
             VkCommandBufferBeginInfo beginInfo { };
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -59,7 +61,7 @@ namespace DeepEngine::Renderer
             VkRenderPassBeginInfo renderPassInfo { };
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = p_renderers[0].GetGraphicsPipeline()->GetVkRenderPass();
-            renderPassInfo.framebuffer = p_renderPass->GetSwapchainImageVkFramebuffer(p_frameBufferIndex);
+            renderPassInfo.framebuffer = p_renderPass->GetVkFramebuffer(p_frameBufferIndex);
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &clearColor;
             renderPassInfo.renderArea.offset = { 0, 0 };
@@ -93,6 +95,35 @@ namespace DeepEngine::Renderer
             
             vkCmdEndRenderPass(_commandBuffer->GetVkCommandBuffer());
 
+            
+
+            VkImageSubresourceRange aspect { };
+            aspect.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            aspect.baseMipLevel = 0;
+            aspect.levelCount = 1;
+            aspect.baseArrayLayer = 0;
+            aspect.layerCount = 1;
+
+            VkImageMemoryBarrier imageBarrier = {};
+            imageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            imageBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            imageBarrier.newLayout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
+            imageBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            imageBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            imageBarrier.image = p_renderPassOutputImage;
+            imageBarrier.subresourceRange = aspect;
+
+            vkCmdPipelineBarrier(_commandBuffer->GetVkCommandBuffer(),
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                0,
+                0,
+                nullptr,
+                0,
+                nullptr,
+                1,
+                &imageBarrier);
+
             const auto result = vkEndCommandBuffer(_commandBuffer->GetVkCommandBuffer());
             if (result != VK_SUCCESS)
             {
@@ -103,7 +134,8 @@ namespace DeepEngine::Renderer
         
         void SubmitBuffer(const Vulkan::Fence* p_finishFence,
             const std::vector<const Vulkan::Semaphore*>& p_waitSemaphores,
-            const std::vector<const Vulkan::Semaphore*>& p_finishSemaphores)
+            const std::vector<const Vulkan::Semaphore*>& p_finishSemaphores,
+            const Vulkan::CommandBuffer* p_imGuiComamandBuffer)
         {
             std::vector<VkSemaphore> waitSemaphores(p_waitSemaphores.size());
             for (uint32_t i = 0; i < waitSemaphores.size(); i++)
@@ -117,6 +149,11 @@ namespace DeepEngine::Renderer
                 finishSubmitSemaphores[i] = p_finishSemaphores[i]->GetVkSemaphore();
             }
 
+            std::array<VkCommandBuffer, 2> commandBuffers{
+                _commandBuffer->GetVkCommandBuffer(),
+                p_imGuiComamandBuffer->GetVkCommandBuffer(),
+            };
+
             VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
             VkSubmitInfo submitInfo { };
@@ -124,12 +161,12 @@ namespace DeepEngine::Renderer
             submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
             submitInfo.pWaitSemaphores = waitSemaphores.data();
             submitInfo.pWaitDstStageMask = waitStages;
-            submitInfo.commandBufferCount = 1;
-            submitInfo.pCommandBuffers = &_commandBuffer->GetVkCommandBuffer();
+            submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+            submitInfo.pCommandBuffers = commandBuffers.data();
             submitInfo.signalSemaphoreCount = static_cast<uint32_t>(finishSubmitSemaphores.size());
             submitInfo.pSignalSemaphores = finishSubmitSemaphores.data();
 
-            VkResult result =  vkQueueSubmit(_mainGraphicsQueue->Queue, 1, &submitInfo, p_finishFence->GetVkFence());
+            VkResult result = vkQueueSubmit(_mainGraphicsQueue->Queue, 1, &submitInfo, p_finishFence->GetVkFence());
 
             if (result != VK_SUCCESS)
             {

@@ -5,14 +5,14 @@
 namespace DeepEngine::Renderer::Vulkan
 {
 
-	VulkanInstance::VulkanInstance(Architecture::EventBus& p_engineEventBus)
-		: _engineEventBus(p_engineEventBus),
+	VulkanInstance::VulkanInstance(Architecture::EventBus& p_engineEventBus, Architecture::EventBus& p_rendererEventBus)
+		: _engineEventBus(p_engineEventBus), _rendererEventBus(p_rendererEventBus),
 		_vulkanEventBus(p_engineEventBus.CreateChildEventBus())
 	{
-		_glfwWindowCreateListener = p_engineEventBus.CreateListener<Events::OnCreateGlfwContext>();
+		_glfwWindowCreateListener = p_engineEventBus.CreateListener<EngineEvents::OnCreateGlfwContext>();
 		_glfwWindowCreateListener->BindCallback<VulkanInstance>(&VulkanInstance::CreateGlfwWindowHandler, this);
 		
-		_windowFramebufferResizedListener = p_engineEventBus.CreateListener<Events::OnWindowFramebufferResized>();
+		_windowFramebufferResizedListener = p_engineEventBus.CreateListener<EngineEvents::OnWindowFramebufferResized>();
 		_windowFramebufferResizedListener->BindCallback<VulkanInstance>(&VulkanInstance::FramebufferResizedHandler, this);
 		
 		_enabledInstanceExtensionNames.reserve(32);

@@ -5,6 +5,10 @@
 namespace DeepEngine::Renderer::Vulkan
 {
 
+#ifndef _VULKAN_COMMAND_BUFFER_CLASS_DEFINED
+    class CommandBuffer;
+#endif
+
     enum CommandPoolFlag
     {
         TRANSIENT = 1 << 0,
@@ -20,6 +24,8 @@ namespace DeepEngine::Renderer::Vulkan
 
         VkCommandPool GetVkCommandPool() const
         { return _commandPool; }
+
+        std::vector<CommandBuffer*> CreateCommandBuffers(uint32_t p_buffersCount);
 
     protected:
         bool OnInitialize() override;
