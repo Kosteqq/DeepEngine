@@ -13,3 +13,6 @@
 [submodule "glm"]
 	path = 3rdParty/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "3rdParty/yaml-cpp"]
+	path = 3rdParty/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git

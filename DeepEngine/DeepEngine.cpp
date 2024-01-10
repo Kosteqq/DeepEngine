@@ -1,3 +1,5 @@
+#include <fstream>
+#include <set>
 #include <stack>
 
 #include "Debugs/Logger.h"
@@ -10,11 +12,18 @@
 
 #include "Architecture/EventBus/EventBus.h"
 
+#include <yaml-cpp/yaml.h>
+#include "Architecture/Serialize/SerializersContainer.h"
+#include "Architecture/Serialize/DefaultImplementations/GlmSerializers.h"
 
-int main(int argc, char* argv[])
-{
+void TestSerializer();
+
+int main(int p_argc, char* p_argv[])
+{    
     DeepEngine::Debug::Logger::Initialize("Logs/engine.log");
     auto engineEventBus = DeepEngine::Architecture::EventBus();
+
+    TestSerializer();
     
     {
         TIMER("Main");
@@ -51,4 +60,33 @@ int main(int argc, char* argv[])
 
     PRINT_TIMER_SUMMARY();
     return 0;
+}
+
+void TestSerializer()
+{
+    TIMER("Testing serializer");
+    DeepEngine::Architecture::SerializerContainer serializeContainer;
+    DeepEngine::Architecture::SerializeInternal::BindGlmSerializers(serializeContainer);
+
+    auto vector = glm::vec3 { 0.2f, 20.0f, 10.0f };
+    auto matrix = glm::mat4x4{};
+    
+    YAML::Emitter out;
+
+    out << YAML::BeginSeq;
+    {
+        TIMER("Serializing");
+        out << serializeContainer.InvokeSerializeFunc(vector);
+        out << serializeContainer.InvokeSerializeFunc(matrix);
+    }
+    out << YAML::EndSeq;
+
+    std::ofstream file;
+
+    {
+        TIMER("Writing to file");
+        file.open("TestFile.txt", std::ios::out | std::ios::ate);
+        file << out.c_str();
+        file.close();
+    }
 }
