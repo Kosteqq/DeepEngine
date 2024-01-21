@@ -2,31 +2,31 @@
 #include <set>
 #include <stack>
 
-#include "Debugs/Logger.h"
-#include "Debugs/InitializationTracker.h"
-#include "Architecture/EngineSystem.h"
-#include "Debugs/InitializationMilestone.h"
-#include "Debugs/Timing.h"
-#include "Renderer/RendererSubsystem.h"
-#include "Window/WindowSubsystem.hpp"
+#include "Debug/Logger.h"
+#include "Debug/InitializationTracker.h"
+#include "Core/EngineSystem.h"
+#include "Debug/InitializationMilestone.h"
+#include "Debug/Timing.h"
+#include "Engine/Renderer/RendererSubsystem.h"
+#include "Engine/Window/WindowSubsystem.hpp"
 
-#include "Architecture/EventBus/EventBus.h"
+#include "Core/Events/EventBus.h"
 
 #include <yaml-cpp/yaml.h>
 
-#include "Architecture/Scene/Scene.h"
-#include "Architecture/Serialize/SerializersContainer.h"
-#include "Architecture/Serialize/DefaultImplementations/GlmSerializers.h"
+#include "Core/Scene/Scene.h"
+#include "Core/Serialize/SerializersContainer.h"
+#include "Core/Serialize/DefaultImplementations/GlmSerializers.h"
 
+using namespace DeepEngine;
 
-
-struct MyCustomSceneElement final : DeepEngine::Architecture::Scene::SceneElement
+struct MyCustomSceneElement final : Core::Scene::SceneElement
 {
     constexpr const char* GetTypeName() const override
     { return "MyCustomSceneElement"; }
 };
 
-struct MyCustomSecondSceneElement final : DeepEngine::Architecture::Scene::SceneElement
+struct MyCustomSecondSceneElement final : Core::Scene::SceneElement
 {
     constexpr const char* GetTypeName() const override
     { return "MyCustomSecondSceneElement"; }
@@ -36,10 +36,10 @@ void TestSerializer();
 
 int main(int p_argc, char* p_argv[])
 {    
-    DeepEngine::Debug::Logger::Initialize("Logs/engine.log");
-    auto engineEventBus = DeepEngine::Architecture::EventBus();
+    Debug::Logger::Initialize("Logs/engine.log");
+    auto engineEventBus = Core::Events::EventBus();
 
-    DeepEngine::Architecture::Scene::Scene scene;
+    Core::Scene::Scene scene;
 
     scene.CreateSceneElement<MyCustomSecondSceneElement>();
     scene.CreateSceneElement<MyCustomSecondSceneElement>();
@@ -73,9 +73,9 @@ int main(int p_argc, char* p_argv[])
         
         ENGINE_INFO("Hello World");
 
-        auto subsystemsManager = DeepEngine::Architecture::EngineSubsystemsManager(engineEventBus);
-        auto windowSubsystem = subsystemsManager.CreateSubsystem<DeepEngine::WindowSubsystem>(800, 600, "1800 lines for fucking triangle (:");
-    	subsystemsManager.CreateSubsystem<DeepEngine::Renderer::RendererSubsystem>();
+        auto subsystemsManager = Core::EngineSubsystemsManager(engineEventBus);
+        auto windowSubsystem = subsystemsManager.CreateSubsystem<WindowSubsystem>(800, 600, "1800 lines for fucking triangle (:");
+    	subsystemsManager.CreateSubsystem<Engine::Renderer::RendererSubsystem>();
 
         if (!subsystemsManager.Init())
         {
@@ -102,8 +102,8 @@ int main(int p_argc, char* p_argv[])
 void TestSerializer()
 {
     TIMER("Testing serializer");
-    DeepEngine::Architecture::SerializerContainer serializeContainer;
-    DeepEngine::Architecture::SerializeInternal::BindGlmSerializers(serializeContainer);
+    Core::Serialize::SerializerContainer serializeContainer;
+    Core::Serialize::Internal::BindGlmSerializers(serializeContainer);
 
     auto vector = glm::vec3 { 0.2f, 20.0f, 10.0f };
     auto matrix = glm::mat4x4{};
