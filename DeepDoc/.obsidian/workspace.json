@@ -11,10 +11,25 @@
             "id": "b6fb7dd317db1933",
             "type": "leaf",
             "state": {
+              "type": "canvas",
+              "state": {
+                "file": "Graf.canvas",
+                "viewState": {
+                  "x": 310,
+                  "y": 585,
+                  "zoom": -0.8925030407464027
+                }
+              }
+            }
+          },
+          {
+            "id": "ed20b69b1ab3a456",
+            "type": "leaf",
+            "state": {
               "type": "markdown",
               "state": {
-                "file": "Architecture/Serializer/SerializersContainer.md",
-                "mode": "source",
+                "file": "Architecture.md",
+                "mode": "preview",
                 "source": false
               }
             }
@@ -31,7 +46,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -97,7 +113,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Architecture/Serializer/SerializersContainer.md",
+                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -114,7 +130,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Architecture/Serializer/SerializersContainer.md",
+                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -137,7 +153,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Architecture/Serializer/SerializersContainer.md"
+                "file": "Renderer/VULKAN/Vulkan Feature Wrapper.md"
               }
             }
           }
@@ -158,12 +174,16 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "c4b8a80e059e06e1",
+  "active": "8b7283f65fb53318",
   "lastOpenFiles": [
-    "_Nomenclature.md",
-    "Architecture/Serializer/SerializersContainer.md",
-    "Architecture/Serializer",
+    "Architecture.md",
+    "Graf.canvas",
     "Renderer/VULKAN/Vulkan Feature Wrapper.md",
+    "Architecture/Serializer/SerializersContainer.md",
+    "_Nomenclature.md",
+    "Code Hierarchy.canvas",
+    "Scene.md",
+    "Architecture/Serializer",
     "Architecture/Bus/Event Bus/Event Bus.canvas",
     "Architecture/Bus/Event Bus/Event Bus Overview.md",
     "Architecture/Bus/Bus Overview.md",
@@ -172,12 +192,9 @@
     "Architecture/Bus",
     "Architecture",
     "Engine Subsystem (Core)/Engine Subsystem.md",
-    "Graf.canvas",
     "Debug (Core)/Initialization Tracker.md",
     "Debug (Core)/Debug Graph.canvas",
-    "Code Hierarchy.canvas",
     "Debug (Core)/Logger.md",
-    "Scene.md",
     "Debug (Core)",
     "Engine Subsystem (Core)",
     "Bez nazwy 2.md",
