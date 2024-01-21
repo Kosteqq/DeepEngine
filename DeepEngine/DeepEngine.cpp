@@ -13,8 +13,24 @@
 #include "Architecture/EventBus/EventBus.h"
 
 #include <yaml-cpp/yaml.h>
+
+#include "Architecture/Scene/Scene.h"
 #include "Architecture/Serialize/SerializersContainer.h"
 #include "Architecture/Serialize/DefaultImplementations/GlmSerializers.h"
+
+
+
+struct MyCustomSceneElement final : DeepEngine::Architecture::Scene::SceneElement
+{
+    constexpr const char* GetTypeName() const override
+    { return "MyCustomSceneElement"; }
+};
+
+struct MyCustomSecondSceneElement final : DeepEngine::Architecture::Scene::SceneElement
+{
+    constexpr const char* GetTypeName() const override
+    { return "MyCustomSecondSceneElement"; }
+};
 
 void TestSerializer();
 
@@ -22,6 +38,27 @@ int main(int p_argc, char* p_argv[])
 {    
     DeepEngine::Debug::Logger::Initialize("Logs/engine.log");
     auto engineEventBus = DeepEngine::Architecture::EventBus();
+
+    DeepEngine::Architecture::Scene::Scene scene;
+
+    scene.CreateSceneElement<MyCustomSecondSceneElement>();
+    scene.CreateSceneElement<MyCustomSecondSceneElement>();
+    scene.CreateSceneElement<MyCustomSceneElement>();
+    scene.CreateSceneElement<MyCustomSecondSceneElement>();
+    scene.CreateSceneElement<MyCustomSceneElement>();
+
+    for (auto it = scene.Begin<MyCustomSceneElement>(); it != scene.End<MyCustomSceneElement>(); ++it)
+    {
+        std::cout << it->GetName() << std::endl;
+    }
+    for (auto it = scene.Begin<MyCustomSecondSceneElement>(); it != scene.End<MyCustomSecondSceneElement>(); ++it)
+    {
+        std::cout << it->GetName() << std::endl;
+    }
+    for (auto it = scene.Begin(); it != scene.End(); ++it)
+    {
+        std::cout << it->GetName() << std::endl;
+    }
 
     TestSerializer();
     
@@ -50,7 +87,7 @@ int main(int p_argc, char* p_argv[])
         {
             TIMER("Tick");
             
-            subsystemsManager.Tick();
+            subsystemsManager.Tick(scene);
             if (windowSubsystem->WantsToExit())
             {
                 break;

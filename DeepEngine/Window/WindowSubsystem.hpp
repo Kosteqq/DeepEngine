@@ -32,7 +32,7 @@ namespace DeepEngine
     protected:
         bool Init() override;
         void Destroy() override {}
-        void Tick() override;
+        void Tick(const Architecture::Scene::Scene& p_scene) override;
 
     private:
         static void ErrorCallbackHandler(int error, const char* description);

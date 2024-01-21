@@ -90,7 +90,7 @@ namespace DeepEngine
         return true;
     }
     
-    void WindowSubsystem::Tick()
+    void WindowSubsystem::Tick(const Architecture::Scene::Scene& p_scene)
     {
         glfwPollEvents();
         if (glfwWindowShouldClose(_window))

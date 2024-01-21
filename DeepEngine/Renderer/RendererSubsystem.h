@@ -47,7 +47,7 @@ namespace DeepEngine::Renderer
             Vulkan::VulkanDebugger::Terminate();
         }
         
-        void Tick() override
+        void Tick(const Architecture::Scene::Scene& p_scene) override
         {
             if (_isWindowMinimized)
             {
@@ -91,7 +91,7 @@ namespace DeepEngine::Renderer
                 _mainRenderPass->GetVkImage(imageIndex)
                 );
 
-            _imGuiController->Renderrr(imageIndex);
+            _imGuiController->Renderrr(imageIndex, p_scene);
 
             _commandRecorder.SubmitBuffer(_readyToRenderFence,
                 { _availableImageToRenderSemaphore },

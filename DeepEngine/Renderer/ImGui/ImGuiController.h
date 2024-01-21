@@ -5,6 +5,7 @@
 #include <backends/imgui_impl_glfw.h>
 
 #include "ImGuiRenderPass.h"
+#include "Architecture/Scene/Scene.h"
 #include "Renderer/Vulkan/CommandBuffer.h"
 #include "Renderer/Vulkan/CommandPool.h"
 #include "Renderer/Vulkan/Instance/VulkanInstance.h"
@@ -18,14 +19,14 @@ namespace DeepEngine::Renderer
 	class ImGuiController
 	{
 		using OnSwapChainRecreated = Vulkan::Events::OnSwapChainRecreated;
-		
+
 	public:
 		ImGuiController(Vulkan::VulkanInstance* p_vulkanInstance, const Vulkan::VulkanInstance::QueueInstance* p_mainQueue,
 			MainRenderPass* p_mainRenderPass);
 
 		void Terminate() const;
 
-		void Renderrr(uint32_t p_frameID);
+		void Renderrr(uint32_t p_frameID, const Architecture::Scene::Scene& p_scene);
 		void PostRenderUpdate();
 
 		Vulkan::CommandBuffer* GetCommandBuffer(uint32_t p_frameID) const
@@ -35,10 +36,11 @@ namespace DeepEngine::Renderer
 
 	private:
 		void LoadFontLol();
-		
+
 		void DrawViewportWindow(uint32_t p_frameID);
 		void DrawVulkanStructureWindow();
 		void DrawVulkanControllerChilds(Vulkan::BaseVulkanController* p_controller);
+		void DrawScene(const Architecture::Scene::Scene& p_scene);
 
 		Architecture::EventResult RecreatedRenderPassAttachmentsHandler(const MainRenderPassRecreatedAttachment& p_event);
 
@@ -64,5 +66,5 @@ namespace DeepEngine::Renderer
 
 		std::shared_ptr<Architecture::EventListener<MainRenderPassRecreatedAttachment>> _attachmentsRecreatedListener;
 	};
-	
+
 }

@@ -90,7 +90,7 @@ namespace DeepEngine::Renderer
 		vkDestroyDescriptorPool(_vulkanInstance->GetLogicalDevice(), _descPool, nullptr);
 	}
 
-	void ImGuiController::Renderrr(uint32_t p_frameID)
+	void ImGuiController::Renderrr(uint32_t p_frameID, const Architecture::Scene::Scene& p_scene)
 	{
 		// Start the Dear ImGui frame
 		ImGui_ImplVulkan_NewFrame();
@@ -101,6 +101,7 @@ namespace DeepEngine::Renderer
 		ImGui::ShowDemoWindow();
 		DrawVulkanStructureWindow();
 		DrawViewportWindow(p_frameID);
+		DrawScene(p_scene);
 			
 		ImGui::Render();
 
@@ -298,6 +299,61 @@ namespace DeepEngine::Renderer
 				
 			++it;
 		}
+	}
+
+	void ImGuiController::DrawScene(const Architecture::Scene::Scene& p_scene)
+	{
+		static bool isOpen = true;
+
+		if (ImGui::Begin("Scene", &isOpen))
+		{
+			uint32_t i = 0;
+			for (auto it = p_scene.Begin(); it != p_scene.End(); ++it)
+			{
+				ImGui::PushID(i);
+
+				if (ImGui::TreeNode(it->GetName()))
+				{
+					ImGui::Text("Position");
+
+					ImGui::PushItemWidth(75.f);
+					ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+					ImGui::SameLine();
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(200,30,20,255));
+					ImGui::PushID(0);
+					ImGui::InputFloat("", &it->GetTransform().Position.x, 0, 0, "X: %.2f");
+					ImGui::PopID();
+					ImGui::PopStyleColor();
+
+					ImGui::SameLine();
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(30,190,20,255));
+					ImGui::PushID(1);
+					ImGui::InputFloat("", &it->GetTransform().Position.y, 0, 0, "Y: %.2f");
+					ImGui::PopID();
+					ImGui::PopStyleColor();
+
+					ImGui::SameLine();
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(40,25,180,255));
+					ImGui::PushID(2);
+					ImGui::InputFloat("", &it->GetTransform().Position.z, 0, 0, "Z: %.2f");
+					ImGui::PopID();
+					ImGui::PopStyleColor();
+
+					ImGui::PopStyleVar();
+					ImGui::PopItemWidth();
+
+					ImGui::TreePop();
+				}
+
+				ImGui::PopID();
+
+				i++;
+			}
+
+		}
+
+		ImGui::End();
 	}
 
 	Architecture::EventResult ImGuiController::RecreatedRenderPassAttachmentsHandler(
