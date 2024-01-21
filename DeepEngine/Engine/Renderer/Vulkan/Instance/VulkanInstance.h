@@ -5,7 +5,7 @@
 
 #include "../VulkanPCH.h"
 #include "../Controller/BaseVulkanController.h"
-#include "Core/Events/EngineEvents.h"
+#include "Engine/EngineEvents.h"
 #include "Core/Events/EventBus.h"
 #include "Engine/Renderer/Vulkan/Debug/VulkanDebug.h"
 

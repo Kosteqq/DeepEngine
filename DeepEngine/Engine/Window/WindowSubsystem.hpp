@@ -8,7 +8,7 @@
 #include <GLFW/glfw3native.h>
 
 #include "Core/EngineSystem.h"
-#include "Core/Events/EngineEvents.h"
+#include "Engine/EngineEvents.h"
 
 namespace DeepEngine
 {
