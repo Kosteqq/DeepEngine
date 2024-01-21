@@ -38,6 +38,7 @@ namespace DeepEngine::Architecture::Scene
 			bool operator==(const Iterator& p_other) const;
 
 		private:
+			static bool CompareType(const SceneElement* p_element);
 			void MoveToNextElement();
 
 		private:
@@ -47,11 +48,14 @@ namespace DeepEngine::Architecture::Scene
 
 		template <typename T>
 		requires std::is_base_of_v<SceneElement, T>
-		Iterator<T> Begin();
+		Iterator<T> Begin() const;
 
 		template <typename T>
 		requires std::is_base_of_v<SceneElement, T>
-		Iterator<T> End();
+		Iterator<T> End() const;
+
+		Iterator<SceneElement> Begin() const;
+		Iterator<SceneElement> End() const;
 
 	private:
 		static const uint32_t SCENE_ELEMENT_SIZE = 8192;

@@ -43,13 +43,17 @@ namespace DeepEngine::Architecture::Scene
 
 		constexpr size_t GetSize() const
 		{ return _size * 8; }
-		
+
+		constexpr const char* GetName() const
+		{ return _name; }
+
 		constexpr virtual const char* GetTypeName() const = 0;
 
 	protected:
 		size_t _size;
 		size_t _typeHashCode;
-		
+		const char* _name;
+
 		uint32_t _runtimeID;
 		Transform _transform;
 	};

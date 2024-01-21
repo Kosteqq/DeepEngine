@@ -49,11 +49,15 @@ int main(int p_argc, char* p_argv[])
 
     for (auto it = scene.Begin<MyCustomSceneElement>(); it != scene.End<MyCustomSceneElement>(); ++it)
     {
-        std::cout << it->GetTypeName() << std::endl;
+        std::cout << it->GetName() << std::endl;
     }
     for (auto it = scene.Begin<MyCustomSecondSceneElement>(); it != scene.End<MyCustomSecondSceneElement>(); ++it)
     {
-        std::cout << it->GetTypeName() << std::endl;
+        std::cout << it->GetName() << std::endl;
+    }
+    for (auto it = scene.Begin(); it != scene.End(); ++it)
+    {
+        std::cout << it->GetName() << std::endl;
     }
 
     TestSerializer();
@@ -83,7 +87,7 @@ int main(int p_argc, char* p_argv[])
         {
             TIMER("Tick");
             
-            subsystemsManager.Tick();
+            subsystemsManager.Tick(scene);
             if (windowSubsystem->WantsToExit())
             {
                 break;

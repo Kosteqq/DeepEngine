@@ -8,8 +8,8 @@ namespace DeepEngine::Architecture::Scene
 	Scene::Iterator<T>::Iterator(const Scene* p_scene): _scene(p_scene)
 	{
 		_currentElement = (SceneElement*)(&_scene->_sceneElements[0]);
-				
-		if (!_currentElement->IsThisType(typeid(T)))
+
+		if (!CompareType(_currentElement))
 		{
 			MoveToNextElement();
 		}
@@ -50,18 +50,35 @@ namespace DeepEngine::Architecture::Scene
 	{ return _currentElement == p_other._currentElement;}
 
 	template <typename T> requires std::is_base_of_v<SceneElement, T>
+	bool Scene::Iterator<T>::CompareType(const SceneElement* p_element)
+	{
+		if (std::is_same_v<T, SceneElement>)
+		{
+			return true;
+		}
+		
+		return p_element->IsThisType(typeid(T));
+	}
+
+	template <typename T> requires std::is_base_of_v<SceneElement, T>
 	void Scene::Iterator<T>::MoveToNextElement()
 	{
+		if (std::is_same_v<SceneElement, T>)
+		{
+			_currentElement = (SceneElement*)((uint8_t*)_currentElement + _currentElement->GetSize());
+			return;
+		}
+		
 		while (true)
 		{
-			_currentElement = (SceneElement*)(((char*)_currentElement + _currentElement->GetSize()));
+			_currentElement = (SceneElement*)((uint8_t*)_currentElement + _currentElement->GetSize());
 
 			if (static_cast<void*>(_currentElement) == _scene->_sceneElementsPtr)
 			{
 				return;
 			}
 
-			if (_currentElement->IsThisType(typeid(T)))
+			if (CompareType(_currentElement))
 			{
 				return;
 			}
@@ -69,15 +86,25 @@ namespace DeepEngine::Architecture::Scene
 	}
 
 	template <typename T> requires std::is_base_of_v<SceneElement, T>
-	Scene::Iterator<T> Scene::Begin()
+	Scene::Iterator<T> Scene::Begin() const
 	{
 		return Iterator<T>(this);
 	}
 
 	template <typename T> requires std::is_base_of_v<SceneElement, T>
-	Scene::Iterator<T> Scene::End()
+	Scene::Iterator<T> Scene::End() const
 	{
 		return Iterator<T>(this, (SceneElement*)_sceneElementsPtr);
+	}
+
+	inline Scene::Iterator<SceneElement> Scene::Begin() const
+	{
+		return Iterator<SceneElement>(this);
+	}
+
+	inline Scene::Iterator<SceneElement> Scene::End() const
+	{
+		return Iterator<SceneElement>(this, (SceneElement*)_sceneElementsPtr);
 	}
 	
 	//////////////////////////////////////
@@ -101,7 +128,7 @@ namespace DeepEngine::Architecture::Scene
 		newElement->_runtimeID = _elementCounter;
 		newElement->_size = alignof(T);
 		newElement->_typeHashCode = typeid(T).hash_code();
-		
+		newElement->_name = ptr->GetTypeName();
 
 		_elementCounter++;
 		_sceneElementsPtr = (uint8_t*)_sceneElementsPtr + ptr->GetSize();
