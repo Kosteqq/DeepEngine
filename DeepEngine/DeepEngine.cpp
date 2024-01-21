@@ -40,12 +40,12 @@ int main(int p_argc, char* p_argv[])
     auto engineEventBus = DeepEngine::Architecture::EventBus();
 
     DeepEngine::Architecture::Scene::Scene scene;
-    
-    DeepEngine::Architecture::Scene::CreateSceneElement<MyCustomSecondSceneElement>(scene);
-    DeepEngine::Architecture::Scene::CreateSceneElement<MyCustomSecondSceneElement>(scene);
-    DeepEngine::Architecture::Scene::CreateSceneElement<MyCustomSceneElement>(scene);
-    DeepEngine::Architecture::Scene::CreateSceneElement<MyCustomSecondSceneElement>(scene);
-    DeepEngine::Architecture::Scene::CreateSceneElement<MyCustomSceneElement>(scene);
+
+    scene.CreateSceneElement<MyCustomSecondSceneElement>();
+    scene.CreateSceneElement<MyCustomSecondSceneElement>();
+    scene.CreateSceneElement<MyCustomSceneElement>();
+    scene.CreateSceneElement<MyCustomSecondSceneElement>();
+    scene.CreateSceneElement<MyCustomSceneElement>();
 
     for (auto it = scene.Begin<MyCustomSceneElement>(); it != scene.End<MyCustomSceneElement>(); ++it)
     {
