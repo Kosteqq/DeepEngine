@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "EventBus/EventBus.h"
+#include "Scene/Scene.h"
 
 
 namespace DeepEngine::Architecture
@@ -34,7 +35,7 @@ namespace DeepEngine::Architecture
 
         virtual bool Init() = 0;
         virtual void Destroy() = 0;
-        virtual void Tick() = 0;
+        virtual void Tick(const Scene::Scene& p_scene) = 0;
 
     protected:
         EngineSubsystemsManager* _subsystemsManager;
@@ -72,7 +73,7 @@ namespace DeepEngine::Architecture
         ~EngineSubsystemsManager();
 
         bool Init();
-        void Tick();
+        void Tick(const Scene::Scene& p_scene);
         
     public:
         template <typename T, class... Args>

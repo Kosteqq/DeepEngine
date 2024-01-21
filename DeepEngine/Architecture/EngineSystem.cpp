@@ -37,7 +37,7 @@ namespace DeepEngine::Architecture
     }
 
 
-    void EngineSubsystemsManager::Tick()
+    void EngineSubsystemsManager::Tick(const Scene::Scene& p_scene)
     {
         for (int i = 0; i < _subsystems.size(); i++)
         {
@@ -46,7 +46,7 @@ namespace DeepEngine::Architecture
                 continue;
             }
             
-            _subsystems[i]->Tick();
+            _subsystems[i]->Tick(p_scene);
         }
     }
 }
