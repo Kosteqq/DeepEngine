@@ -34,113 +34,49 @@ struct MyCustomSecondSceneElement final : Core::Scene::SceneElement
 
 void TestSerializer();
 
-template <class T>
 class VulkanObject
 {
 public:
-    T GetVkObject() const
-    { return _vkObject; }
-    
-protected:
-    T _vkObject;
-};
-
-class VulkanObjectObserver
-{
-public:
-    virtual ~VulkanObjectObserver() = default;
-    
-    virtual void VulkanObjectOutOfReference(uint32_t p_id) = 0;
-};
-
-template <class T, class Y>
-requires std::is_base_of_v<VulkanObject<T>, Y>
-class VulkanObjectRef
-{
-private:
-    VulkanObjectRef(uint32_t p_refID, VulkanObject<T>& p_objectRef, bool& p_isValid,
-        uint32_t& p_refCounter, VulkanObjectObserver& p_observer)
-        : _refID(p_refID), _objectRef(p_objectRef), _isValid(p_isValid),
-        _refCounter(p_refCounter), _observer(p_observer)
-    {
-        _refCounter++;
-    }
-    
-public:
-    VulkanObjectRef(const VulkanObjectRef& p_base)
-        : _refID(p_base._refID), _objectRef(p_base._objectRef), _isValid(p_base._isValid),
-        _refCounter(p_base._refCounter), _observer(p_base._observer)
-    {
-        if (_isValid)
-        {
-            _refCounter++;
-        }
-    }
-
-    ~VulkanObjectRef()
-    {
-        _refCounter--;
-        
-        if (_refCounter <= 0 && _isValid)
-        {
-            _observer.VulkanObjectOutOfReference(_refID);
-            _isValid = false;
-        }
-    }
-
-    bool IsValid() const
-    { return _isValid; }
-
-    VulkanObject<T>& GetObjectRef() const
-    { return _objectRef; }
+    ~VulkanObject() = default;
     
 private:
-    uint32_t _refID;
-    VulkanObject<T>& _objectRef;
-    bool& _isValid;
-    uint32_t& _refCounter;
-    VulkanObjectObserver& _observer;
+    bool _isValid;
+    uint32_t _factoryID;
+    uint32_t _objectID;
 };
 
-// Builder??
-// Data??
-// T = Wrapper
-template <class T, class Y>
-requires std::is_base_of_v<VulkanObject<T>, Y>
-class VulkanObjectFactory : VulkanObjectObserver
+class VulkanFactory
 {
 public:
-    VulkanObjectFactory() = default;
-    ~VulkanObjectFactory() override = default;
-
-    void VulkanObjectOutOfReference(uint32_t p_id) override
+    VulkanFactory()
     {
-        delete _objects[p_id].VulkanObject;
+    }
+
+    ~VulkanFactory()
+    {
     }
 
 protected:
-    struct Object
-    {
-        VulkanObject<T>* VulkanObject;
-        uint32_t RefCounter;
-        bool IsValid;
-    };
+    void TEST()
+    { }
 
-    VulkanObjectRef<T, Y> CreateRef(const Object& p_object)
+    static VulkanFactory GetInstance()
+    { return VulkanFactory(); }
+    
+public:
+    template <typename T>
+    class Factory;
+};
+
+template <>
+class VulkanFactory::Factory<int>
+{
+public:
+    void Create() const
     {
-        _objectIdCounter++;
-        _objects[_objectIdCounter] = p_object;
-        return VulkanObjectRef<T, Y>(
-            _objectIdCounter,
-            *p_object.VulkanObject,
-            p_object.IsValid,
-            p_object.RefCounter,
-            *this);
+        GetInstance().TEST();
     }
-
-private:
-    uint32_t _objectIdCounter;
-    std::unordered_map<uint32_t, Object> _objects;
+    
 };
 
 
@@ -151,6 +87,12 @@ int main(int p_argc, char* p_argv[])
     auto engineEventBus = Core::Events::EventBus();
 
     Core::Scene::Scene scene;
+
+    auto x = VulkanFactory::Factory<int>();
+    x.Create();
+    // auto f = VulkanFactory::Factory<float>();
+    
+    
 
     scene.CreateSceneElement<MyCustomSecondSceneElement>();
     scene.CreateSceneElement<MyCustomSecondSceneElement>();
