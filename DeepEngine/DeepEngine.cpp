@@ -17,6 +17,8 @@
 #include "Core/Scene/Scene.h"
 #include "Core/Serialize/SerializersContainer.h"
 #include "Core/Serialize/DefaultImplementations/GlmSerializers.h"
+#include "Engine/Renderer/Vulkan/VulkanFactory.h"
+#include "Engine/Renderer/Vulkan/VulkanObject.h"
 
 using namespace DeepEngine;
 
@@ -34,128 +36,7 @@ struct MyCustomSecondSceneElement final : Core::Scene::SceneElement
 
 void TestSerializer();
 
-class VulkanObject
-{
-    friend class VulkanFactory;
-
-    void (*TerminateFunc)(VulkanObject*);
-
-public:
-    ~VulkanObject() = default;
-
-    bool IsValid() const
-    {
-        return _isValid;
-    }
-    
-private:
-    bool _isValid;
-    uint32_t _factoryID;
-    uint32_t _objectID;
-    
-
-    std::list<std::weak_ptr<VulkanObject>> _subobjects;
-};
-
-template <typename T>
-concept VulkanObjectKind = std::is_base_of_v<VulkanObject, T>;
-
-template <typename T>
-concept PointerDeleterKind = requires(T t)
-{
-    { t.operator() };
-};
-
-class VulkanFactory
-{
-
-public:
-    VulkanFactory()
-    {
-    }
-
-    ~VulkanFactory()
-    {
-    }
-
-    void Bind()
-    {
-        _bindInstance = this;
-    }
-
-private:
-    template <VulkanObjectKind T>
-    class VulkanSubFactory
-    {
-        static void Terminate(T*);
-    };
-
-public:
-    template <VulkanObjectKind T>
-    using FactoryOf = VulkanSubFactory<T>;
-
-    static void TerminateObject(const std::shared_ptr<VulkanObject>& p_object)
-    {
-        TerminateObject(p_object.get());
-    }
-
-private:
-    static void TerminateObject(VulkanObject* p_object)
-    {
-        if (!p_object->IsValid())
-        {
-            return;
-        }
-        std::cout << "Terminating Object" << std::endl;
-
-        // revers it lol
-        for (auto& subObject : p_object->_subobjects)
-        {
-            if (!subObject.expired())
-            {
-                TerminateObject(subObject.lock().get());
-            }
-        }
-        
-        p_object->TerminateFunc(p_object);
-
-        p_object->_isValid = false;
-    }
-    
-private:
-    static void DestroyPointerHandler(VulkanObject* p_object)
-    {
-        std::cout << "Destroying Pointer" << std::endl;
-        TerminateObject(p_object);
-        delete p_object;
-    }
-    
-    template <VulkanObjectKind T>
-    std::shared_ptr<T> CreateObject(T* p_instance, void(*TerminateFunc)(VulkanObject*))
-    {
-        ((VulkanObject*)p_instance)->TerminateFunc = TerminateFunc;
-        std::shared_ptr<T> ptr = std::shared_ptr<T>(p_instance, DestroyPointerHandler);
-        
-        return ptr;
-    }
-    
-    template <VulkanObjectKind T, VulkanObjectKind ParentType>
-    std::shared_ptr<T> CreateObject(T* p_instance, void(*TerminateFunc)(VulkanObject*), const std::shared_ptr<ParentType>& p_parentObject)
-    {
-        ((VulkanObject*)p_instance)->TerminateFunc = TerminateFunc;
-        std::shared_ptr<T> ptr = std::shared_ptr<T>(p_instance, DestroyPointerHandler);
-        p_parentObject->_subobjects.push_back(std::weak_ptr<T>(ptr));
-        return ptr;
-    }
-
-    static VulkanFactory GetInstance()
-    { return VulkanFactory(); }
-
-private:
-    static VulkanFactory* _bindInstance;
-};
-
-class Semaphore : public VulkanObject
+class Semaphore : public Engine::Renderer::Vulkan::VulkanObject
 {
 public:
     Semaphore(VkSemaphore p_handler) : _handler(p_handler)
@@ -171,16 +52,16 @@ private:
 };
 
 template <>
-class VulkanFactory::VulkanSubFactory<Semaphore>
+class Engine::Renderer::Vulkan::VulkanFactory::VulkanSubFactory<Semaphore>
 {
 public:
     static std::shared_ptr<Semaphore> Create()
     {
-        auto factory = GetInstance();
+        auto* factory = GetInstance();
 
         auto semaphore = new Semaphore(VK_NULL_HANDLE);
         
-        auto newObject = factory.CreateObject(semaphore, Terminate);
+        auto newObject = factory->CreateObject(semaphore, Terminate);
         return newObject;
     }
 
@@ -198,14 +79,14 @@ int main(int p_argc, char* p_argv[])
     Debug::Logger::Initialize("Logs/engine.log");
     auto engineEventBus = Core::Events::EventBus();
 
-    Core::Scene::Scene scene;
     {
-        auto factory = VulkanFactory();
-        auto sempahore = VulkanFactory::FactoryOf<Semaphore>::Create();
-        sempahore.reset();
-        VulkanFactory::TerminateObject(sempahore);
+        // auto factory = VulkanFactory(*(Engine::Renderer::Vulkan::VulkanInstance*)nullptr);
+        // auto sempahore = VulkanFactory::FactoryOf<Semaphore>::Create();
+        // sempahore.reset();
+        // VulkanFactory::TerminateObject(sempahore);
     }
 
+    Core::Scene::Scene scene;
     scene.CreateSceneElement<MyCustomSecondSceneElement>();
     scene.CreateSceneElement<MyCustomSecondSceneElement>();
     scene.CreateSceneElement<MyCustomSceneElement>();

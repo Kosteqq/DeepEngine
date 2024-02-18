@@ -1,0 +1,62 @@
+#pragma once
+#include "VulkanObject.h"
+#include "Instance/VulkanInstance.h"
+
+
+namespace DeepEngine::Engine::Renderer::Vulkan
+{
+
+    template <typename T>
+    concept VulkanObjectKind = std::is_base_of_v<VulkanObject, T>;
+    
+    class VulkanFactory
+    {
+        template <VulkanObjectKind T>
+        class VulkanSubFactory
+        {
+            static void Terminate(T*);
+        };
+        
+    public:
+        template <VulkanObjectKind T>
+        using FactoryOf = VulkanSubFactory<T>;
+
+        
+        VulkanFactory(VulkanInstance& p_vulkanInstance);
+        void Bind();
+
+        static void TerminateObject(const std::shared_ptr<VulkanObject>& p_object);
+
+    private:
+        static void TerminateObject(VulkanObject* p_object);
+        static void DestroyPointerHandler(VulkanObject* p_object);
+
+        // Mostly for internal use (inside subfactories)
+        static VulkanFactory* GetInstance();
+
+        template <VulkanObjectKind T>
+        std::shared_ptr<T> CreateObject(T* p_instance, VulkanObject::TerminateFunction p_terminateFunc)
+        {
+            p_instance->_terminateFunc = p_terminateFunc;
+            std::shared_ptr<T> ptr = std::shared_ptr<T>(p_instance, DestroyPointerHandler);
+        
+            return ptr;
+        }
+    
+        template <VulkanObjectKind T, VulkanObjectKind ParentType>
+        std::shared_ptr<T> CreateObject(T* p_instance, VulkanObject::TerminateFunction p_terminateFunc, const std::shared_ptr<ParentType>& p_parentObject)
+        {
+            p_instance->_terminateFunc = p_terminateFunc;
+            std::shared_ptr<T> ptr = std::shared_ptr<T>(p_instance, DestroyPointerHandler);
+            
+            p_parentObject->_subobjects.push_back(std::weak_ptr<T>(ptr));
+            
+            return ptr;
+        }
+
+    private:
+        static VulkanFactory* _bindInstance;
+        VulkanInstance& _vulkanInstance;
+    };
+    
+}
