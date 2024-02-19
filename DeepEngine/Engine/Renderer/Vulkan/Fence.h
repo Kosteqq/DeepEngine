@@ -79,12 +79,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
             auto fenceObject = new Fence2(fence);
 
-            if (p_parent != nullptr)
-            {
-                return CreateObject(fenceObject, Terminate, p_parent);
-            }
-            
-            return CreateObject(fenceObject, Terminate);
+            return CreateObject(fenceObject, Terminate, p_parent);
         }
 
         template <VulkanObjectKind T>
@@ -99,12 +94,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
             auto fenceObject = new Fence2(fence);
 
-            if (p_parent != nullptr)
-            {
-                return CreateObject(fenceObject, Terminate, p_parent);
-            }
-            
-            return CreateObject(fenceObject, Terminate);
+            return CreateObject(fenceObject, Terminate, p_parent);
         }
 
     private:

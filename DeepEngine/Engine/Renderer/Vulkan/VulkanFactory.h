@@ -35,23 +35,18 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     private:
         static void TerminateObject(VulkanObject* p_object);
         static void DestroyPointerHandler(VulkanObject* p_object);
-
-        template <VulkanObjectKind T>
-        std::shared_ptr<T> CreateObject(T* p_instance, VulkanObject::TerminateFunction p_terminateFunc)
-        {
-            p_instance->_terminateFunc = p_terminateFunc;
-            std::shared_ptr<T> ptr = std::shared_ptr<T>(p_instance, DestroyPointerHandler);
-        
-            return ptr;
-        }
     
         template <VulkanObjectKind T, VulkanObjectKind ParentType>
-        std::shared_ptr<T> CreateObject(T* p_instance, VulkanObject::TerminateFunction p_terminateFunc, const std::shared_ptr<ParentType>& p_parentObject)
+        std::shared_ptr<T> CreateObject(T* p_instance, VulkanObject::TerminateFunction p_terminateFunc,
+            const std::shared_ptr<ParentType>& p_parentObject = nullptr)
         {
             p_instance->_terminateFunc = p_terminateFunc;
             std::shared_ptr<T> ptr = std::shared_ptr<T>(p_instance, DestroyPointerHandler);
-            
-            p_parentObject->_subobjects.push_back(std::weak_ptr<T>(ptr));
+
+            if (p_parentObject != nullptr)
+            {
+                p_parentObject->_subobjects.push_back(std::weak_ptr<T>(ptr));
+            }
             
             return ptr;
         }
