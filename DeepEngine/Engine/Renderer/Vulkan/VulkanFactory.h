@@ -8,31 +8,33 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
     template <typename T>
     concept VulkanObjectKind = std::is_base_of_v<VulkanObject, T>;
+
+    template <VulkanObjectKind T>
+    using VulkanRef = std::shared_ptr<T>;
     
     class VulkanFactory
     {
         template <VulkanObjectKind T>
-        class VulkanSubFactory
+        class SubFactory
         {
             static void Terminate(T*);
         };
         
+        template <VulkanObjectKind T>
+        friend class SubFactory;
+        
     public:
         template <VulkanObjectKind T>
-        using FactoryOf = VulkanSubFactory<T>;
-
+        using FactoryOf = SubFactory<T>;
         
         VulkanFactory(VulkanInstance& p_vulkanInstance);
-        void Bind();
 
+        void Bind();
         static void TerminateObject(const std::shared_ptr<VulkanObject>& p_object);
 
     private:
         static void TerminateObject(VulkanObject* p_object);
         static void DestroyPointerHandler(VulkanObject* p_object);
-
-        // Mostly for internal use (inside subfactories)
-        static VulkanFactory* GetInstance();
 
         template <VulkanObjectKind T>
         std::shared_ptr<T> CreateObject(T* p_instance, VulkanObject::TerminateFunction p_terminateFunc)
@@ -55,7 +57,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         }
 
     private:
-        static VulkanFactory* _bindInstance;
+        static VulkanFactory* _bindFactory;
         VulkanInstance& _vulkanInstance;
     };
     

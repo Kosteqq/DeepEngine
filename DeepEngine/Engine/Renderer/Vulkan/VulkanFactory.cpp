@@ -2,7 +2,7 @@
 
 namespace DeepEngine::Engine::Renderer::Vulkan
 {
-	VulkanFactory* VulkanFactory::_bindInstance = nullptr;
+	VulkanFactory* VulkanFactory::_bindFactory = nullptr;
 
 	VulkanFactory::VulkanFactory(VulkanInstance& p_vulkanInstance): _vulkanInstance(p_vulkanInstance)
 	{
@@ -11,7 +11,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
 	void VulkanFactory::Bind()
 	{
-		_bindInstance = this;
+		_bindFactory = this;
 	}
 
 	void VulkanFactory::TerminateObject(const std::shared_ptr<VulkanObject>& p_object)
@@ -25,14 +25,14 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		{
 			return;
 		}
+		
 		std::cout << "Terminating Object" << std::endl;
 
-		// revers it lol
-		for (auto& subObject : p_object->_subobjects)
+		for (auto it = p_object->_subobjects.rbegin(); it != p_object->_subobjects.rend(); ++it)
 		{
-			if (!subObject.expired())
+			if (!it->expired())
 			{
-				TerminateObject(subObject.lock().get());
+				TerminateObject(it->lock().get());
 			}
 		}
         
@@ -47,7 +47,4 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		TerminateObject(p_object);
 		delete p_object;
 	}
-
-	VulkanFactory* VulkanFactory::GetInstance()
-	{ return VulkanFactory::_bindInstance; }
 }
