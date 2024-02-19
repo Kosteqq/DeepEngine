@@ -15,10 +15,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     class VulkanFactory
     {
         template <VulkanObjectKind T>
-        class SubFactory
-        {
-            static void Terminate(T*);
-        };
+        class SubFactory;
         
         template <VulkanObjectKind T>
         friend class SubFactory;
@@ -37,7 +34,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         static void DestroyPointerHandler(VulkanObject* p_object);
     
         template <VulkanObjectKind T, VulkanObjectKind ParentType>
-        std::shared_ptr<T> CreateObject(T* p_instance, VulkanObject::TerminateFunction p_terminateFunc,
+        static std::shared_ptr<T> CreateObject(T* p_instance, VulkanObject::TerminateFunction p_terminateFunc,
             const std::shared_ptr<ParentType>& p_parentObject = nullptr)
         {
             p_instance->_terminateFunc = p_terminateFunc;

@@ -55,7 +55,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         }
         
     private:
-        VkCommandPool _handler;
+        const VkCommandPool _handler;
 
         const VulkanInstance::QueueInstance* _queue;
     };
