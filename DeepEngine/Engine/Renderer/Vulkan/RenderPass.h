@@ -301,6 +301,8 @@ namespace DeepEngine::Engine::Renderer::Vulkan
                 // TODO (Kostek): assign resolve attachments
                 // subpassesDesc[i].pResolveAttachments = subpass.ResolveAttachments.data();
 
+                subpassesDesc[i].pDepthStencilAttachment = nullptr;
+                
                 if (subpass.UseDepthStencilAttachment)
                 {
                     subpassesDesc[i].pDepthStencilAttachment = &subpass.DepthStencilAttachment;
@@ -331,7 +333,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         {
             vkDestroyRenderPass(
                 _bindFactory->_vulkanInstance.GetLogicalDevice(),
-                ((RenderPass2*)p_object)->GetHandler(),
+                *(RenderPass2*)p_object,
                 nullptr);
         }
 
