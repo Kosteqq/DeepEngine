@@ -264,21 +264,20 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     public:
         template <VulkanObjectKind TParent, typename TBuilder>
         requires std::is_base_of_v<RenderPassBuilder, TBuilder>
-        static VulkanRef<RenderPass2> Create(VulkanRef<TParent> p_parent)
+        static VulkanRef<RenderPass2> Create(VulkanRef<TParent> p_parent, TBuilder& p_builder)
         {
-            TBuilder builder;
-            builder.DeclareAttachments();
+            p_builder.DeclareAttachments();
 
             _idCounter++;
 
-            const std::vector<RenderPassBuilder::AttachmentDescription>& attachments = builder._attachments;
+            const std::vector<RenderPassBuilder::AttachmentDescription>& attachments = p_builder._attachments;
             auto attachmentsDesc = std::make_unique<VkAttachmentDescription[]>(attachments.size());
             for (uint32_t i = 0; i < attachments.size(); i++)
             {
                 attachmentsDesc[i] = attachments[i].Desc;
             }
             
-            const std::vector<RenderPassBuilder::SubPassDescription>& subpasses = builder._subpasses;
+            const std::vector<RenderPassBuilder::SubPassDescription>& subpasses = p_builder._subpasses;
             auto subpassesDesc = std::make_unique<VkSubpassDescription[]>(subpasses.size());
             for (uint32_t i = 0; i < subpasses.size(); i++)
             {
@@ -319,8 +318,8 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             createInfo.pAttachments = attachmentsDesc.get();
             createInfo.subpassCount = static_cast<uint32_t>(subpasses.size());
             createInfo.pSubpasses = subpassesDesc.get();
-            createInfo.dependencyCount = static_cast<uint32_t>(builder._dependecies.size());
-            createInfo.pDependencies = builder._dependecies.data();
+            createInfo.dependencyCount = static_cast<uint32_t>(p_builder._dependecies.size());
+            createInfo.pDependencies = p_builder._dependecies.data();
 
             VkRenderPass vulkanHandler;
             vkCreateRenderPass(_bindFactory->_vulkanInstance.GetLogicalDevice(), &createInfo, nullptr, &vulkanHandler);
