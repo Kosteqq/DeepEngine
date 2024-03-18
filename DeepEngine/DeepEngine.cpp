@@ -36,55 +36,10 @@ struct MyCustomSecondSceneElement final : Core::Scene::SceneElement
 
 void TestSerializer();
 
-class Semaphore : public Engine::Renderer::Vulkan::VulkanObject
-{
-public:
-    Semaphore(VkSemaphore p_handler) : _handler(p_handler)
-    {
-        
-    }
-    
-    VkSemaphore GetVulkanHandler() const
-    { return _handler; }
-
-private:
-    VkSemaphore _handler;
-};
-
-template <>
-class Engine::Renderer::Vulkan::VulkanFactory::VulkanSubFactory<Semaphore>
-{
-public:
-    static std::shared_ptr<Semaphore> Create()
-    {
-        auto* factory = GetInstance();
-
-        auto semaphore = new Semaphore(VK_NULL_HANDLE);
-        
-        auto newObject = factory->CreateObject(semaphore, Terminate);
-        return newObject;
-    }
-
-private:
-    static void Terminate(VulkanObject* p_object)
-    {
-        std::cout << "Terminateeee" << std::endl;
-    }
-};
-
-
-
 int main(int p_argc, char* p_argv[])
 {    
     Debug::Logger::Initialize("Logs/engine.log");
     auto engineEventBus = Core::Events::EventBus();
-
-    {
-        // auto factory = VulkanFactory(*(Engine::Renderer::Vulkan::VulkanInstance*)nullptr);
-        // auto sempahore = VulkanFactory::FactoryOf<Semaphore>::Create();
-        // sempahore.reset();
-        // VulkanFactory::TerminateObject(sempahore);
-    }
 
     Core::Scene::Scene scene;
     scene.CreateSceneElement<MyCustomSecondSceneElement>();
