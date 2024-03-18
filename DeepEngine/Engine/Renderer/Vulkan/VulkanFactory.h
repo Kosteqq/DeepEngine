@@ -10,7 +10,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     concept VulkanObjectKind = std::is_base_of_v<VulkanObject, T>;
 
     template <VulkanObjectKind T>
-    using VulkanRef = std::shared_ptr<T>;
+    using Ref = std::shared_ptr<T>;
     
     class VulkanFactory
     {

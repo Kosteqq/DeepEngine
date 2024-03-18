@@ -54,7 +54,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     class VulkanFactory::SubFactory<PipelineLayout2>
     {
     public:
-        static VulkanRef<PipelineLayout2> Create(VulkanRef<RenderPass2> p_renderPass, RenderSubPassHandler p_subPass)
+        static Ref<PipelineLayout2> Create(Ref<RenderPass2> p_renderPass, RenderSubPassHandler p_subPass)
         {
             VkPipelineLayoutCreateInfo createInfo { };
             createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

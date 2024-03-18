@@ -74,8 +74,8 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     class VulkanFactory::SubFactory<ShaderModule2>
     {
     public:
-        static VulkanRef<ShaderModule2> Create(const std::string& p_filepath, VkShaderStageFlagBits p_stageFlags,
-            const VulkanRef<VulkanObject>& p_parent = nullptr)
+        static Ref<ShaderModule2> Create(const std::string& p_filepath, VkShaderStageFlagBits p_stageFlags,
+            const Ref<VulkanObject>& p_parent = nullptr)
         {
             const auto shaderCode = ReadFile(p_filepath);
 

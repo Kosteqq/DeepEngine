@@ -52,8 +52,8 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     class VulkanFactory::SubFactory<CommandBuffer2>
     {
     public:
-        static VulkanRef<CommandBuffer2> Create(VulkanRef<CommandPool2> p_commandPool, bool p_asSecondary = false);
-        static std::vector<VulkanRef<CommandBuffer2>> CreateMany(VulkanRef<CommandPool2> p_commandPool, uint32_t p_amount, bool p_asSecondary = false);
+        static Ref<CommandBuffer2> Create(Ref<CommandPool2> p_commandPool, bool p_asSecondary = false);
+        static std::vector<Ref<CommandBuffer2>> CreateMany(Ref<CommandPool2> p_commandPool, uint32_t p_amount, bool p_asSecondary = false);
 
     private:
         static void Terminate(VulkanObject* p_object);

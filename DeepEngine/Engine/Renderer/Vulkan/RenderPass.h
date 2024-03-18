@@ -257,7 +257,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     public:
         template <VulkanObjectKind TParent, typename TBuilder>
         requires std::is_base_of_v<RenderPassBuilder, TBuilder>
-        static VulkanRef<RenderPass2> Create(VulkanRef<TParent> p_parent, TBuilder& p_builder)
+        static Ref<RenderPass2> Create(Ref<TParent> p_parent, TBuilder& p_builder)
         {
             p_builder.DeclareAttachments();
 

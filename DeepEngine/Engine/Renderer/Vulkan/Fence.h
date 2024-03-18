@@ -69,7 +69,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     {
     public:
         template <VulkanObjectKind T>
-        static VulkanRef<Fence2> Create(VulkanRef<T> p_parent = nullptr)
+        static Ref<Fence2> Create(Ref<T> p_parent = nullptr)
         {
             VkFenceCreateInfo fenceCreateInfo { };
             fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -83,7 +83,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         }
 
         template <VulkanObjectKind T>
-        static VulkanRef<Fence2> CreateSignaled(VulkanRef<T> p_parent = nullptr)
+        static Ref<Fence2> CreateSignaled(Ref<T> p_parent = nullptr)
         {
             VkFenceCreateInfo fenceCreateInfo { };
             fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

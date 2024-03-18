@@ -29,7 +29,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         return true;
     }
 
-    VulkanRef<CommandBuffer2> VulkanFactory::SubFactory<CommandBuffer2>::Create(VulkanRef<CommandPool2> p_commandPool,
+    Ref<CommandBuffer2> VulkanFactory::SubFactory<CommandBuffer2>::Create(Ref<CommandPool2> p_commandPool,
         bool p_asSecondary)
     {
         VkCommandBufferAllocateInfo allocInfo { };
@@ -48,8 +48,8 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         return CreateObject(bufferObject, Terminate, p_commandPool);
     }
 
-    std::vector<VulkanRef<CommandBuffer2>> VulkanFactory::SubFactory<CommandBuffer2>::CreateMany(
-        VulkanRef<CommandPool2> p_commandPool, uint32_t p_amount, bool p_asSecondary)
+    std::vector<Ref<CommandBuffer2>> VulkanFactory::SubFactory<CommandBuffer2>::CreateMany(
+        Ref<CommandPool2> p_commandPool, uint32_t p_amount, bool p_asSecondary)
     {
         VkCommandBufferAllocateInfo allocInfo { };
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -57,7 +57,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         allocInfo.level = p_asSecondary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
         allocInfo.commandBufferCount = 1;
 
-        std::vector<VulkanRef<CommandBuffer2>> objects(p_amount);
+        std::vector<Ref<CommandBuffer2>> objects(p_amount);
 
         for (uint32_t i = 0; i < p_amount; i++)
         {

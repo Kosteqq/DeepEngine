@@ -162,7 +162,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         };
 
     protected:
-        virtual void GetShaderStages(VulkanRef<ShaderModule2>& p_vertShader, VulkanRef<ShaderModule2>& p_fragShader);
+        virtual void GetShaderStages(Ref<ShaderModule2>& p_vertShader, Ref<ShaderModule2>& p_fragShader);
         virtual void DefineDynamicState(DynamicStateDefinition* p_definition) = 0;
         virtual void DefineColorBlend(ColorBlendDefinition* p_definition) = 0;
         virtual void DefineBlendAttachment(ColorBlendAttachmentDefinition* p_definition) = 0;
@@ -175,15 +175,15 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     public:
         template <typename TBuilder>
         requires std::is_base_of_v<GraphicsPipelineBuilder, TBuilder>
-        static VulkanRef<GraphicsPipeline2> Create(
-            const VulkanRef<RenderPass2>& p_renderPass,
-            const VulkanRef<PipelineLayout2>& p_pipelineLayout,
+        static Ref<GraphicsPipeline2> Create(
+            const Ref<RenderPass2>& p_renderPass,
+            const Ref<PipelineLayout2>& p_pipelineLayout,
             TBuilder& p_builder)
         {
             std::vector<VkPipelineShaderStageCreateInfo> stages;
 
-            VulkanRef<ShaderModule2> vertShader;
-            VulkanRef<ShaderModule2> fragShader;
+            Ref<ShaderModule2> vertShader;
+            Ref<ShaderModule2> fragShader;
 
             p_builder.GetShaderStages(vertShader, fragShader);
             InitializeShaderStages(vertShader, fragShader, &stages);
@@ -289,7 +289,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             return CreateObject(new GraphicsPipeline2(pipelineHandler), Terminate, p_pipelineLayout);
         }
 
-        static void InitializeShaderStages(const VulkanRef<ShaderModule2>& p_vertShader, const VulkanRef<ShaderModule2>& p_fragShader,
+        static void InitializeShaderStages(const Ref<ShaderModule2>& p_vertShader, const Ref<ShaderModule2>& p_fragShader,
             std::vector<VkPipelineShaderStageCreateInfo>* p_stages)
         {
             {

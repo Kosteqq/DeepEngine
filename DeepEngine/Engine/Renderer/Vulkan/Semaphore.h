@@ -61,7 +61,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     {
     public:
         template <VulkanObjectKind TParent>
-        static VulkanRef<Semaphore2> Create(const VulkanRef<TParent>& p_parent)
+        static Ref<Semaphore2> Create(const Ref<TParent>& p_parent)
         {
             VkSemaphoreCreateInfo createInfo { };
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -77,7 +77,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             return CreateObject(new Semaphore2(handler), Terminate, p_parent);
         }
         
-        static VulkanRef<Semaphore2> Create()
+        static Ref<Semaphore2> Create()
         {
             VkSemaphoreCreateInfo createInfo { };
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

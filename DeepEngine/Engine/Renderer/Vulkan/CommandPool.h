@@ -65,8 +65,8 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     {
     public:
         template <VulkanObjectKind T>
-        static VulkanRef<CommandPool2> Create(const VulkanInstance::QueueInstance* p_queue,
-            const CommandPoolFlag p_flags, VulkanRef<T> p_parent = nullptr)
+        static Ref<CommandPool2> Create(const VulkanInstance::QueueInstance* p_queue,
+            const CommandPoolFlag p_flags, Ref<T> p_parent = nullptr)
         {
             VkCommandPoolCreateInfo createInfo { };
             createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
