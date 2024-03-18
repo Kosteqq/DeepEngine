@@ -56,9 +56,9 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         }
 
         VkPipelineDynamicStateCreateInfo dynamicState { };
-        dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-        dynamicState.pDynamicStates = dynamicStates.data();
+        dynamicState.sType              = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamicState.dynamicStateCount  = static_cast<uint32_t>(dynamicStates.size());
+        dynamicState.pDynamicStates     = dynamicStates.data();
 
         // No fucking idea how pass this info
         VkPipelineVertexInputStateCreateInfo vertexBufferCreateInfo { };
