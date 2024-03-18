@@ -32,27 +32,29 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         RenderPass* _renderPass;
     };
 
-    class PipelineLayout2 : VulkanObject
+    class PipelineLayout2 : public VulkanObject
     {
     public:
-        PipelineLayout2(VkPipelineLayout p_handler) : _handler(p_handler)
+        PipelineLayout2(VkPipelineLayout p_handler, RenderSubPassHandler p_subPass)
+            : _handler(p_handler), _subPass(p_subPass)
         { }
         
         VkPipelineLayout GetHandler() const
         { return _handler; }
-
-        operator VkPipelineLayout() const
-        { return _handler; }
+        
+        RenderSubPassHandler GetSubPass() const
+        { return _subPass; }
 
     private:
         const VkPipelineLayout _handler;
+        const RenderSubPassHandler _subPass;
     };
 
     template <>
     class VulkanFactory::SubFactory<PipelineLayout2>
     {
     public:
-        static VulkanRef<PipelineLayout2> Create(VulkanRef<RenderPass2> p_renderPass)
+        static VulkanRef<PipelineLayout2> Create(VulkanRef<RenderPass2> p_renderPass, RenderSubPassHandler p_subPass)
         {
             VkPipelineLayoutCreateInfo createInfo { };
             createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -69,17 +71,16 @@ namespace DeepEngine::Engine::Renderer::Vulkan
                 nullptr,
                 &handler);
 
-            auto pipelineLayout = new PipelineLayout2(handler);
+            auto pipelineLayout = new PipelineLayout2(handler, p_subPass);
             
             return CreateObject(pipelineLayout, Terminate, p_renderPass);
         }
 
-    private:
         static void Terminate(VulkanObject* p_object)
         {
             vkDestroyPipelineLayout(
                 _bindFactory->_vulkanInstance.GetLogicalDevice(),
-                *(PipelineLayout2*)p_object,
+                ((PipelineLayout2*)p_object)->GetHandler(),
                 nullptr);
         }
         

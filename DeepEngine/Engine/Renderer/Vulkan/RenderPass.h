@@ -97,9 +97,6 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
     class RenderPass2 : public VulkanObject
     {
-        template<VulkanObjectKind T>
-        friend class VulkanFactory::SubFactory;
-        
         friend class RenderPassBuilder;
         
         struct RenderAttachment
@@ -120,13 +117,12 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             std::vector<VkAttachmentReference> PreserveAttachments;
         };
 
-    private:
+    public:
         RenderPass2(VkRenderPass p_handler) : _handler(p_handler)
         {
             
         }
 
-    public:
         VkRenderPass GetHandler() const
         { return _handler; }
 
@@ -139,9 +135,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
     class RenderPassBuilder
     {
-        template<VulkanObjectKind T>
-        friend class VulkanFactory::SubFactory;
-        
+    public:
         struct AttachmentDescription 
         {
             RenderAttachmentHandler Handler;
@@ -168,7 +162,6 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             _dependecies.reserve(16);
         }
 
-    public:
         virtual ~RenderPassBuilder() = default;
 
         virtual void DeclareAttachments() = 0;
