@@ -43,5 +43,63 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     private:
         VkSemaphore _semaphore;
     };
+
+    class Semaphore2 : public VulkanObject
+    {
+    public:
+        Semaphore2(VkSemaphore p_handler) : _handler(p_handler)
+        { }
+        
+        VkSemaphore GetHandler() const
+        { return _handler; }
+        
+        const VkSemaphore _handler;
+    };
+    
+    template<>
+    class VulkanFactory::SubFactory<Semaphore2>
+    {
+    public:
+        template <VulkanObjectKind TParent>
+        static VulkanRef<Semaphore2> Create(const VulkanRef<TParent>& p_parent)
+        {
+            VkSemaphoreCreateInfo createInfo { };
+            createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            createInfo.flags = 0;
+
+            VkSemaphore handler;
+            vkCreateSemaphore(
+                _bindFactory->_vulkanInstance.GetLogicalDevice(),
+                &createInfo,
+                nullptr,
+                &handler);
+
+            return CreateObject(new Semaphore2(handler), Terminate, p_parent);
+        }
+        
+        static VulkanRef<Semaphore2> Create()
+        {
+            VkSemaphoreCreateInfo createInfo { };
+            createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            createInfo.flags = 0;
+        
+            VkSemaphore handler;
+            vkCreateSemaphore(
+                _bindFactory->_vulkanInstance.GetLogicalDevice(),
+                &createInfo,
+                nullptr,
+                &handler);
+        
+            return CreateObject<Semaphore2, VulkanObject>(new Semaphore2(handler), Terminate);
+        }
+
+        static void Terminate(VulkanObject* p_object)
+        {
+            vkDestroySemaphore(
+                _bindFactory->_vulkanInstance.GetLogicalDevice(),
+                ((Semaphore2*)p_object)->GetHandler(),
+                nullptr);
+        }
+    };
     
 }
