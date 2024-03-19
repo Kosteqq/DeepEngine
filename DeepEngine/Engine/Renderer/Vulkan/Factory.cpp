@@ -11,9 +11,14 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
 	Factory::~Factory()
 	{
-		for (auto it = _parentlessObjects.rbegin(); it != _parentlessObjects.rend(); ++it)
+		while (!_parentlessObjects.empty())
 		{
-			TerminateObject(*it);
+			TerminateObject(_parentlessObjects.back());
+		}
+		
+		if (_bindFactory == this)
+		{
+			_bindFactory = nullptr;
 		}
 	}
 
@@ -24,14 +29,13 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
 	void Factory::TerminateObject(const std::shared_ptr<VulkanObject>& p_object)
 	{
-		_bindFactory->_parentlessObjects.remove(p_object.get());
-
 		TerminateObject(p_object.get());
 	}
 
 	void Factory::TerminateObject(VulkanObject* p_object)
 	{
-		if (!p_object->IsValid())
+		if (!p_object->IsValid()
+			|| _bindFactory == nullptr)
 		{
 			return;
 		}
@@ -43,7 +47,9 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 				TerminateObject(it->lock().get());
 			}
 		}
-        
+
+		_bindFactory->_parentlessObjects.remove(p_object);
+		
 		p_object->_terminateFunc(p_object);
 
 		p_object->_isValid = false;
