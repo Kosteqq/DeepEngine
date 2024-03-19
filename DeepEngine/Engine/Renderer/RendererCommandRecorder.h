@@ -132,7 +132,7 @@ namespace DeepEngine::Engine::Renderer
             }
         }
         
-        void SubmitBuffer(const Vulkan::Fence* p_finishFence,
+        void SubmitBuffer(const Vulkan::Ref<Vulkan::Fence>& p_finishFence,
             const std::vector<const Vulkan::Semaphore*>& p_waitSemaphores,
             const std::vector<const Vulkan::Semaphore*>& p_finishSemaphores,
             const Vulkan::CommandBuffer* p_imGuiComamandBuffer)
@@ -166,7 +166,7 @@ namespace DeepEngine::Engine::Renderer
             submitInfo.signalSemaphoreCount = static_cast<uint32_t>(finishSubmitSemaphores.size());
             submitInfo.pSignalSemaphores = finishSubmitSemaphores.data();
 
-            VkResult result = vkQueueSubmit(_mainGraphicsQueue->Queue, 1, &submitInfo, p_finishFence->GetVkFence());
+            VkResult result = vkQueueSubmit(_mainGraphicsQueue->Queue, 1, &submitInfo, p_finishFence->GetHandler());
 
             if (result != VK_SUCCESS)
             {

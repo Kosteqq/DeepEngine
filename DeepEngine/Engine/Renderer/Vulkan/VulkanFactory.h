@@ -25,6 +25,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         using FactoryOf = SubFactory<T>;
         
         VulkanFactory(VulkanInstance& p_vulkanInstance);
+        ~VulkanFactory();
 
         void Bind();
         static void TerminateObject(const std::shared_ptr<VulkanObject>& p_object);
@@ -44,12 +45,18 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             {
                 p_parentObject->_subobjects.push_back(std::weak_ptr<T>(ptr));
             }
+            else
+            {
+                _bindFactory->_parentlessObjects.push_back(p_instance);
+            }
             
             return ptr;
         }
 
     private:
         static VulkanFactory* _bindFactory;
+
+        std::list<VulkanObject*> _parentlessObjects;
         VulkanInstance& _vulkanInstance;
     };
     

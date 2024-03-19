@@ -9,6 +9,14 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         
 	}
 
+	VulkanFactory::~VulkanFactory()
+	{
+		for (auto it = _parentlessObjects.rbegin(); it != _parentlessObjects.rend(); ++it)
+		{
+			TerminateObject(*it);
+		}
+	}
+
 	void VulkanFactory::Bind()
 	{
 		_bindFactory = this;
@@ -16,6 +24,8 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
 	void VulkanFactory::TerminateObject(const std::shared_ptr<VulkanObject>& p_object)
 	{
+		_bindFactory->_parentlessObjects.remove(p_object.get());
+
 		TerminateObject(p_object.get());
 	}
 
@@ -26,8 +36,6 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 			return;
 		}
 		
-		std::cout << "Terminating Object" << std::endl;
-
 		for (auto it = p_object->_subobjects.rbegin(); it != p_object->_subobjects.rend(); ++it)
 		{
 			if (!it->expired())
@@ -43,7 +51,6 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
 	void VulkanFactory::DestroyPointerHandler(VulkanObject* p_object)
 	{
-		std::cout << "Destroying Pointer" << std::endl;
 		TerminateObject(p_object);
 		delete p_object;
 	}

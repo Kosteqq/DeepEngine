@@ -14,23 +14,11 @@
 
 namespace DeepEngine::Engine::Renderer
 {
-    struct FrameInFlight
-    {
-        Vulkan::CommandBuffer* _commandBuffer;
-        Vulkan::Fence* _fence;
-        
-    };
     
     class RendererSubsystem final : Core::EngineSubsystem
     {
     public:
-        RendererSubsystem(Core::Events::EventBus& p_engineEventBus)
-            : EngineSubsystem(p_engineEventBus, "Renderer")
-        { 
-            _vulkanInstance = new Vulkan::VulkanInstance(p_engineEventBus, _internalSubsystemEventBus);
-            _wndChangeMinimizedListener = _internalSubsystemEventBus.CreateListener<Core::Events::OnWindowChangeMinimized>();
-            _wndChangeMinimizedListener->BindCallback(&RendererSubsystem::WindowChangedMinimizedHandler, this);
-        }
+        RendererSubsystem(Core::Events::EventBus& p_engineEventBus);
 
     protected:
         bool Init() override;
@@ -43,6 +31,8 @@ namespace DeepEngine::Engine::Renderer
             delete _imGuiController;
             
             _commandRecorder.Terminate();
+
+            _factory = nullptr;
             _vulkanInstance->Terminate();
             Vulkan::VulkanDebugger::Terminate();
         }
@@ -57,7 +47,7 @@ namespace DeepEngine::Engine::Renderer
             vkWaitForFences(
                 _vulkanInstance->GetLogicalDevice(),
                 1,
-                _readyToRenderFence->GetVkFencePtr(),
+                _readyToRenderFence->GetPtr(),
                 VK_TRUE,
                 UINT64_MAX);
 
@@ -81,7 +71,7 @@ namespace DeepEngine::Engine::Renderer
                 return;
             }
             
-            vkResetFences(_vulkanInstance->GetLogicalDevice(), 1, _readyToRenderFence->GetVkFencePtr());
+            vkResetFences(_vulkanInstance->GetLogicalDevice(), 1, _readyToRenderFence->GetPtr());
 
             _commandRecorder.RecordBuffer(
                 {0.05f, 0.05f, 0.15f, 1.0f},
@@ -131,9 +121,11 @@ namespace DeepEngine::Engine::Renderer
     private:
         Vulkan::VulkanInstance* _vulkanInstance = nullptr;
         MainRenderPass* _mainRenderPass = nullptr;
-        Vulkan::Fence* _readyToRenderFence = nullptr;
+        Vulkan::Ref<Vulkan::Fence> _readyToRenderFence = nullptr;
         Vulkan::Semaphore* _availableImageToRenderSemaphore = nullptr; 
         Vulkan::Semaphore* _finishRenderingSemaphore = nullptr;
+
+        std::unique_ptr<Vulkan::VulkanFactory> _factory;
 
         ImGuiController* _imGuiController;
 

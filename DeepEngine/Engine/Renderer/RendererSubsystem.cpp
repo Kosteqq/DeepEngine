@@ -2,6 +2,16 @@
 
 namespace DeepEngine::Engine::Renderer
 {
+    RendererSubsystem::RendererSubsystem(Core::Events::EventBus& p_engineEventBus): EngineSubsystem(p_engineEventBus, "Renderer")
+    { 
+        _vulkanInstance = new Vulkan::VulkanInstance(p_engineEventBus, _internalSubsystemEventBus);
+        _wndChangeMinimizedListener = _internalSubsystemEventBus.CreateListener<Core::Events::OnWindowChangeMinimized>();
+        _wndChangeMinimizedListener->BindCallback(&RendererSubsystem::WindowChangedMinimizedHandler, this);
+
+        _factory = std::make_unique<Vulkan::VulkanFactory>(*_vulkanInstance);
+        _factory->Bind();
+    }
+
     bool RendererSubsystem::Init()
     {
         if (!InitializeVulkanInstance())
@@ -9,12 +19,8 @@ namespace DeepEngine::Engine::Renderer
             return false;
         }
 
-        _readyToRenderFence = new Vulkan::Fence(true);
-        if (!_vulkanInstance->InitializeSubController(_readyToRenderFence))
-        {
-            return false;
-        }
-
+        _readyToRenderFence = Vulkan::VulkanFactory::FactoryOf<Vulkan::Fence>::CreateSignaled();
+        
         _availableImageToRenderSemaphore = new Vulkan::Semaphore();
         if (!_vulkanInstance->InitializeSubController(_availableImageToRenderSemaphore))
         {
