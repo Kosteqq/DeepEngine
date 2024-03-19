@@ -11,11 +11,12 @@ namespace DeepEngine::Engine::Renderer
 		{
 			return;
 		}
-			
-		_commandPool = new Vulkan::CommandPool(_mainQueue, Vulkan::CommandPoolFlag::RESET_COMMAND_BUFFER);
-		_vulkanInstance->InitializeSubController(_commandPool);
 
-		_commandBuffers = _commandPool->CreateCommandBuffers(_vulkanInstance->GetSwapChainImageViews().size());
+		_commandPool = Vulkan::Factory::SubFactory<Vulkan::CommandPool>::Create(_mainQueue, Vulkan::CommandPoolFlag::RESET_COMMAND_BUFFER);
+
+		_commandBuffers = Vulkan::Factory::SubFactory<Vulkan::CommandBuffer>::CreateMany(
+			_commandPool,
+			_vulkanInstance->GetSwapChainImageViews().size());
 			
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -106,7 +107,7 @@ namespace DeepEngine::Engine::Renderer
 		ImGui::Render();
 
 		{
-			auto result = vkResetCommandPool(_vulkanInstance->GetLogicalDevice(), _commandPool->GetVkCommandPool(), 0);
+			auto result = vkResetCommandPool(_vulkanInstance->GetLogicalDevice(), _commandPool->GetHandler(), 0);
 
 			if (result != VK_SUCCESS)
 			{
@@ -117,7 +118,7 @@ namespace DeepEngine::Engine::Renderer
 			info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 				
-			result = vkBeginCommandBuffer(_commandBuffers[p_frameID]->GetVkCommandBuffer(), &info);
+			result = vkBeginCommandBuffer(_commandBuffers[p_frameID]->GetHandler(), &info);
 
 			if (result != VK_SUCCESS)
 			{
@@ -136,13 +137,13 @@ namespace DeepEngine::Engine::Renderer
 			info.renderArea.extent.height = _vulkanInstance->GetFrameBufferSize().y;
 			info.clearValueCount = 1;
 			info.pClearValues = &clearColor;
-			vkCmdBeginRenderPass(_commandBuffers[p_frameID]->GetVkCommandBuffer(), &info, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBeginRenderPass(_commandBuffers[p_frameID]->GetHandler(), &info, VK_SUBPASS_CONTENTS_INLINE);
 		}
 
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), _commandBuffers[p_frameID]->GetVkCommandBuffer());
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), _commandBuffers[p_frameID]->GetHandler());
 
-		vkCmdEndRenderPass(_commandBuffers[p_frameID]->GetVkCommandBuffer());
-		auto result = vkEndCommandBuffer(_commandBuffers[p_frameID]->GetVkCommandBuffer());
+		vkCmdEndRenderPass(_commandBuffers[p_frameID]->GetHandler());
+		auto result = vkEndCommandBuffer(_commandBuffers[p_frameID]->GetHandler());
 
 		if (result != VK_SUCCESS)
 		{
@@ -187,13 +188,12 @@ namespace DeepEngine::Engine::Renderer
 		//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 		//IM_ASSERT(font != nullptr);
 
-		auto buffer = new Vulkan::CommandBuffer(_commandPool, false);
-		_commandPool->InitializeSubController(buffer);
+		const auto buffer = Vulkan::Factory::SubFactory<Vulkan::CommandBuffer>::Create(_commandPool);
 
 		// Upload Fonts
 		{
 			// Use any command queue
-			VkResult err = vkResetCommandPool(_vulkanInstance->GetLogicalDevice(), _commandPool->GetVkCommandPool(), 0);
+			VkResult err = vkResetCommandPool(_vulkanInstance->GetLogicalDevice(), _commandPool->GetHandler(), 0);
 		    	
 			if (err != VK_SUCCESS)
 			{
@@ -203,20 +203,20 @@ namespace DeepEngine::Engine::Renderer
 			VkCommandBufferBeginInfo begin_info = {};
 			begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-			err = vkBeginCommandBuffer(buffer->GetVkCommandBuffer(), &begin_info);
+			err = vkBeginCommandBuffer(buffer->GetHandler(), &begin_info);
 		    	
 			if (err != VK_SUCCESS)
 			{
 				return;
 			}
 
-			ImGui_ImplVulkan_CreateFontsTexture(buffer->GetVkCommandBuffer());
+			ImGui_ImplVulkan_CreateFontsTexture(buffer->GetHandler());
 
 			VkSubmitInfo end_info = { };
 			end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			end_info.commandBufferCount = 1;
-			end_info.pCommandBuffers = &buffer->GetVkCommandBuffer();
-			err = vkEndCommandBuffer(buffer->GetVkCommandBuffer());
+			end_info.pCommandBuffers = buffer->GetPtr();
+			err = vkEndCommandBuffer(buffer->GetHandler());
 		    	
 			if (err != VK_SUCCESS)
 			{
@@ -239,8 +239,6 @@ namespace DeepEngine::Engine::Renderer
 		    	
 			ImGui_ImplVulkan_DestroyFontUploadObjects();
 		}
-
-		buffer->Terminate();
 	}
 
 	void ImGuiController::DrawViewportWindow(uint32_t p_frameID)

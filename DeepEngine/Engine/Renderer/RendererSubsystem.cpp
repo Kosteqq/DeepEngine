@@ -18,11 +18,9 @@ namespace DeepEngine::Engine::Renderer
         {
             return false;
         }
-
+        
         _readyToRenderFence = Vulkan::Factory::SubFactory<Vulkan::Fence>::CreateSignaled();
-
         _availableImageToRenderSemaphore = Vulkan::Factory::SubFactory<Vulkan::Semaphore>::Create();
-
         _finishRenderingSemaphore = Vulkan::Factory::SubFactory<Vulkan::Semaphore>::Create();
         
         _mainRenderPass = new MainRenderPass();

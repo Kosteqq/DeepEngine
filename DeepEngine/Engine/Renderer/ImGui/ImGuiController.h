@@ -29,7 +29,7 @@ namespace DeepEngine::Engine::Renderer
 		void Renderrr(uint32_t p_frameID, const Core::Scene::Scene& p_scene);
 		void PostRenderUpdate();
 
-		Vulkan::CommandBuffer* GetCommandBuffer(uint32_t p_frameID) const
+		Vulkan::Ref<Vulkan::CommandBuffer> GetCommandBuffer(uint32_t p_frameID) const
 		{
 			return _commandBuffers[p_frameID];
 		}
@@ -56,8 +56,8 @@ namespace DeepEngine::Engine::Renderer
 
 		Vulkan::VulkanInstance* _vulkanInstance;
 		const Vulkan::VulkanInstance::QueueInstance* _mainQueue;
-		Vulkan::CommandPool* _commandPool;
-		std::vector<Vulkan::CommandBuffer*> _commandBuffers;
+		Vulkan::Ref<Vulkan::CommandPool> _commandPool;
+		std::vector<Vulkan::Ref<Vulkan::CommandBuffer>> _commandBuffers;
         ImGuiRenderPass* _imGuiRenderPass = nullptr;
         MainRenderPass* _mainRenderPass = nullptr;
 

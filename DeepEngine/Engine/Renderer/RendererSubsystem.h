@@ -30,8 +30,6 @@ namespace DeepEngine::Engine::Renderer
             _imGuiController->Terminate();
             delete _imGuiController;
             
-            _commandRecorder.Terminate();
-
             _factory = nullptr;
             _vulkanInstance->Terminate();
             Vulkan::VulkanDebugger::Terminate();

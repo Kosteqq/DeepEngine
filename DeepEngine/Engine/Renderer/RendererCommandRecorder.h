@@ -21,17 +21,9 @@ namespace DeepEngine::Engine::Renderer
         {
             uint32_t cmdPoolFlags = 0;
             cmdPoolFlags |= Vulkan::CommandPoolFlag::RESET_COMMAND_BUFFER;
-            
-            _commandPool = new Vulkan::CommandPool(_mainGraphicsQueue, (Vulkan::CommandPoolFlag)cmdPoolFlags);
-            _vulkanInstance->InitializeSubController(_commandPool);
-            
-            _commandBuffer = new Vulkan::CommandBuffer(_commandPool, false);
-            _commandPool->InitializeSubController(_commandBuffer);
-        }
-        
-        void Terminate()
-        {
-            _commandPool->Terminate();
+
+            _commandPool = Vulkan::Factory::SubFactory<Vulkan::CommandPool>::Create(_mainGraphicsQueue, (Vulkan::CommandPoolFlag)cmdPoolFlags);
+            _commandBuffer = Vulkan::Factory::SubFactory<Vulkan::CommandBuffer>::Create(_commandPool);
         }
         
         void RecordBuffer(glm::vec4 p_clearColor, uint32_t p_frameBufferIndex,
@@ -44,7 +36,7 @@ namespace DeepEngine::Engine::Renderer
             beginInfo.flags = 0;
             beginInfo.pInheritanceInfo = nullptr;
 
-            const auto status = vkBeginCommandBuffer(_commandBuffer->GetVkCommandBuffer(), &beginInfo);
+            const auto status = vkBeginCommandBuffer(_commandBuffer->GetHandler(), &beginInfo);
             if (status != VK_SUCCESS)
             {
                 VULKAN_ERR("Failed to create begin command buffer with returned result {}", string_VkResult(status));
@@ -67,7 +59,7 @@ namespace DeepEngine::Engine::Renderer
             renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = renderAreaExtent;
 
-            vkCmdBeginRenderPass(_commandBuffer->GetVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBeginRenderPass(_commandBuffer->GetHandler(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             VkViewport viewport;
             viewport.x = 0.0f;
@@ -77,23 +69,23 @@ namespace DeepEngine::Engine::Renderer
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
             
-            vkCmdSetViewport(_commandBuffer->GetVkCommandBuffer(), 0, 1, &viewport);
+            vkCmdSetViewport(_commandBuffer->GetHandler(), 0, 1, &viewport);
 
             VkRect2D scissor;
             scissor.offset = {0, 0};
             scissor.extent = renderAreaExtent;
             
-            vkCmdSetScissor(_commandBuffer->GetVkCommandBuffer(), 0, 1, &scissor);
+            vkCmdSetScissor(_commandBuffer->GetHandler(), 0, 1, &scissor);
 
             for (auto& renderer : p_renderers)
             {
-                vkCmdBindPipeline(_commandBuffer->GetVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+                vkCmdBindPipeline(_commandBuffer->GetHandler(), VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 renderer.GetGraphicsPipeline()->GetVkPipeline());
 
-                vkCmdDraw(_commandBuffer->GetVkCommandBuffer(), 3, 1, 0, 0);
+                vkCmdDraw(_commandBuffer->GetHandler(), 3, 1, 0, 0);
             }
             
-            vkCmdEndRenderPass(_commandBuffer->GetVkCommandBuffer());
+            vkCmdEndRenderPass(_commandBuffer->GetHandler());
 
             
 
@@ -113,7 +105,7 @@ namespace DeepEngine::Engine::Renderer
             imageBarrier.image = p_renderPassOutputImage;
             imageBarrier.subresourceRange = aspect;
 
-            vkCmdPipelineBarrier(_commandBuffer->GetVkCommandBuffer(),
+            vkCmdPipelineBarrier(_commandBuffer->GetHandler(),
                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                 0,
@@ -124,7 +116,7 @@ namespace DeepEngine::Engine::Renderer
                 1,
                 &imageBarrier);
 
-            const auto result = vkEndCommandBuffer(_commandBuffer->GetVkCommandBuffer());
+            const auto result = vkEndCommandBuffer(_commandBuffer->GetHandler());
             if (result != VK_SUCCESS)
             {
                 VULKAN_ERR("Failed to record command buffer with returned result {}", string_VkResult(status));
@@ -135,7 +127,7 @@ namespace DeepEngine::Engine::Renderer
         void SubmitBuffer(const Vulkan::Ref<Vulkan::Fence>& p_finishFence,
             const std::vector<Vulkan::Ref<Vulkan::Semaphore>>& p_waitSemaphores,
             const std::vector<Vulkan::Ref<Vulkan::Semaphore>>& p_finishSemaphores,
-            const Vulkan::CommandBuffer* p_imGuiComamandBuffer)
+            const Vulkan::Ref<Vulkan::CommandBuffer>& p_imGuiComamandBuffer)
         {
             std::vector<VkSemaphore> waitSemaphores(p_waitSemaphores.size());
             for (uint32_t i = 0; i < waitSemaphores.size(); i++)
@@ -150,8 +142,8 @@ namespace DeepEngine::Engine::Renderer
             }
 
             std::array<VkCommandBuffer, 2> commandBuffers{
-                _commandBuffer->GetVkCommandBuffer(),
-                p_imGuiComamandBuffer->GetVkCommandBuffer(),
+                _commandBuffer->GetHandler(),
+                p_imGuiComamandBuffer->GetHandler(),
             };
 
             VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
@@ -178,8 +170,8 @@ namespace DeepEngine::Engine::Renderer
         const Vulkan::VulkanInstance::QueueInstance* _mainGraphicsQueue;
         Vulkan::VulkanInstance* _vulkanInstance;
 
-        Vulkan::CommandBuffer* _commandBuffer;
-        Vulkan::CommandPool* _commandPool;
+        Vulkan::Ref<Vulkan::CommandBuffer> _commandBuffer;
+        Vulkan::Ref<Vulkan::CommandPool> _commandPool;
     };
     
 }
