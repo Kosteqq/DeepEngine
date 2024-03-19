@@ -31,41 +31,11 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     class Factory::SubFactory<Fence>
     {
     public:
-        template <VulkanObjectKind T>
-        static Ref<Fence> Create(Ref<T> p_parent = nullptr)
-        {
-            VkFenceCreateInfo fenceCreateInfo { };
-            fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            
-            VkFence fence;
-            vkCreateFence(_bindFactory->_vulkanInstance.GetLogicalDevice(), &fenceCreateInfo, nullptr, &fence);
-
-            auto fenceObject = new Fence(fence);
-
-            return CreateObject(fenceObject, Terminate, p_parent);
-        }
-
-        template <VulkanObjectKind T = VulkanObject>
-        static Ref<Fence> CreateSignaled(Ref<T> p_parent = nullptr)
-        {
-            VkFenceCreateInfo fenceCreateInfo { };
-            fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-            
-            VkFence fence;
-            vkCreateFence(_bindFactory->_vulkanInstance.GetLogicalDevice(), &fenceCreateInfo, nullptr, &fence);
-
-            auto fenceObject = new Fence(fence);
-
-            return CreateObject(fenceObject, Terminate, p_parent);
-        }
+        static Ref<Fence> Create(const Ref<VulkanObject>& p_parent = nullptr);
+        static Ref<Fence> CreateSignaled(const Ref<VulkanObject>& p_parent = nullptr);
 
     private:
-        static void Terminate(VulkanObject* p_object)
-        {
-            auto fenceObject = (Fence*)p_object;
-            vkDestroyFence(_bindFactory->_vulkanInstance.GetLogicalDevice(), fenceObject->GetHandler(), nullptr);
-        }
+        static void Terminate(VulkanObject* p_object);
     };
     
 }
