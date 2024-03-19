@@ -1,19 +1,22 @@
 #pragma once
 #include "Instance/VulkanInstance.h"
-#include "VulkanFactory.h"
+#include "Factory.h"
 
 namespace DeepEngine::Engine::Renderer::Vulkan
 {
 
     class Fence : public VulkanObject
     {
-    public:
+        template <VulkanObjectKind T>
+        friend class Factory::SubFactory;
+        
         Fence(VkFence p_handler)
             : _handler(p_handler)
         {
             // ...
         }
 
+    public:
         VkFence GetHandler() const
         { return _handler; }
 
@@ -25,7 +28,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     };
 
     template<>
-    class VulkanFactory::SubFactory<Fence>
+    class Factory::SubFactory<Fence>
     {
     public:
         template <VulkanObjectKind T>

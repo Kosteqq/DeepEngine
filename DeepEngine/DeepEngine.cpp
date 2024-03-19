@@ -17,7 +17,7 @@
 #include "Core/Scene/Scene.h"
 #include "Core/Serialize/SerializersContainer.h"
 #include "Core/Serialize/DefaultImplementations/GlmSerializers.h"
-#include "Engine/Renderer/Vulkan/VulkanFactory.h"
+#include "Engine/Renderer/Vulkan/Factory.h"
 #include "Engine/Renderer/Vulkan/VulkanObject.h"
 
 using namespace DeepEngine;

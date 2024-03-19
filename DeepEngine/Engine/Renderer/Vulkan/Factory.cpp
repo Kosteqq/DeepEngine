@@ -1,15 +1,15 @@
-#include "VulkanFactory.h"
+#include "Factory.h"
 
 namespace DeepEngine::Engine::Renderer::Vulkan
 {
-	VulkanFactory* VulkanFactory::_bindFactory = nullptr;
+	Factory* Factory::_bindFactory = nullptr;
 
-	VulkanFactory::VulkanFactory(VulkanInstance& p_vulkanInstance): _vulkanInstance(p_vulkanInstance)
+	Factory::Factory(VulkanInstance& p_vulkanInstance): _vulkanInstance(p_vulkanInstance)
 	{
         
 	}
 
-	VulkanFactory::~VulkanFactory()
+	Factory::~Factory()
 	{
 		for (auto it = _parentlessObjects.rbegin(); it != _parentlessObjects.rend(); ++it)
 		{
@@ -17,19 +17,19 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		}
 	}
 
-	void VulkanFactory::Bind()
+	void Factory::Bind()
 	{
 		_bindFactory = this;
 	}
 
-	void VulkanFactory::TerminateObject(const std::shared_ptr<VulkanObject>& p_object)
+	void Factory::TerminateObject(const std::shared_ptr<VulkanObject>& p_object)
 	{
 		_bindFactory->_parentlessObjects.remove(p_object.get());
 
 		TerminateObject(p_object.get());
 	}
 
-	void VulkanFactory::TerminateObject(VulkanObject* p_object)
+	void Factory::TerminateObject(VulkanObject* p_object)
 	{
 		if (!p_object->IsValid())
 		{
@@ -49,7 +49,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		p_object->_isValid = false;
 	}
 
-	void VulkanFactory::DestroyPointerHandler(VulkanObject* p_object)
+	void Factory::DestroyPointerHandler(VulkanObject* p_object)
 	{
 		TerminateObject(p_object);
 		delete p_object;

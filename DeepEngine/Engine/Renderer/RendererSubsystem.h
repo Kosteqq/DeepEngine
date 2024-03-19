@@ -125,7 +125,7 @@ namespace DeepEngine::Engine::Renderer
         Vulkan::Ref<Vulkan::Semaphore> _availableImageToRenderSemaphore; 
         Vulkan::Ref<Vulkan::Semaphore> _finishRenderingSemaphore;
 
-        std::unique_ptr<Vulkan::VulkanFactory> _factory;
+        std::unique_ptr<Vulkan::Factory> _factory;
 
         ImGuiController* _imGuiController;
 

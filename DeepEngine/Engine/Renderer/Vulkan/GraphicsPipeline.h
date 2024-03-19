@@ -3,7 +3,7 @@
 #include "Instance/VulkanInstance.h"
 #include "PipelineLayout.h"
 #include "ShaderModule.h"
-#include "VulkanFactory.h"
+#include "Factory.h"
 #include "VulkanObject.h"
 
 namespace DeepEngine::Engine::Renderer::Vulkan
@@ -170,7 +170,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     };
     
     template<>
-    class VulkanFactory::SubFactory<GraphicsPipeline2>
+    class Factory::SubFactory<GraphicsPipeline2>
     {
     public:
         template <typename TBuilder>

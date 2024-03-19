@@ -1,7 +1,7 @@
 #pragma once
 #include <fstream>
 
-#include "VulkanFactory.h"
+#include "Factory.h"
 #include "Controller/BaseVulkanController.h"
 #include "Instance/VulkanInstance.h"
 
@@ -71,7 +71,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     };
 
     template <>
-    class VulkanFactory::SubFactory<ShaderModule2>
+    class Factory::SubFactory<ShaderModule2>
     {
     public:
         static Ref<ShaderModule2> Create(const std::string& p_filepath, VkShaderStageFlagBits p_stageFlags,

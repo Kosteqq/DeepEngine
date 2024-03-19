@@ -6,10 +6,13 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
     class Semaphore : public VulkanObject
     {
-    public:
+        template <VulkanObjectKind T>
+        friend class Factory::SubFactory;
+        
         Semaphore(VkSemaphore p_handler) : _handler(p_handler)
         { }
         
+    public:
         VkSemaphore GetHandler() const
         { return _handler; }
         
@@ -17,7 +20,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     };
     
     template<>
-    class VulkanFactory::SubFactory<Semaphore>
+    class Factory::SubFactory<Semaphore>
     {
     public:
         template <VulkanObjectKind TParent>

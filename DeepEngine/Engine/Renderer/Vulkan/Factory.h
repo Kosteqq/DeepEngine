@@ -12,20 +12,17 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     template <VulkanObjectKind T>
     using Ref = std::shared_ptr<T>;
     
-    class VulkanFactory
+    class Factory
     {
+    public:
         template <VulkanObjectKind T>
         class SubFactory;
         
         template <VulkanObjectKind T>
         friend class SubFactory;
         
-    public:
-        template <VulkanObjectKind T>
-        using FactoryOf = SubFactory<T>;
-        
-        VulkanFactory(VulkanInstance& p_vulkanInstance);
-        ~VulkanFactory();
+        Factory(VulkanInstance& p_vulkanInstance);
+        ~Factory();
 
         void Bind();
         static void TerminateObject(const std::shared_ptr<VulkanObject>& p_object);
@@ -54,7 +51,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         }
 
     private:
-        static VulkanFactory* _bindFactory;
+        static Factory* _bindFactory;
 
         std::list<VulkanObject*> _parentlessObjects;
         VulkanInstance& _vulkanInstance;

@@ -7,7 +7,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
 	class VulkanObject
 	{
-		friend class VulkanFactory;
+		friend class Factory;
 		typedef void(TerminateFunction)(VulkanObject*);
 
 	public:

@@ -49,7 +49,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     };
 
     template <>
-    class VulkanFactory::SubFactory<CommandBuffer2>
+    class Factory::SubFactory<CommandBuffer2>
     {
     public:
         static Ref<CommandBuffer2> Create(Ref<CommandPool2> p_commandPool, bool p_asSecondary = false);

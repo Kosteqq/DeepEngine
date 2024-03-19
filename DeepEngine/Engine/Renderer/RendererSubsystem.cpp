@@ -8,7 +8,7 @@ namespace DeepEngine::Engine::Renderer
         _wndChangeMinimizedListener = _internalSubsystemEventBus.CreateListener<Core::Events::OnWindowChangeMinimized>();
         _wndChangeMinimizedListener->BindCallback(&RendererSubsystem::WindowChangedMinimizedHandler, this);
 
-        _factory = std::make_unique<Vulkan::VulkanFactory>(*_vulkanInstance);
+        _factory = std::make_unique<Vulkan::Factory>(*_vulkanInstance);
         _factory->Bind();
     }
 
@@ -19,11 +19,11 @@ namespace DeepEngine::Engine::Renderer
             return false;
         }
 
-        _readyToRenderFence = Vulkan::VulkanFactory::FactoryOf<Vulkan::Fence>::CreateSignaled();
+        _readyToRenderFence = Vulkan::Factory::SubFactory<Vulkan::Fence>::CreateSignaled();
 
-        _availableImageToRenderSemaphore = Vulkan::VulkanFactory::FactoryOf<Vulkan::Semaphore>::Create();
+        _availableImageToRenderSemaphore = Vulkan::Factory::SubFactory<Vulkan::Semaphore>::Create();
 
-        _finishRenderingSemaphore = Vulkan::VulkanFactory::FactoryOf<Vulkan::Semaphore>::Create();
+        _finishRenderingSemaphore = Vulkan::Factory::SubFactory<Vulkan::Semaphore>::Create();
         
         _mainRenderPass = new MainRenderPass();
         if (!_vulkanInstance->InitializeSubController(_mainRenderPass))

@@ -1,5 +1,5 @@
 #pragma once
-#include "VulkanFactory.h"
+#include "Factory.h"
 #include "VulkanObject.h"
 #include "Controller/BaseVulkanController.h"
 #include "Instance/VulkanInstance.h"
@@ -61,7 +61,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     };
 
     template <>
-    class VulkanFactory::SubFactory<CommandPool2>
+    class Factory::SubFactory<CommandPool2>
     {
     public:
         template <VulkanObjectKind T>

@@ -29,7 +29,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         return true;
     }
 
-    Ref<CommandBuffer2> VulkanFactory::SubFactory<CommandBuffer2>::Create(Ref<CommandPool2> p_commandPool,
+    Ref<CommandBuffer2> Factory::SubFactory<CommandBuffer2>::Create(Ref<CommandPool2> p_commandPool,
         bool p_asSecondary)
     {
         VkCommandBufferAllocateInfo allocInfo { };
@@ -48,7 +48,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         return CreateObject(bufferObject, Terminate, p_commandPool);
     }
 
-    std::vector<Ref<CommandBuffer2>> VulkanFactory::SubFactory<CommandBuffer2>::CreateMany(
+    std::vector<Ref<CommandBuffer2>> Factory::SubFactory<CommandBuffer2>::CreateMany(
         Ref<CommandPool2> p_commandPool, uint32_t p_amount, bool p_asSecondary)
     {
         VkCommandBufferAllocateInfo allocInfo { };
@@ -75,7 +75,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         return objects;
     }
 
-    void VulkanFactory::SubFactory<CommandBuffer2>::Terminate(VulkanObject* p_object)
+    void Factory::SubFactory<CommandBuffer2>::Terminate(VulkanObject* p_object)
     {
         // ...
     }

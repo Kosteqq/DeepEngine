@@ -51,7 +51,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     };
 
     template <>
-    class VulkanFactory::SubFactory<PipelineLayout2>
+    class Factory::SubFactory<PipelineLayout2>
     {
     public:
         static Ref<PipelineLayout2> Create(Ref<RenderPass2> p_renderPass, RenderSubPassHandler p_subPass)
