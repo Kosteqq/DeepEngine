@@ -56,7 +56,7 @@ namespace DeepEngine::Engine::Renderer
                 _vulkanInstance->GetLogicalDevice(),
                 _vulkanInstance->GetSwapchain(),
                 UINT64_MAX,
-                _availableImageToRenderSemaphore->GetVkSemaphore(),
+                _availableImageToRenderSemaphore->GetHandler(),
                 VK_NULL_HANDLE,
                 &imageIndex);
 
@@ -89,7 +89,7 @@ namespace DeepEngine::Engine::Renderer
                 _imGuiController->GetCommandBuffer(imageIndex));
 
             VkSwapchainKHR swapChains[] = { _vulkanInstance->GetSwapchain() };
-            VkSemaphore waitSemaphores[] = { _finishRenderingSemaphore->GetVkSemaphore() };
+            VkSemaphore waitSemaphores[] = { _finishRenderingSemaphore->GetHandler() };
             
             VkPresentInfoKHR presentInfo { };
             presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -122,8 +122,8 @@ namespace DeepEngine::Engine::Renderer
         Vulkan::VulkanInstance* _vulkanInstance = nullptr;
         MainRenderPass* _mainRenderPass = nullptr;
         Vulkan::Ref<Vulkan::Fence> _readyToRenderFence = nullptr;
-        Vulkan::Semaphore* _availableImageToRenderSemaphore = nullptr; 
-        Vulkan::Semaphore* _finishRenderingSemaphore = nullptr;
+        Vulkan::Ref<Vulkan::Semaphore> _availableImageToRenderSemaphore; 
+        Vulkan::Ref<Vulkan::Semaphore> _finishRenderingSemaphore;
 
         std::unique_ptr<Vulkan::VulkanFactory> _factory;
 

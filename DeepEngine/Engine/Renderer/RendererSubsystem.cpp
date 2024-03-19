@@ -20,18 +20,10 @@ namespace DeepEngine::Engine::Renderer
         }
 
         _readyToRenderFence = Vulkan::VulkanFactory::FactoryOf<Vulkan::Fence>::CreateSignaled();
-        
-        _availableImageToRenderSemaphore = new Vulkan::Semaphore();
-        if (!_vulkanInstance->InitializeSubController(_availableImageToRenderSemaphore))
-        {
-            return false;
-        }
 
-        _finishRenderingSemaphore = new Vulkan::Semaphore();
-        if (!_vulkanInstance->InitializeSubController(_finishRenderingSemaphore))
-        {
-            return false;
-        }
+        _availableImageToRenderSemaphore = Vulkan::VulkanFactory::FactoryOf<Vulkan::Semaphore>::Create();
+
+        _finishRenderingSemaphore = Vulkan::VulkanFactory::FactoryOf<Vulkan::Semaphore>::Create();
         
         _mainRenderPass = new MainRenderPass();
         if (!_vulkanInstance->InitializeSubController(_mainRenderPass))

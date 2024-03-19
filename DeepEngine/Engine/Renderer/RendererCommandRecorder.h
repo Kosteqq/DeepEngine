@@ -133,20 +133,20 @@ namespace DeepEngine::Engine::Renderer
         }
         
         void SubmitBuffer(const Vulkan::Ref<Vulkan::Fence>& p_finishFence,
-            const std::vector<const Vulkan::Semaphore*>& p_waitSemaphores,
-            const std::vector<const Vulkan::Semaphore*>& p_finishSemaphores,
+            const std::vector<Vulkan::Ref<Vulkan::Semaphore>>& p_waitSemaphores,
+            const std::vector<Vulkan::Ref<Vulkan::Semaphore>>& p_finishSemaphores,
             const Vulkan::CommandBuffer* p_imGuiComamandBuffer)
         {
             std::vector<VkSemaphore> waitSemaphores(p_waitSemaphores.size());
             for (uint32_t i = 0; i < waitSemaphores.size(); i++)
             {
-                waitSemaphores[i] = p_waitSemaphores[i]->GetVkSemaphore();
+                waitSemaphores[i] = p_waitSemaphores[i]->GetHandler();
             }
 
             std::vector<VkSemaphore> finishSubmitSemaphores(p_finishSemaphores.size());
             for (uint32_t i = 0; i < finishSubmitSemaphores.size(); i++)
             {
-                finishSubmitSemaphores[i] = p_finishSemaphores[i]->GetVkSemaphore();
+                finishSubmitSemaphores[i] = p_finishSemaphores[i]->GetHandler();
             }
 
             std::array<VkCommandBuffer, 2> commandBuffers{
