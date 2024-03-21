@@ -77,7 +77,7 @@ namespace DeepEngine::Engine::Renderer
             
             vkCmdSetScissor(_commandBuffer->GetHandler(), 0, 1, &scissor);
 
-            Vulkan::GraphicsPipeline2* currentPipeline = nullptr;
+            Vulkan::GraphicsPipeline* currentPipeline = nullptr;
             
             for (auto& renderer : p_renderers)
             {

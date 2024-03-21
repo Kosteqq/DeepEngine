@@ -60,8 +60,8 @@ namespace DeepEngine::Engine::Renderer
             : _vulkanInstance(p_vulkanInstance)
         {
             MainRenderPassBuilder builder(_vulkanInstance);
-            _renderPass = Vulkan::Factory::SubFactory<Vulkan::RenderPass2>::Create(&builder);
-            _mainPipelineLayout = Vulkan::Factory::SubFactory<Vulkan::PipelineLayout2>::Create(_renderPass, _mainSubPass);
+            _renderPass = Vulkan::Factory::SubFactory<Vulkan::RenderPass>::Create(&builder);
+            _mainPipelineLayout = Vulkan::Factory::SubFactory<Vulkan::PipelineLayout>::Create(_renderPass, _mainSubPass);
             
             RecreateFrameBuffers(800, 600);
         }
@@ -86,10 +86,10 @@ namespace DeepEngine::Engine::Renderer
         VkRenderPass GetRenderPassHandler() const
         { return _renderPass->GetHandler(); }
 
-        Vulkan::Ref<Vulkan::RenderPass2> GetRenderPass() const
+        Vulkan::Ref<Vulkan::RenderPass> GetRenderPass() const
         { return _renderPass; }
 
-        Vulkan::Ref<Vulkan::PipelineLayout2> GetMainSubPassPipelineLayout() const
+        Vulkan::Ref<Vulkan::PipelineLayout> GetMainSubPassPipelineLayout() const
         { return _mainPipelineLayout; }
 
     private:
@@ -264,10 +264,10 @@ namespace DeepEngine::Engine::Renderer
         
         std::shared_ptr<Core::Events::EventListener<Events::OnViewportResized>> _swapChainRecreatedListener;
 
-        Vulkan::Ref<Vulkan::RenderPass2> _renderPass;
+        Vulkan::Ref<Vulkan::RenderPass> _renderPass;
         Vulkan::RenderSubPassHandler _mainSubPass;
         
-        Vulkan::Ref<Vulkan::PipelineLayout2> _mainPipelineLayout;
+        Vulkan::Ref<Vulkan::PipelineLayout> _mainPipelineLayout;
 
         std::vector<VkImage> _renderImages;
         std::vector<VkDeviceMemory> _renderImageMem;

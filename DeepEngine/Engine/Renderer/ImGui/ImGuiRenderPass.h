@@ -56,7 +56,7 @@ namespace DeepEngine::Engine::Renderer
             : _vulkanInstance(p_vulkanInstance)
         {
             ImGuiRenderPassBuilder builder(_vulkanInstance);
-            _renderPass = Vulkan::Factory::SubFactory<Vulkan::RenderPass2>::Create(&builder);
+            _renderPass = Vulkan::Factory::SubFactory<Vulkan::RenderPass>::Create(&builder);
 
             _mainSubPass = builder.GetMainSubPass();
             
@@ -74,9 +74,9 @@ namespace DeepEngine::Engine::Renderer
             }
         }
         
-        Vulkan::Ref<Vulkan::PipelineLayout2> CreateBaseSubPassPipelineLayout() const
+        Vulkan::Ref<Vulkan::PipelineLayout> CreateBaseSubPassPipelineLayout() const
         {
-            return Vulkan::Factory::SubFactory<Vulkan::PipelineLayout2>::Create(_renderPass, _mainSubPass);
+            return Vulkan::Factory::SubFactory<Vulkan::PipelineLayout>::Create(_renderPass, _mainSubPass);
         }
         
         VkFramebuffer GetSwapChainImageFrameBufferHandler(uint32_t p_index) const
@@ -137,7 +137,7 @@ namespace DeepEngine::Engine::Renderer
         
         std::shared_ptr<Core::Events::EventListener<Vulkan::Events::OnSwapChainRecreated>> _swapChainRecreatedListener;
         
-        Vulkan::Ref<Vulkan::RenderPass2> _renderPass;
+        Vulkan::Ref<Vulkan::RenderPass> _renderPass;
         Vulkan::RenderSubPassHandler _mainSubPass;
         
         std::vector<VkFramebuffer> _swapChainImageFrameBuffers;

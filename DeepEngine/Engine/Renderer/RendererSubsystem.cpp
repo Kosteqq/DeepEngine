@@ -24,7 +24,7 @@ namespace DeepEngine::Engine::Renderer
         _finishRenderingSemaphore = Vulkan::Factory::SubFactory<Vulkan::Semaphore>::Create();
         
         _mainRenderPass = std::make_shared<MainRenderPassController>(_vulkanInstance);
-        Vulkan::Ref<Vulkan::PipelineLayout2> pipelineLayout = _mainRenderPass->GetMainSubPassPipelineLayout();
+        Vulkan::Ref<Vulkan::PipelineLayout> pipelineLayout = _mainRenderPass->GetMainSubPassPipelineLayout();
 
         _renderers.resize(2);
         

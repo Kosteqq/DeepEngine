@@ -4,18 +4,16 @@
 
 namespace DeepEngine::Engine::Renderer::Vulkan
 {
-    ShaderModule::ShaderModule(const std::string& p_filepath, VkShaderStageFlagBits p_shaderStage)
-        : _filepath(p_filepath), _shaderStageFlags(p_shaderStage)
-    { }
 
-    bool ShaderModule::OnInitialize()
+    Ref<ShaderModule> Factory::SubFactory<ShaderModule>::Create(const std::string& p_filepath,
+        VkShaderStageFlagBits p_stageFlags, const Ref<VulkanObject>& p_parent)
     {
-        const auto shaderCode = ReadFile();
+        const auto shaderCode = ReadFile(p_filepath);
 
         if (shaderCode.empty())
         {
-            VULKAN_ERR("Failed to load shader from filepath: \"{}\". Loaded files size {}", _filepath, shaderCode.size());
-            return false;
+            VULKAN_ERR("Failed to load shader from filepath: \"{}\"!!", p_filepath);
+            return nullptr;
         }
             
         VkShaderModuleCreateInfo createInfo { };
@@ -23,25 +21,28 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         createInfo.codeSize = shaderCode.size();
         createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
-        VULKAN_CHECK_CREATE(
-            vkCreateShaderModule(
-                GetVulkanInstanceController()->GetLogicalDevice(),
-                &createInfo,
-                nullptr,
-                &_shaderModule),
-            "Failed to create Vulkan Shader Module!")
+        VkShaderModule handler;
             
-        return true;
+        vkCreateShaderModule(
+            _bindFactory->_vulkanInstance.GetLogicalDevice(),
+            &createInfo,
+            nullptr,
+            &handler);
+
+        return CreateObject(new ShaderModule(handler, p_stageFlags), Terminate, p_parent);
     }
 
-    void ShaderModule::OnTerminate()
+    void Factory::SubFactory<ShaderModule>::Terminate(VulkanObject* p_object)
     {
-        vkDestroyShaderModule(GetVulkanInstanceController()->GetLogicalDevice(), _shaderModule, nullptr);
+        vkDestroyShaderModule(
+            _bindFactory->_vulkanInstance.GetLogicalDevice(),
+            ((ShaderModule*)p_object)->GetHandler(),
+            nullptr);
     }
 
-    std::vector<char> ShaderModule::ReadFile() const
+    std::vector<char> Factory::SubFactory<ShaderModule>::ReadFile(const std::string& p_filepath)
     {
-        std::ifstream file(_filepath, std::ios::ate | std::ios::binary);
+        std::ifstream file(p_filepath, std::ios::ate | std::ios::binary);
 
         if (!file.is_open())
         {

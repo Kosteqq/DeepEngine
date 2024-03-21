@@ -2,32 +2,34 @@
 
 namespace DeepEngine::Engine::Renderer::Vulkan
 {
-    PipelineLayout::PipelineLayout(RenderPass* p_renderPass, uint32_t p_subPassIndex)
-        : _renderPass(p_renderPass), _subPassIndex(p_subPassIndex)
-    { }
+	Ref<PipelineLayout> Factory::SubFactory<PipelineLayout>::Create(const Ref<RenderPass>& p_renderPass,
+		RenderSubPassHandler p_subPass)
+	{
+		VkPipelineLayoutCreateInfo createInfo { };
+		createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		createInfo.setLayoutCount = 0;
+		createInfo.pSetLayouts = nullptr;
+		createInfo.pushConstantRangeCount = 0;
+		createInfo.pPushConstantRanges = nullptr;
 
-    bool PipelineLayout::OnInitialize()
-    {
-        VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo { };
-        pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutCreateInfo.setLayoutCount = 0;
-        pipelineLayoutCreateInfo.pSetLayouts = nullptr;
-        pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
-        pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
+		VkPipelineLayout handler;
+            
+		vkCreatePipelineLayout(
+			_bindFactory->_vulkanInstance.GetLogicalDevice(),
+			&createInfo,
+			nullptr,
+			&handler);
 
-        VULKAN_CHECK_CREATE(
-            vkCreatePipelineLayout(
-                GetVulkanInstanceController()->GetLogicalDevice(),
-                &pipelineLayoutCreateInfo,
-                nullptr,
-                &_pipelineLayout),
-            "Failed to create Vulkan pipeline layout!")
+		auto pipelineLayout = new PipelineLayout(handler, p_subPass);
+            
+		return CreateObject(pipelineLayout, Terminate, p_renderPass);
+	}
 
-        return true;
-    }
-
-    void PipelineLayout::OnTerminate()
-    {
-        vkDestroyPipelineLayout(GetVulkanInstanceController()->GetLogicalDevice(), _pipelineLayout, nullptr);
-    }
+	void Factory::SubFactory<PipelineLayout>::Terminate(VulkanObject* p_object)
+	{
+		vkDestroyPipelineLayout(
+			_bindFactory->_vulkanInstance.GetLogicalDevice(),
+			((PipelineLayout*)p_object)->GetHandler(),
+			nullptr);
+	}
 }

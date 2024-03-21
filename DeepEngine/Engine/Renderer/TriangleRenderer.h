@@ -16,11 +16,11 @@ namespace DeepEngine::Engine::Renderer
         
     protected:
         void GetShaderStages(
-            Vulkan::Ref<Vulkan::ShaderModule2>& p_vertShader,
-            Vulkan::Ref<Vulkan::ShaderModule2>& p_fragShader) override
+            Vulkan::Ref<Vulkan::ShaderModule>& p_vertShader,
+            Vulkan::Ref<Vulkan::ShaderModule>& p_fragShader) override
         {
-            p_vertShader = Vulkan::Factory::SubFactory<Vulkan::ShaderModule2>::Create(_vertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT);
-            p_fragShader = Vulkan::Factory::SubFactory<Vulkan::ShaderModule2>::Create(_fragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT);
+            p_vertShader = Vulkan::Factory::SubFactory<Vulkan::ShaderModule>::Create(_vertexShaderPath, VK_SHADER_STAGE_VERTEX_BIT);
+            p_fragShader = Vulkan::Factory::SubFactory<Vulkan::ShaderModule>::Create(_fragmentShaderPath, VK_SHADER_STAGE_FRAGMENT_BIT);
         }
         
         void DefineDynamicState(DynamicStateDefinition& p_definition) override
@@ -67,20 +67,20 @@ namespace DeepEngine::Engine::Renderer
         TriangleRenderer() = default;
         
         bool Init(const std::string& p_vertexShaderPath, const std::string& p_fragmentShaderPath,
-            const Vulkan::Ref<Vulkan::RenderPass2> p_renderPass,
-            const Vulkan::Ref<Vulkan::PipelineLayout2>& p_pipelineLayout)
+            const Vulkan::Ref<Vulkan::RenderPass> p_renderPass,
+            const Vulkan::Ref<Vulkan::PipelineLayout>& p_pipelineLayout)
         {
             TriangleGraphicsPipelineBuilder builder(p_vertexShaderPath, p_fragmentShaderPath);
-            _graphicsPipeline = Vulkan::Factory::SubFactory<Vulkan::GraphicsPipeline2>::Create(p_renderPass, p_pipelineLayout, &builder);
+            _graphicsPipeline = Vulkan::Factory::SubFactory<Vulkan::GraphicsPipeline>::Create(p_renderPass, p_pipelineLayout, &builder);
             
             return _graphicsPipeline != nullptr;    
         }
 
-        Vulkan::Ref<Vulkan::GraphicsPipeline2> GetGraphicsPipeline() const
+        Vulkan::Ref<Vulkan::GraphicsPipeline> GetGraphicsPipeline() const
         { return _graphicsPipeline; }
 
     private:
-        Vulkan::Ref<Vulkan::GraphicsPipeline2> _graphicsPipeline;
+        Vulkan::Ref<Vulkan::GraphicsPipeline> _graphicsPipeline;
     };
 }
 
