@@ -10,139 +10,127 @@ namespace DeepEngine::Engine::Renderer
     BEGIN_LOCAL_EVENT_DEFINITION(MainRenderPassRecreatedAttachment)
     END_EVENT_DEFINITION
 
-    class MainRenderPass : public Vulkan::RenderPass
+    class MainRenderPassBuilder : public Vulkan::RenderPassBuilder
     {
+    public:
+        MainRenderPassBuilder(const Vulkan::VulkanInstance* p_vulkanInstance)
+            : _vulkanInstance(p_vulkanInstance)
+        { }
+
+        Vulkan::RenderSubPassHandler GetMainSubPass() const
+        { return _mainSubPass; }
+        
     protected:
-        void Initialize() override
+        void DeclareAttachments() override
         {
-            auto vulkanController = GetVulkanInstanceController();
-            
-            VkAttachmentDescription baseColorAttachmentDesc { };
-            baseColorAttachmentDesc.format = VK_FORMAT_R8G8B8A8_SRGB;
-            baseColorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-            baseColorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            baseColorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            baseColorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            baseColorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            baseColorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            baseColorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            VkAttachmentDescription colorAttachmentDesc { };
+            colorAttachmentDesc.format = VK_FORMAT_R8G8B8A8_SRGB;
+            colorAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+            colorAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            colorAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            colorAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+            _colorAttachment = CreateAttachment(colorAttachmentDesc);
             
-            VkSubpassDependency dependency { };
-            dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // Take last operating 
-            dependency.dstSubpass = 0; // ours
-            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Wait for finish reading from it from another process
-            dependency.srcAccessMask = 0;
-            dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-            dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            
-            CreateRenderAttachment(baseColorAttachmentDesc, &_colorAttachment);
-            
-            CreateRenderSubPass(VK_PIPELINE_BIND_POINT_GRAPHICS)
-                .AddColorAttachment(_colorAttachment, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                .AddDependency(dependency)
-                .GetSubPassPtr(&_baseSubPass);
+            _mainSubPass = CreateRenderSubPass(VK_PIPELINE_BIND_POINT_GRAPHICS);
+            AttachColorToSubPass(_mainSubPass, _colorAttachment, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-            _swapChainRecreatedListener = vulkanController->GetVulkanEventBus().CreateListener<Events::OnViewportResized>();
-            _swapChainRecreatedListener->BindCallback(&MainRenderPass::SwapChainRecreatedHandler, this);
+            AttachDependencyToSubPass(
+                nullptr,
+                &_mainSubPass,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                0,
+                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
         }
+        
+    private:
+        const Vulkan::VulkanInstance* _vulkanInstance;
+        Vulkan::RenderAttachmentHandler _colorAttachment;
+        Vulkan::RenderSubPassHandler _mainSubPass;
+    };
 
-        void PostInitialize() override
+    class MainRenderPassController
+    {
+    public:
+        MainRenderPassController(Vulkan::VulkanInstance* p_vulkanInstance)
+            : _vulkanInstance(p_vulkanInstance)
         {
+            MainRenderPassBuilder builder(_vulkanInstance);
+            _renderPass = Vulkan::Factory::SubFactory<Vulkan::RenderPass2>::Create(&builder);
+            _mainPipelineLayout = Vulkan::Factory::SubFactory<Vulkan::PipelineLayout2>::Create(_renderPass, _mainSubPass);
+            
             RecreateFrameBuffers(800, 600);
         }
 
-        void OnTerminate() override
+        ~MainRenderPassController()
         {
-            RenderPass::OnTerminate();
-            
-            for (const VkFramebuffer framebuffer : _framebuffers)
-            {
-                vkDestroyFramebuffer(GetVulkanInstanceController()->GetLogicalDevice(), framebuffer, nullptr);
-            }
-
-            for (const VkImageView imageView : _renderImagesViews)
-            {
-                vkDestroyImageView(GetVulkanInstanceController()->GetLogicalDevice(), imageView, nullptr);
-            }
-
-            for (const VkImage image : _renderImages)
-            {
-                vkDestroyImage(GetVulkanInstanceController()->GetLogicalDevice(), image, nullptr);
-            }
-
-            for (const VkDeviceMemory memory : _renderImageMem)
-            {
-                vkFreeMemory(GetVulkanInstanceController()->GetLogicalDevice(), memory, nullptr);
-            }
+            DestroyVulkanStuff();
         }
 
-    public:
-        Vulkan::PipelineLayout* CreateBaseSubPassPipelineLayout()
-        {
-            auto pipelineLayout = new Vulkan::PipelineLayout(this, _baseSubPass->ID);
-            if (!InitializeSubController(pipelineLayout))
-            {
-                pipelineLayout->Terminate();
-                return nullptr;
-            }
-            
-            return pipelineLayout;
-        }
+        VkFramebuffer GetFrameBufferHandler(uint32_t p_index) const
+        { return _framebuffers[p_index]; }
 
-        VkFramebuffer GetVkFramebuffer(uint32_t p_index) const
-        {
-            return _framebuffers[p_index];
-        }
+        VkImage GetFrameImageHandler(uint32_t p_index) const
+        { return _renderImages[p_index]; }
 
-        VkImage GetVkImage(uint32_t p_index) const
-        {
-            return _renderImages[p_index];
-        }
+        VkImageView GetFrameImageViewHandler(uint32_t p_index) const
+        { return _renderImagesViews[p_index]; }
 
-        VkImageView GetVkImageView(uint32_t p_index) const
-        {
-            return _renderImagesViews[p_index];
-        }
+        uint64_t GetFrameBuffersCount() const
+        { return _framebuffers.size(); }
 
-        const std::vector<VkFramebuffer>& GetAllVkFramebuffer() const
-        {
-            return _framebuffers;
-        }
+        VkRenderPass GetRenderPassHandler() const
+        { return _renderPass->GetHandler(); }
+
+        Vulkan::Ref<Vulkan::RenderPass2> GetRenderPass() const
+        { return _renderPass; }
+
+        Vulkan::Ref<Vulkan::PipelineLayout2> GetMainSubPassPipelineLayout() const
+        { return _mainPipelineLayout; }
 
     private:
-        void RecreateFrameBuffers(uint32_t p_width, uint32_t p_height)
+        void DestroyVulkanStuff()
         {
-            uint32_t imageCount = static_cast<uint32_t>(GetVulkanInstanceController()->GetSwapChainImageViews().size());
-            glm::vec2 framebufferSize = GetVulkanInstanceController()->GetFrameBufferSize();
-
             for (const VkFramebuffer framebuffer : _framebuffers)
             {
-                vkDestroyFramebuffer(GetVulkanInstanceController()->GetLogicalDevice(), framebuffer, nullptr);
+                vkDestroyFramebuffer(_vulkanInstance->GetLogicalDevice(), framebuffer, nullptr);
             }
 
             for (const VkImageView imageView : _renderImagesViews)
             {
-                vkDestroyImageView(GetVulkanInstanceController()->GetLogicalDevice(), imageView, nullptr);
+                vkDestroyImageView(_vulkanInstance->GetLogicalDevice(), imageView, nullptr);
             }
 
             for (const VkImage image : _renderImages)
             {
-                vkDestroyImage(GetVulkanInstanceController()->GetLogicalDevice(), image, nullptr);
+                vkDestroyImage(_vulkanInstance->GetLogicalDevice(), image, nullptr);
             }
 
             for (const VkDeviceMemory memory : _renderImageMem)
             {
-                vkFreeMemory(GetVulkanInstanceController()->GetLogicalDevice(), memory, nullptr);
+                vkFreeMemory(_vulkanInstance->GetLogicalDevice(), memory, nullptr);
             }
 
-            _renderImages.clear();
-            _renderImages.resize(imageCount);
-            _renderImagesViews.clear();
-            _renderImagesViews.resize(imageCount);
             _framebuffers.clear();
-            _framebuffers.resize(imageCount);
+            _renderImagesViews.clear();
+            _renderImages.clear();
             _renderImageMem.clear();
+        }
+        
+        void RecreateFrameBuffers(uint32_t p_width, uint32_t p_height)
+        {
+            uint32_t imageCount = static_cast<uint32_t>(_vulkanInstance->GetSwapChainImageViews().size());
+            glm::vec2 framebufferSize = _vulkanInstance->GetFrameBufferSize();
+
+            DestroyVulkanStuff();
+
+            _renderImages.resize(imageCount);
+            _renderImagesViews.resize(imageCount);
+            _framebuffers.resize(imageCount);
             _renderImageMem.resize(imageCount);
             
             for (uint32_t i = 0; i < imageCount; i++)
@@ -167,7 +155,7 @@ namespace DeepEngine::Engine::Renderer
                 viewInfo.subresourceRange.layerCount = 1;
 
                 VkResult result = vkCreateImageView(
-                    GetVulkanInstanceController()->GetLogicalDevice(),
+                    _vulkanInstance->GetLogicalDevice(),
                     &viewInfo,
                     nullptr,
                     &_renderImagesViews[i]);
@@ -181,7 +169,7 @@ namespace DeepEngine::Engine::Renderer
                     
                 VkFramebufferCreateInfo createInfo { };
                 createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-                createInfo.renderPass = GetVkRenderPass();
+                createInfo.renderPass = _renderPass->GetHandler();
                 createInfo.attachmentCount = 1;
                 createInfo.pAttachments = attachments;
                 createInfo.width = framebufferSize.x;
@@ -190,7 +178,7 @@ namespace DeepEngine::Engine::Renderer
 
                 VkFramebuffer _framebuffer;
                 result = vkCreateFramebuffer(
-                    GetVulkanInstanceController()->GetLogicalDevice(),
+                    _vulkanInstance->GetLogicalDevice(),
                     &createInfo,
                     nullptr,
                     &_framebuffer);
@@ -204,7 +192,7 @@ namespace DeepEngine::Engine::Renderer
                 _framebuffers[i] = _framebuffer;
             }
 
-            GetVulkanInstanceController()->GetRendererEventBus().Publish<MainRenderPassRecreatedAttachment>();
+            _vulkanInstance->GetRendererEventBus().Publish<MainRenderPassRecreatedAttachment>();
         }
 
         void CreateImage(uint32_t p_width, uint32_t p_height, VkFormat p_format, VkImageTiling p_tiling,
@@ -225,33 +213,33 @@ namespace DeepEngine::Engine::Renderer
             imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-            auto result = vkCreateImage(GetVulkanInstanceController()->GetLogicalDevice(), &imageInfo, nullptr, &p_image);
+            auto result = vkCreateImage(_vulkanInstance->GetLogicalDevice(), &imageInfo, nullptr, &p_image);
             if (result != VK_SUCCESS)
             {
                 return;
             }
 
             VkMemoryRequirements memRequirements;
-            vkGetImageMemoryRequirements(GetVulkanInstanceController()->GetLogicalDevice(), p_image, &memRequirements);
+            vkGetImageMemoryRequirements(_vulkanInstance->GetLogicalDevice(), p_image, &memRequirements);
 
             VkMemoryAllocateInfo allocInfo { };
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, p_properties);
 
-            result = vkAllocateMemory(GetVulkanInstanceController()->GetLogicalDevice(), &allocInfo, nullptr, &p_imageMemory);
+            result = vkAllocateMemory(_vulkanInstance->GetLogicalDevice(), &allocInfo, nullptr, &p_imageMemory);
             if (result != VK_SUCCESS)
             {
                 return;
             }
 
-            vkBindImageMemory(GetVulkanInstanceController()->GetLogicalDevice(), p_image, p_imageMemory, 0);
+            vkBindImageMemory(_vulkanInstance->GetLogicalDevice(), p_image, p_imageMemory, 0);
         }
 
-        uint32_t FindMemoryType(uint32_t p_typeFilter, VkMemoryPropertyFlags p_properties)
+        uint32_t FindMemoryType(uint32_t p_typeFilter, VkMemoryPropertyFlags p_properties) const
         {
             VkPhysicalDeviceMemoryProperties memProperties;
-            vkGetPhysicalDeviceMemoryProperties(GetVulkanInstanceController()->GetPhysicalDevice(), &memProperties);
+            vkGetPhysicalDeviceMemoryProperties(_vulkanInstance->GetPhysicalDevice(), &memProperties);
             
             for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
             {
@@ -272,15 +260,18 @@ namespace DeepEngine::Engine::Renderer
         }
 
     private:
-        std::shared_ptr<Core::Events::EventListener<Events::OnViewportResized>> _swapChainRecreatedListener;
+        const Vulkan::VulkanInstance* _vulkanInstance;
         
-        RenderSubPass* _baseSubPass;
-        const RenderAttachment* _colorAttachment;
+        std::shared_ptr<Core::Events::EventListener<Events::OnViewportResized>> _swapChainRecreatedListener;
+
+        Vulkan::Ref<Vulkan::RenderPass2> _renderPass;
+        Vulkan::RenderSubPassHandler _mainSubPass;
+        
+        Vulkan::Ref<Vulkan::PipelineLayout2> _mainPipelineLayout;
 
         std::vector<VkImage> _renderImages;
         std::vector<VkDeviceMemory> _renderImageMem;
         std::vector<VkImageView> _renderImagesViews;
         std::vector<VkFramebuffer> _framebuffers;
     };
-    
 }

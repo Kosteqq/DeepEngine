@@ -27,7 +27,7 @@ namespace DeepEngine::Engine::Renderer
         }
         
         void RecordBuffer(glm::vec4 p_clearColor, uint32_t p_frameBufferIndex,
-            MainRenderPass* p_renderPass,
+            std::shared_ptr<MainRenderPassController>& p_renderPass,
             const std::vector<TriangleRenderer>& p_renderers, 
             VkImage p_renderPassOutputImage)
         {
@@ -52,8 +52,8 @@ namespace DeepEngine::Engine::Renderer
 
             VkRenderPassBeginInfo renderPassInfo { };
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = p_renderers[0].GetGraphicsPipeline()->GetVkRenderPass();
-            renderPassInfo.framebuffer = p_renderPass->GetVkFramebuffer(p_frameBufferIndex);
+            renderPassInfo.renderPass = p_renderPass->GetRenderPassHandler();
+            renderPassInfo.framebuffer = p_renderPass->GetFrameBufferHandler(p_frameBufferIndex);
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &clearColor;
             renderPassInfo.renderArea.offset = { 0, 0 };
@@ -77,11 +77,16 @@ namespace DeepEngine::Engine::Renderer
             
             vkCmdSetScissor(_commandBuffer->GetHandler(), 0, 1, &scissor);
 
+            Vulkan::GraphicsPipeline2* currentPipeline = nullptr;
+            
             for (auto& renderer : p_renderers)
             {
-                vkCmdBindPipeline(_commandBuffer->GetHandler(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                renderer.GetGraphicsPipeline()->GetVkPipeline());
-
+                if (currentPipeline != renderer.GetGraphicsPipeline().get())
+                {
+                    currentPipeline = renderer.GetGraphicsPipeline().get();
+                    vkCmdBindPipeline(_commandBuffer->GetHandler(), VK_PIPELINE_BIND_POINT_GRAPHICS, currentPipeline->GetHandler());
+                }
+                
                 vkCmdDraw(_commandBuffer->GetHandler(), 3, 1, 0, 0);
             }
             

@@ -81,18 +81,18 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
     struct RenderAttachmentHandler
     {
-        const uint32_t RenderPassID; // for validation only
-        const uint32_t AttachmentID;
+        uint32_t RenderPassID; // for validation only
+        uint32_t AttachmentID;
 
-        bool operator==(const RenderAttachmentHandler&) const = default;
+        // bool operator==(const RenderAttachmentHandler&) const = default;
     };
 
     struct RenderSubPassHandler
     {
-        const uint32_t RenderPassID;
-        const uint32_t SubPassID;
+        uint32_t RenderPassID = 0;
+        uint32_t SubPassID = 0;
 
-        bool operator==(const RenderSubPassHandler&) const = default;
+        // bool operator==(const RenderSubPassHandler&) const = default;
     };
 
     class RenderPass2 : public VulkanObject
@@ -118,7 +118,8 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         };
 
     public:
-        RenderPass2(VkRenderPass p_handler) : _handler(p_handler)
+        RenderPass2(VkRenderPass p_handler, const std::vector<RenderAttachmentHandler>& p_attachments)
+            : _handler(p_handler), _attachments(p_attachments)
         {
             
         }
@@ -126,16 +127,20 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         VkRenderPass GetHandler() const
         { return _handler; }
 
-        operator VkRenderPass() const
-        { return GetHandler(); }
+        std::vector<RenderAttachmentHandler> GetAttachments() const
+        { return _attachments; }
 
     private:
         const VkRenderPass _handler;
+        const std::vector<RenderAttachmentHandler> _attachments;
     };
 
     class RenderPassBuilder
     {
-    public:
+        template <VulkanObjectKind T>
+        friend class Factory::SubFactory;
+        
+    protected:
         struct AttachmentDescription 
         {
             RenderAttachmentHandler Handler;
@@ -162,12 +167,12 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             _dependecies.reserve(16);
         }
 
+    public:
         virtual ~RenderPassBuilder() = default;
 
-        virtual void DeclareAttachments() = 0;
-        virtual void PostInitialize() = 0;
-
     protected:
+        virtual void DeclareAttachments() = 0;
+
         RenderAttachmentHandler CreateAttachment(const VkAttachmentDescription& p_desc)
         {
             const uint32_t id = static_cast<uint32_t>(_attachments.size());
@@ -230,8 +235,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 
         void AttachDependencyToSubPass(RenderSubPassHandler* p_srcSubPass, RenderSubPassHandler* p_dstSubPass,
             VkPipelineStageFlags p_srcStageMask, VkPipelineStageFlags p_dstStageMask,
-            VkAccessFlags p_srcAccessFlags, VkAccessFlags p_dstAccessFlags,
-            VkSubpassDependency p_dependency)
+            VkAccessFlags p_srcAccessFlags, VkAccessFlags p_dstAccessFlags)
         {
             // TODO: Setup access flags & stages in subpass
 
@@ -245,7 +249,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         }
 
     private:
-        uint32_t _currentRenderPassID;
+        uint32_t _currentRenderPassID = 0;
         std::vector<AttachmentDescription> _attachments;
         std::vector<SubPassDescription> _subpasses;
         std::vector<VkSubpassDependency> _dependecies;
@@ -255,22 +259,23 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     class Factory::SubFactory<RenderPass2>
     {
     public:
-        template <VulkanObjectKind TParent, typename TBuilder>
-        requires std::is_base_of_v<RenderPassBuilder, TBuilder>
-        static Ref<RenderPass2> Create(Ref<TParent> p_parent, TBuilder& p_builder)
+        static Ref<RenderPass2> Create(RenderPassBuilder* p_builder, Ref<VulkanObject> p_parent = nullptr)
         {
-            p_builder.DeclareAttachments();
+            p_builder->DeclareAttachments();
 
             _idCounter++;
 
-            const std::vector<RenderPassBuilder::AttachmentDescription>& attachments = p_builder._attachments;
+            const std::vector<RenderPassBuilder::AttachmentDescription>& attachments = p_builder->_attachments;
+
             auto attachmentsDesc = std::make_unique<VkAttachmentDescription[]>(attachments.size());
+            std::vector<RenderAttachmentHandler> attachmentsHandlers(attachments.size());
             for (uint32_t i = 0; i < attachments.size(); i++)
             {
                 attachmentsDesc[i] = attachments[i].Desc;
+                attachmentsHandlers[i] = attachments[i].Handler;
             }
             
-            const std::vector<RenderPassBuilder::SubPassDescription>& subpasses = p_builder._subpasses;
+            const std::vector<RenderPassBuilder::SubPassDescription>& subpasses = p_builder->_subpasses;
             auto subpassesDesc = std::make_unique<VkSubpassDescription[]>(subpasses.size());
             for (uint32_t i = 0; i < subpasses.size(); i++)
             {
@@ -311,13 +316,13 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             createInfo.pAttachments = attachmentsDesc.get();
             createInfo.subpassCount = static_cast<uint32_t>(subpasses.size());
             createInfo.pSubpasses = subpassesDesc.get();
-            createInfo.dependencyCount = static_cast<uint32_t>(p_builder._dependecies.size());
-            createInfo.pDependencies = p_builder._dependecies.data();
+            createInfo.dependencyCount = static_cast<uint32_t>(p_builder->_dependecies.size());
+            createInfo.pDependencies = p_builder->_dependecies.data();
 
             VkRenderPass vulkanHandler;
             vkCreateRenderPass(_bindFactory->_vulkanInstance.GetLogicalDevice(), &createInfo, nullptr, &vulkanHandler);
 
-            return CreateObject(new RenderPass2(vulkanHandler), Terminate, p_parent);
+            return CreateObject(new RenderPass2(vulkanHandler, attachmentsHandlers), Terminate, p_parent);
         }
 
     private:
@@ -325,7 +330,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         {
             vkDestroyRenderPass(
                 _bindFactory->_vulkanInstance.GetLogicalDevice(),
-                *(RenderPass2*)p_object,
+                ((RenderPass2*)p_object)->GetHandler(),
                 nullptr);
         }
 

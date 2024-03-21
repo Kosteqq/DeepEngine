@@ -4,13 +4,11 @@ namespace DeepEngine::Engine::Renderer
 {
 	
 	ImGuiController::ImGuiController(Vulkan::VulkanInstance* p_vulkanInstance,
-		const Vulkan::VulkanInstance::QueueInstance* p_mainQueue, MainRenderPass* p_mainRenderPass): _vulkanInstance(p_vulkanInstance), _mainQueue(p_mainQueue), _mainRenderPass(p_mainRenderPass)
+		const Vulkan::VulkanInstance::QueueInstance* p_mainQueue,
+		const std::shared_ptr<MainRenderPassController>& p_mainRenderPass):
+		_vulkanInstance(p_vulkanInstance), _mainQueue(p_mainQueue), _mainRenderPass(p_mainRenderPass)
 	{
-		_imGuiRenderPass = new ImGuiRenderPass();
-		if (!_vulkanInstance->InitializeSubController(_imGuiRenderPass))
-		{
-			return;
-		}
+		_imGuiRenderPass = std::make_unique<ImGuiRenderPassController>(_vulkanInstance);
 
 		_commandPool = Vulkan::Factory::SubFactory<Vulkan::CommandPool>::Create(_mainQueue, Vulkan::CommandPoolFlag::RESET_COMMAND_BUFFER);
 
@@ -65,7 +63,7 @@ namespace DeepEngine::Engine::Renderer
 		init_info.MinImageCount = 2;
 		init_info.ImageCount = static_cast<uint32_t>(_vulkanInstance->GetSwapChainImageViews().size());
 		init_info.Subpass = 0;
-		ImGui_ImplVulkan_Init(&init_info, _imGuiRenderPass->GetVkRenderPass());
+		ImGui_ImplVulkan_Init(&init_info, _imGuiRenderPass->GetRenderPassHandler());
 
 		LoadFontLol();
 
@@ -131,8 +129,8 @@ namespace DeepEngine::Engine::Renderer
 				
 			VkRenderPassBeginInfo info = {};
 			info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			info.renderPass = _imGuiRenderPass->GetVkRenderPass();
-			info.framebuffer = _imGuiRenderPass->GetSwapchainImageVkFramebuffer(p_frameID);
+			info.renderPass = _imGuiRenderPass->GetRenderPassHandler();
+			info.framebuffer = _imGuiRenderPass->GetSwapChainImageFrameBufferHandler(p_frameID);
 			info.renderArea.extent.width = _vulkanInstance->GetFrameBufferSize().x;
 			info.renderArea.extent.height = _vulkanInstance->GetFrameBufferSize().y;
 			info.clearValueCount = 1;
@@ -373,9 +371,9 @@ namespace DeepEngine::Engine::Renderer
 		}
 
 		_renderPassTexturesSamplers.clear();
-		_renderPassTexturesSamplers.resize(_mainRenderPass->GetAllVkFramebuffer().size());
+		_renderPassTexturesSamplers.resize(_mainRenderPass->GetFrameBuffersCount());
 		_renderPassTextures.clear();
-		_renderPassTextures.resize(_mainRenderPass->GetAllVkFramebuffer().size());
+		_renderPassTextures.resize(_mainRenderPass->GetFrameBuffersCount());
 
 		for (uint32_t i = 0; i < static_cast<uint32_t>(_renderPassTextures.size()); i++)
 		{
@@ -398,7 +396,7 @@ namespace DeepEngine::Engine::Renderer
 
 			vkCreateSampler(_vulkanInstance->GetLogicalDevice(), &samplerInfo, nullptr, &_renderPassTexturesSamplers[i]);
 				
-			_renderPassTextures[i] = ImGui_ImplVulkan_AddTexture(_renderPassTexturesSamplers[i], _mainRenderPass->GetVkImageView(i), VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
+			_renderPassTextures[i] = ImGui_ImplVulkan_AddTexture(_renderPassTexturesSamplers[i], _mainRenderPass->GetFrameImageViewHandler(i), VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL);
 		}
 	}
 	

@@ -21,8 +21,9 @@ namespace DeepEngine::Engine::Renderer
 		using OnSwapChainRecreated = Vulkan::Events::OnSwapChainRecreated;
 
 	public:
-		ImGuiController(Vulkan::VulkanInstance* p_vulkanInstance, const Vulkan::VulkanInstance::QueueInstance* p_mainQueue,
-			MainRenderPass* p_mainRenderPass);
+		ImGuiController(Vulkan::VulkanInstance* p_vulkanInstance,
+			const Vulkan::VulkanInstance::QueueInstance* p_mainQueue,
+			const std::shared_ptr<MainRenderPassController>& p_mainRenderPass);
 
 		void Terminate() const;
 
@@ -58,8 +59,8 @@ namespace DeepEngine::Engine::Renderer
 		const Vulkan::VulkanInstance::QueueInstance* _mainQueue;
 		Vulkan::Ref<Vulkan::CommandPool> _commandPool;
 		std::vector<Vulkan::Ref<Vulkan::CommandBuffer>> _commandBuffers;
-        ImGuiRenderPass* _imGuiRenderPass = nullptr;
-        MainRenderPass* _mainRenderPass = nullptr;
+        std::unique_ptr<ImGuiRenderPassController> _imGuiRenderPass = nullptr;
+        std::shared_ptr<MainRenderPassController> _mainRenderPass = nullptr;
 
         std::vector<VkSampler> _renderPassTexturesSamplers;
         std::vector<VkDescriptorSet> _renderPassTextures;

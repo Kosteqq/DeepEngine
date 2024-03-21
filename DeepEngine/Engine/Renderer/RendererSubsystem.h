@@ -29,6 +29,8 @@ namespace DeepEngine::Engine::Renderer
             
             _imGuiController->Terminate();
             delete _imGuiController;
+
+            _mainRenderPass.reset();
             
             _factory = nullptr;
             _vulkanInstance->Terminate();
@@ -76,7 +78,7 @@ namespace DeepEngine::Engine::Renderer
                 imageIndex,
                 _mainRenderPass,
                 _renderers,
-                _mainRenderPass->GetVkImage(imageIndex)
+                _mainRenderPass->GetFrameImageHandler(imageIndex)
                 );
 
             _imGuiController->Renderrr(imageIndex, p_scene);
@@ -118,7 +120,7 @@ namespace DeepEngine::Engine::Renderer
 
     private:
         Vulkan::VulkanInstance* _vulkanInstance = nullptr;
-        MainRenderPass* _mainRenderPass = nullptr;
+        std::shared_ptr<MainRenderPassController> _mainRenderPass = nullptr;
         Vulkan::Ref<Vulkan::Fence> _readyToRenderFence = nullptr;
         Vulkan::Ref<Vulkan::Semaphore> _availableImageToRenderSemaphore; 
         Vulkan::Ref<Vulkan::Semaphore> _finishRenderingSemaphore;

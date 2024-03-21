@@ -23,52 +23,23 @@ namespace DeepEngine::Engine::Renderer
         _availableImageToRenderSemaphore = Vulkan::Factory::SubFactory<Vulkan::Semaphore>::Create();
         _finishRenderingSemaphore = Vulkan::Factory::SubFactory<Vulkan::Semaphore>::Create();
         
-        _mainRenderPass = new MainRenderPass();
-        if (!_vulkanInstance->InitializeSubController(_mainRenderPass))
-        {
-            return false;
-        }
-
-        Vulkan::PipelineLayout* pipelineLayout = _mainRenderPass->CreateBaseSubPassPipelineLayout();
-
-        Vulkan::PipelineDynamicState dynamicState {
-            .Viewport = true,
-            .Scissor = true,
-            .LineWidth = false,
-        };
-
-        Vulkan::PipelineColorBlend colorBlend {
-            .ColorBlendConstants = { 1.0f, 1.0f, 1.0f, 1.0f },
-            .EnableLogicalBlendOperation = false,
-        };
-
-        Vulkan::PipelineColorBlendAttachment attachmentBlend {
-            .WriteChannelR = true,
-            .WriteChannelG = true,
-            .WriteChannelB = true,
-            .WriteChannelA = true,
-            .EnableBlend = false,
-        };
-
-        Vulkan::PipelineRasterization rasterization {
-            .EnableDepthClamp = false,
-            .EnableDiscardRasterizer = false,
-            .EnableDepthBias = false,
-            .PolygonMode = VK_POLYGON_MODE_FILL,
-            .CullMode = VK_CULL_MODE_NONE,
-            .FrontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
-        };
+        _mainRenderPass = std::make_shared<MainRenderPassController>(_vulkanInstance);
+        Vulkan::Ref<Vulkan::PipelineLayout2> pipelineLayout = _mainRenderPass->GetMainSubPassPipelineLayout();
 
         _renderers.resize(2);
+        
         if(!_renderers[0].Init("../DeepEngine/Engine/Renderer/Shader/vert.spv",
             "../DeepEngine/Engine/Renderer/Shader/frag.spv",
-                            dynamicState, colorBlend, attachmentBlend, rasterization, pipelineLayout))
+            _mainRenderPass->GetRenderPass(),
+            pipelineLayout))
         {
             return false;
         }
+        
         if(!_renderers[1].Init("../DeepEngine/Engine/Renderer/Shader/vert1.spv",
             "../DeepEngine/Engine/Renderer/Shader/frag1.spv",
-                            dynamicState, colorBlend, attachmentBlend, rasterization, pipelineLayout))
+            _mainRenderPass->GetRenderPass(),
+            pipelineLayout))
         {
             return false;
         }

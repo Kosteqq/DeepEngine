@@ -3,6 +3,8 @@
 namespace DeepEngine::Engine::Renderer::Vulkan
 {
 
+    uint32_t Factory::SubFactory<RenderPass2>::_idCounter = 0;
+
     //////////////////////////////////////////////
     //      RENDER SUBPASS DESCRIPTION CREATOR
     //////////////////////////////////////////////

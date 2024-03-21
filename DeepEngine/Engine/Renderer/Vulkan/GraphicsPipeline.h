@@ -58,43 +58,6 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         float DepthBiasSlopeFactor      = 0.0f;
     };
     
-    class GraphicsPipeline : public BaseVulkanController
-    {
-    public:
-        GraphicsPipeline(PipelineLayout* p_pipelineLayout,
-            const ShaderModule* p_vertShaderModule, const ShaderModule* p_fragShaderModule,
-            const PipelineDynamicState& p_dynamicStateFlags, const PipelineColorBlend& p_colorBlend,
-            const std::vector<PipelineColorBlendAttachment>& p_attachmentsBlend, const PipelineRasterization& p_rasterization);
-
-        ~GraphicsPipeline() override = default;
-
-        const VkRenderPass& GetVkRenderPass() const
-        { return _pipelineLayout->GetRenderPass()->GetVkRenderPass(); }
-
-        const VkPipelineLayout& GetVkPipelineLayout() const
-        { return _pipelineLayout->GetVkPipelineLayout(); }
-        
-        const VkPipeline& GetVkPipeline() const
-        { return _pipeline; }
-
-    protected:
-        bool OnInitialize() final;
-        void OnTerminate() final;
-
-    private:
-        PipelineLayout* _pipelineLayout;
-        
-        const ShaderModule* _vertShaderModule; 
-        const ShaderModule* _fragShaderModule;
-        
-        const PipelineDynamicState _dynamicStateFlags;
-        const PipelineColorBlend _colorBlend;
-        const std::vector<PipelineColorBlendAttachment> _attachemntsBlend;
-        const PipelineRasterization _rasterization;
-        
-        VkPipeline _pipeline = VK_NULL_HANDLE;
-    };
-
     class GraphicsPipeline2 : public VulkanObject
     {
     public:
@@ -111,6 +74,12 @@ namespace DeepEngine::Engine::Renderer::Vulkan
     class GraphicsPipelineBuilder
     {
     public:
+        virtual ~GraphicsPipelineBuilder() = default;
+
+    private:
+        friend class Factory::SubFactory<GraphicsPipeline2>;
+        
+    protected:
         struct DynamicStateDefinition
         {
             // For now, those two always have to be enabled
@@ -161,44 +130,45 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             float DepthBiasSlopeFactor      = 0.0f;
         };
 
-    protected:
-        virtual void GetShaderStages(Ref<ShaderModule2>& p_vertShader, Ref<ShaderModule2>& p_fragShader);
-        virtual void DefineDynamicState(DynamicStateDefinition* p_definition) = 0;
-        virtual void DefineColorBlend(ColorBlendDefinition* p_definition) = 0;
-        virtual void DefineBlendAttachment(ColorBlendAttachmentDefinition* p_definition) = 0;
-        virtual void DefineRasterisation(RasterisationDefinition* p_definition) = 0;
+        virtual void GetShaderStages(Ref<ShaderModule2>& p_vertShader, Ref<ShaderModule2>& p_fragShader) = 0;
+        virtual void DefineDynamicState(DynamicStateDefinition& p_definition) = 0;
+        virtual void DefineColorBlend(ColorBlendDefinition& p_definition) = 0;
+        virtual void DefineBlendAttachment(uint64_t p_attachmentIndex, ColorBlendAttachmentDefinition& p_definition) = 0;
+        virtual void DefineRasterisation(RasterisationDefinition& p_definition) = 0;
     };
     
     template<>
     class Factory::SubFactory<GraphicsPipeline2>
     {
     public:
-        template <typename TBuilder>
-        requires std::is_base_of_v<GraphicsPipelineBuilder, TBuilder>
         static Ref<GraphicsPipeline2> Create(
             const Ref<RenderPass2>& p_renderPass,
             const Ref<PipelineLayout2>& p_pipelineLayout,
-            TBuilder& p_builder)
+            GraphicsPipelineBuilder* p_builder)
         {
             std::vector<VkPipelineShaderStageCreateInfo> stages;
 
             Ref<ShaderModule2> vertShader;
             Ref<ShaderModule2> fragShader;
 
-            p_builder.GetShaderStages(vertShader, fragShader);
+            p_builder->GetShaderStages(vertShader, fragShader);
             InitializeShaderStages(vertShader, fragShader, &stages);
 
             GraphicsPipelineBuilder::DynamicStateDefinition dynamicStatesDefinition;
-            p_builder.DefineDynamicState(&dynamicStatesDefinition);
+            p_builder->DefineDynamicState(dynamicStatesDefinition);
 
+            std::vector<VkDynamicState> dynamicStates;
+            InitializeDynamicStates(dynamicStatesDefinition, dynamicStates);
             VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo { };
-            InitializeDynamicStates(dynamicStatesDefinition, &dynamicStateCreateInfo);
+            dynamicStateCreateInfo.sType              = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+            dynamicStateCreateInfo.dynamicStateCount  = static_cast<uint32_t>(dynamicStates.size());
+            dynamicStateCreateInfo.pDynamicStates     = dynamicStates.data();
 
             VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo { };
             InitializeVertexInputStage(&vertexInputCreateInfo);
 
             GraphicsPipelineBuilder::RasterisationDefinition rasterisaztionDefinition { };
-            p_builder.DefineRasterisation(&rasterisaztionDefinition);
+            p_builder->DefineRasterisation(rasterisaztionDefinition);
             
             VkPipelineRasterizationStateCreateInfo rasterizerCreateInfo { };
 
@@ -209,11 +179,14 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             }
 
             // Get info about attachments
-            std::vector<GraphicsPipelineBuilder::ColorBlendAttachmentDefinition> attachmentBlendDefinitions;
-            p_builder.DefineBlendAttachment(&attachmentBlendDefinitions);
+            std::vector<GraphicsPipelineBuilder::ColorBlendAttachmentDefinition> attachmentBlendDefinitions(p_renderPass->GetAttachments().size());
+            for (uint64_t i = 0; i < attachmentBlendDefinitions.size(); i++)
+            {
+                p_builder->DefineBlendAttachment(i, attachmentBlendDefinitions[i]);
+            }
 
             GraphicsPipelineBuilder::ColorBlendDefinition colorBlendDefinition;
-            p_builder.DefineColorBlend(&colorBlendDefinition);
+            p_builder->DefineColorBlend(colorBlendDefinition);
 
             std::vector<VkPipelineColorBlendAttachmentState> attachmentsBlend(attachmentBlendDefinitions.size());
             VkPipelineColorBlendStateCreateInfo colorBlendingCreateInfo { };
@@ -235,7 +208,6 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             multisampleCreateInfo.alphaToCoverageEnable = VK_FALSE;
             multisampleCreateInfo.alphaToOneEnable      = VK_FALSE;
 
-            
             VkViewport viewport;
             viewport.x = 0.0f;
             viewport.y = 0.0f;
@@ -314,38 +286,33 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         }
 
         static void InitializeDynamicStates(const GraphicsPipelineBuilder::DynamicStateDefinition& p_stateDefinition,
-            VkPipelineDynamicStateCreateInfo* p_createInfo)
+            std::vector<VkDynamicState>& p_dynamicStates)
         {
-            std::vector<VkDynamicState> dynamicStates { };
-            dynamicStates.reserve(16);
+            p_dynamicStates.reserve(16);
                 
             if (p_stateDefinition.Viewport)
             {
-                dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+                p_dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
             }
                 
             if (p_stateDefinition.Scissor)
             {
-                dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
+                p_dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
             }
                 
             if (p_stateDefinition.LineWidth)
             {
-                dynamicStates.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
+                p_dynamicStates.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
             }
-
-            p_createInfo->sType              = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            p_createInfo->dynamicStateCount  = static_cast<uint32_t>(dynamicStates.size());
-            p_createInfo->pDynamicStates     = dynamicStates.data();
         }
 
-        static void InitializeVertexInputStage(VkPipelineVertexInputStateCreateInfo* p_vertextInputCreateInfo)
+        static void InitializeVertexInputStage(VkPipelineVertexInputStateCreateInfo* p_vertexInputCreateInfo)
         {
-            p_vertextInputCreateInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-            p_vertextInputCreateInfo->vertexBindingDescriptionCount    = 0;
-            p_vertextInputCreateInfo->pVertexBindingDescriptions       = nullptr;
-            p_vertextInputCreateInfo->vertexAttributeDescriptionCount  = 0;
-            p_vertextInputCreateInfo->pVertexAttributeDescriptions     = nullptr;
+            p_vertexInputCreateInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+            p_vertexInputCreateInfo->vertexBindingDescriptionCount    = 0;
+            p_vertexInputCreateInfo->pVertexBindingDescriptions       = nullptr;
+            p_vertexInputCreateInfo->vertexAttributeDescriptionCount  = 0;
+            p_vertexInputCreateInfo->pVertexAttributeDescriptions     = nullptr;
         }
 
         static bool InitializeRasterization(const GraphicsPipelineBuilder::RasterisationDefinition& p_rasterisationDefinition,
@@ -425,7 +392,7 @@ namespace DeepEngine::Engine::Renderer::Vulkan
             std::vector<VkPipelineColorBlendAttachmentState>* p_attachmentsBlends,
             VkPipelineColorBlendStateCreateInfo* p_colorBlendCreateInfo)
         {
-            for (uint32_t i = 0; i < p_attachmentsBlends->size(); i++)
+            for (uint64_t i = 0; i < p_attachmentsBlends->size(); i++)
             {
                 VkPipelineColorBlendAttachmentState& attachmentBlend = (*p_attachmentsBlends)[i];
                 attachmentBlend = { };
