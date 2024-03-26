@@ -1,26 +1,34 @@
 #pragma once
-// #include "../VulkanPCH.h"
+#include "../VulkanPCH.h"
 
 #include <memory>
 #include <fmt/format.h>
 
 #include "Debug/Logger.h"
 
+#define VULKAN_ASSERT_OBJECT(p_object)                      ASSERT_COND_MSG(         (p_object)->IsValid(), "Failed Vulkan object assertion on {}", #p_object)
+#define VULKAN_ASSERT_OBJECT_MSG(p_object, ...)             ASSERT_COND_MSG(         (p_object)->IsValid(), "Failed Vulkan object assertion on {}. Message {}", #p_object, __VA_ARGS__)
+#define VULKAN_ASSERT_OBJECT_V(p_object, p_return)          ASSERT_COND_V_MSG(       (p_object)->IsValid(), p_return, "Failed Vulkan object assertion on {}", #p_object)
+#define VULKAN_ASSERT_OBJECT_V_MSG(p_object, p_return, ...) ASSERT_COND_V_MSG(       (p_object)->IsValid(), p_return, "Failed Vulkan object assertion on {}. Message {}", #p_object, __VA_ARGS__)
+#define VULKAN_ASSERT_OBJECT_BREAK(p_object)                ASSERT_COND_BREAK_MSG(   (p_object)->IsValid(), "Failed Vulkan object assertion on {}", #p_object)
+#define VULKAN_ASSERT_OBJECT_BREAK_MSG(p_object, ...)       ASSERT_COND_BREAK_MSG(   (p_object)->IsValid(), "Failed Vulkan object assertion on {}. Message {}", #p_object, __VA_ARGS__)
+#define VULKAN_ASSERT_OBJECT_CONTINUE(p_object)             ASSERT_COND_CONTINUE_MSG((p_object)->IsValid(), "Failed Vulkan object assertion on {}", #p_object)
+#define VULKAN_ASSERT_OBJECT_CONTINUE_MSG(p_object, ...)    ASSERT_COND_CONTINUE_MSG((p_object)->IsValid(), "Failed Vulkan object assertion on {}. Message {}", #p_object, __VA_ARGS__)
+
+#define VULKAN_ASSERT_RESULT(p_result)                      { VkResult result = p_result; ASSERT_COND_MSG(         (result) == VK_SUCCESS, "Vulkan result check returns {}", string_VkResult(result)) }
+#define VULKAN_ASSERT_RESULT_MSG(p_result, ...)             { VkResult result = p_result; ASSERT_COND_MSG(         (result) == VK_SUCCESS, "Vulkan result check returns {}. Message: {}", string_VkResult(result), __VA_ARGS__) }
+#define VULKAN_ASSERT_RESULT_V(p_result, p_return)          { VkResult result = p_result; ASSERT_COND_V_MSG(       (result) == VK_SUCCESS, p_return, "Vulkan result check returns {}", string_VkResult(result)) }
+#define VULKAN_ASSERT_RESULT_V_MSG(p_result, p_return, ...) { VkResult result = p_result; ASSERT_COND_V_MSG(       (result) == VK_SUCCESS, p_return, "Vulkan result check returns {}. Message: {}", string_VkResult(result), __VA_ARGS__) }
+#define VULKAN_ASSERT_RESULT_BREAK(p_result)                { VkResult result = p_result; ASSERT_COND_BREAK_MSG(   (result) == VK_SUCCESS, "Vulkan result check returns {}", string_VkResult(p_result)) }
+#define VULKAN_ASSERT_RESULT_BREAK_MSG(p_result, ...)       { VkResult result = p_result; ASSERT_COND_BREAK_MSG(   (result) == VK_SUCCESS, "Vulkan result check returns {}. Message: {}", string_VkResult(result), __VA_ARGS__) }
+#define VULKAN_ASSERT_RESULT_CONTINUE(p_result)             { VkResult result = p_result; ASSERT_COND_CONTINUE_MSG((result) == VK_SUCCESS, "Vulkan result check returns {}", string_VkResult(result)) }
+#define VULKAN_ASSERT_RESULT_CONTINUE_MSG(p_result, ...)    { VkResult result = p_result; ASSERT_COND_CONTINUE_MSG((result) == VK_SUCCESS, "Vulkan result check returns {}. Message: {}", string_VkResult(result), __VA_ARGS__) }
+
 #define VULKAN_TRACE(mess, ...) LOG_TRACE(DeepEngine::Engine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
 #define VULKAN_DEBUG(mess, ...) LOG_DEBUG(DeepEngine::Engine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
 #define VULKAN_INFO(mess, ...) LOG_INFO(DeepEngine::Engine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
 #define VULKAN_WARN(mess, ...) LOG_WARN(DeepEngine::Engine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
 #define VULKAN_ERR(mess, ...) LOG_ERR(DeepEngine::Engine::Renderer::Vulkan::VulkanDebugger::GetLogger(), mess, __VA_ARGS__)
-
-#define VULKAN_CHECK_CREATE(Result, FailMessage, ...)               \
-    if (Result != VK_SUCCESS)                                       \
-    {                                                               \
-        VULKAN_ERR("Vulkan create assertion failed!\n"              \
-            "Returned result: {}\n"                                 \
-            "Message: {}",                                          \
-            string_VkResult(Result), fmt::format(FailMessage, __VA_ARGS__)); \
-        return false;                                               \
-    }                                                               \
 
 #ifdef MESSENGER_UTILS
 #endif
