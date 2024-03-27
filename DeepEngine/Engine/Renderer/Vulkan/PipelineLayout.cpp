@@ -13,12 +13,14 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		createInfo.pPushConstantRanges = nullptr;
 
 		VkPipelineLayout handler;
-            
-		vkCreatePipelineLayout(
-			_bindFactory->_vulkanInstance.GetLogicalDevice(),
-			&createInfo,
-			nullptr,
-			&handler);
+
+		VULKAN_ASSERT_RESULT_V(
+			vkCreatePipelineLayout(
+				_bindFactory->_vulkanInstance.GetLogicalDevice(),
+				&createInfo,
+				nullptr,
+				&handler),
+			nullptr)
 
 		auto pipelineLayout = new PipelineLayout(handler, p_subPass);
             

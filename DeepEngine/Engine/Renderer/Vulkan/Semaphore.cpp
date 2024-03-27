@@ -9,11 +9,10 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		createInfo.flags = 0;
         
 		VkSemaphore handler;
-		vkCreateSemaphore(
-			_bindFactory->_vulkanInstance.GetLogicalDevice(),
-			&createInfo,
-			nullptr,
-			&handler);
+
+		VULKAN_ASSERT_RESULT_V(
+			vkCreateSemaphore(_bindFactory->_vulkanInstance.GetLogicalDevice(), &createInfo, nullptr, &handler),
+			nullptr)
         
 		return CreateObject(new Semaphore(handler), Terminate, p_parent);
 	}

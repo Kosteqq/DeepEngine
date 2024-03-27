@@ -22,12 +22,13 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
         VkShaderModule handler;
-            
-        vkCreateShaderModule(
-            _bindFactory->_vulkanInstance.GetLogicalDevice(),
-            &createInfo,
-            nullptr,
-            &handler);
+        VULKAN_ASSERT_RESULT_V(
+            vkCreateShaderModule(
+                _bindFactory->_vulkanInstance.GetLogicalDevice(),
+                &createInfo,
+                nullptr,
+                &handler),
+            nullptr)
 
         return CreateObject(new ShaderModule(handler, p_stageFlags), Terminate, p_parent);
     }

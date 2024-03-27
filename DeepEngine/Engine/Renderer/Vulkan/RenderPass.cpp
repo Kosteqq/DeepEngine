@@ -152,7 +152,10 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         createInfo.pDependencies = p_builder->_dependecies.data();
 
         VkRenderPass vulkanHandler;
-        vkCreateRenderPass(_bindFactory->_vulkanInstance.GetLogicalDevice(), &createInfo, nullptr, &vulkanHandler);
+
+        VULKAN_ASSERT_RESULT_V(
+            vkCreateRenderPass(_bindFactory->_vulkanInstance.GetLogicalDevice(), &createInfo, nullptr, &vulkanHandler),
+            nullptr)
 
         return CreateObject(new RenderPass(vulkanHandler, attachmentsHandlers), Terminate, p_parent);
     }

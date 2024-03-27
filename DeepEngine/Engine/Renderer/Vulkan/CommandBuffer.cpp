@@ -13,12 +13,14 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer bufferHandler;
-        vkAllocateCommandBuffers(
-            _bindFactory->_vulkanInstance.GetLogicalDevice(),
-            &allocInfo,
-            &bufferHandler);
+        VULKAN_ASSERT_RESULT_V(
+            vkAllocateCommandBuffers(
+                _bindFactory->_vulkanInstance.GetLogicalDevice(),
+                &allocInfo,
+                &bufferHandler),
+            nullptr)
 
-        auto bufferObject = new CommandBuffer(bufferHandler);
+        const auto bufferObject = new CommandBuffer(bufferHandler);
         return CreateObject(bufferObject, Terminate, p_commandPool);
     }
 
@@ -31,19 +33,21 @@ namespace DeepEngine::Engine::Renderer::Vulkan
         allocInfo.level = p_asSecondary ? VK_COMMAND_BUFFER_LEVEL_SECONDARY : VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = 1;
 
-        std::vector<Ref<CommandBuffer>> objects(p_amount);
+        std::vector<Ref<CommandBuffer>> objects;
+        objects.reserve(p_amount);
 
         for (uint32_t i = 0; i < p_amount; i++)
         {
             VkCommandBuffer bufferHandler;
-            vkAllocateCommandBuffers(
-                _bindFactory->_vulkanInstance.GetLogicalDevice(),
-                &allocInfo,
-                &bufferHandler);
-                
-            auto bufferObject = new CommandBuffer(bufferHandler);
-                
-            objects[i] = CreateObject(bufferObject, Terminate, p_commandPool);
+
+            VULKAN_ASSERT_RESULT_CONTINUE(
+                vkAllocateCommandBuffers(
+                    _bindFactory->_vulkanInstance.GetLogicalDevice(),
+                    &allocInfo,
+                    &bufferHandler))
+
+            const auto bufferObject = new CommandBuffer(bufferHandler);
+            objects.push_back(CreateObject(bufferObject, Terminate, p_commandPool));
         }
 
         return objects;

@@ -8,7 +8,9 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             
 		VkFence handler;
-		vkCreateFence(_bindFactory->_vulkanInstance.GetLogicalDevice(), &fenceCreateInfo, nullptr, &handler);
+		VULKAN_ASSERT_RESULT_V(
+			vkCreateFence(_bindFactory->_vulkanInstance.GetLogicalDevice(), &fenceCreateInfo, nullptr, &handler),
+			nullptr)
 
 		return CreateObject(new Fence(handler), Terminate, p_parent);
 	}
@@ -20,7 +22,10 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
             
 		VkFence handler;
-		vkCreateFence(_bindFactory->_vulkanInstance.GetLogicalDevice(), &fenceCreateInfo, nullptr, &handler);
+
+		VULKAN_ASSERT_RESULT_V(
+			vkCreateFence(_bindFactory->_vulkanInstance.GetLogicalDevice(), &fenceCreateInfo, nullptr, &handler),
+			nullptr)
 
 		return CreateObject(new Fence(handler), Terminate, p_parent);
 	}

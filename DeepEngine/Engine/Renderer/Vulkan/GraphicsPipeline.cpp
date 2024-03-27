@@ -107,15 +107,11 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		pipelineInfo.basePipelineHandle     = VK_NULL_HANDLE;
 		pipelineInfo.basePipelineIndex      = -1;
 
-
 		VkPipeline pipelineHandler;
-		vkCreateGraphicsPipelines(
-			_bindFactory->_vulkanInstance.GetLogicalDevice(),
-			VK_NULL_HANDLE,
-			1,
-			&pipelineInfo,
-			nullptr,
-			&pipelineHandler);
+
+		VULKAN_ASSERT_RESULT_V(
+			vkCreateGraphicsPipelines(_bindFactory->_vulkanInstance.GetLogicalDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipelineHandler),
+			nullptr)
 
 		return CreateObject(new GraphicsPipeline(pipelineHandler), Terminate, p_pipelineLayout);
 	}

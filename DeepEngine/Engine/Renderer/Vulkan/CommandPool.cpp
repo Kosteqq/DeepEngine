@@ -24,11 +24,14 @@ namespace DeepEngine::Engine::Renderer::Vulkan
 		}
 
 		VkCommandPool commandPool;
-		vkCreateCommandPool(
-			_bindFactory->_vulkanInstance.GetLogicalDevice(),
-			&createInfo,
-			nullptr,
-			&commandPool);
+
+		VULKAN_ASSERT_RESULT_V(
+			vkCreateCommandPool(
+				_bindFactory->_vulkanInstance.GetLogicalDevice(),
+				&createInfo,
+				nullptr,
+				&commandPool),
+			nullptr)
 
 		auto poolObject = new CommandPool(commandPool, p_queue);
             
