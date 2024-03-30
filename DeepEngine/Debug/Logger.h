@@ -39,20 +39,20 @@
         ((void)0);
 
 #define ASSERT_COND_BREAK_MSG(p_condition, ...)                     \
-    if ((p_condition)) {                                            \
+    if (!(p_condition)) {                                           \
         ENGINE_ERR(__VA_ARGS__);                                    \
         break;                                                      \
     } else                                                          \
         ((void)0);
 
 #define ASSERT_COND_CONTINUE(p_condition)                           \
-    if ((p_condition))                                              \
+    if (!(p_condition))                                             \
         continue;                                                   \
     else                                                            \
         ((void)0);
 
 #define ASSERT_COND_CONTINUE_MSG(p_condition, ...)                  \
-    if ((p_condition)) {                                            \
+    if (!(p_condition)) {                                           \
         ENGINE_ERR(__VA_ARGS__);                                    \
         continue;                                                   \
     } else                                                          \
