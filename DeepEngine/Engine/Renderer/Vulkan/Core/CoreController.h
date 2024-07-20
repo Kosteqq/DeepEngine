@@ -1,5 +1,4 @@
 #pragma once
-#include <functional>
 #include <vector>
 #include <memory>
 #include <set>
@@ -141,7 +140,7 @@ namespace DeepEngine::Renderer::Vulkan
 	};
 	
 
-	struct InstanceDescription
+	struct CoreDescription
 	{
 		struct FeatureData
 		{
@@ -153,7 +152,7 @@ namespace DeepEngine::Renderer::Vulkan
 		AppDescription m_AppDesc;
 		DebugDescription m_DebugDesc;
 
-		InstanceDescription()
+		CoreDescription()
 		{
 			m_Features.reserve(32);
 		}
@@ -173,10 +172,10 @@ namespace DeepEngine::Renderer::Vulkan
 		}
 	};
 
-	class InstanceController
+	class CoreController
 	{
 	public:
-		static InstanceController Create(const InstanceDescription& p_desc)
+		static CoreController Create(const CoreDescription& p_desc)
 		{
 			
 		}
