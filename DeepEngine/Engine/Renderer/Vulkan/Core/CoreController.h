@@ -66,6 +66,8 @@ namespace DeepEngine::Renderer::Vulkan
 		{ return { }; }
 	};
 
+	using FeatureType = std::type_info;
+
 	// ---------------------------------------------------
 	// FACTORY
 	// ---------------------------------------------------
@@ -137,6 +139,8 @@ namespace DeepEngine::Renderer::Vulkan
 		uint32_t m_FamilyIndex;
 		VkQueueFlagBits m_Bits;
 		bool m_SupportsSurface;
+
+		std::set<const FeatureType&> m_SupportFeatures;
 	};
 	
 
@@ -145,7 +149,7 @@ namespace DeepEngine::Renderer::Vulkan
 		struct FeatureData
 		{
 			std::unique_ptr<Feature> m_Feature;
-			const std::type_info& m_Type;
+			const FeatureType& m_Type;
 		};
 		
 		std::vector<FeatureData> m_Features;
@@ -180,11 +184,31 @@ namespace DeepEngine::Renderer::Vulkan
 			
 		}
 		
-		template <typename T>
+		template <typename TFeature>
+		requires std::is_base_of_v<Feature, TFeature>
 		bool IsFeatureEnabled() const
 		{
-			type_info& type = typeid(T);
+			const FeatureType& type = typeid(TFeature);
 			return m_enabledFeatures.contains(type);
+		}
+
+		template <typename TFeature>
+		requires std::is_base_of_v<Feature, TFeature>
+		std::vector<QueueData> GetFeatureSupportQueues() const
+		{
+			std::vector<QueueData> output;
+			output.reserve(m_queuesData.size());
+			
+			const FeatureType& type = typeid(TFeature);
+			
+			for (uint32_t i = 0; i < m_queuesData.size(); i++)
+			{
+				if (m_queuesData[i].m_SupportFeatures.contains(type))
+				{
+					output.push_back(m_queuesData[i]);
+				}
+			}
+			return output;
 		}
 		
 	private:
@@ -193,7 +217,7 @@ namespace DeepEngine::Renderer::Vulkan
 		SwapChainData m_swapChainData;
 		SurfaceData m_surfaceData;
 		std::vector<QueueData> m_queuesData;
-		std::set<std::type_info&> m_enabledFeatures;
+		std::set<const FeatureType&> m_enabledFeatures;
 	};
 	
 }
