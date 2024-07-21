@@ -179,9 +179,24 @@ namespace DeepEngine::Renderer::Vulkan
 	class CoreController
 	{
 	public:
-		static CoreController Create(const CoreDescription& p_desc)
+		static std::shared_ptr<CoreController> Create(const CoreDescription& p_desc)
 		{
-			
+			// Get available instance extensions
+			// Compare extensions with features
+			// Return null if required features has not been matched
+
+			// Get available Physical devices
+			// Get availabel queues per physiacl devices
+			// Find device with matching all required features and the larges amount of optional features
+
+			// Create debug layers create info
+			// Create Instance
+			// Create Debug messenger
+
+			// Create LogicalDevice
+			// Create Queues
+
+			return nullptr;
 		}
 		
 		template <typename TFeature>
